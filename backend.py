@@ -24,6 +24,12 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+import json
+import jwt
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from database import SessionLocal, get_db, User, Job as DBJob
+from sqlalchemy.orm import Session
 
 # ─── THIRD-PARTY ───────────────────────────────────────────────────────────
 import jieba
@@ -31,9 +37,10 @@ import torch
 import requests
 from bs4 import BeautifulSoup
 from ddgs import DDGS
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -69,6 +76,9 @@ CONFIG = {
     # Report
     "stats_file": "run_statistics.csv",
 }
+
+JWT_SECRET = "c-checker-super-secret-key"
+GOOGLE_CLIENT_ID = "988401071814-56kve7lfi1sg4vqckqju6v0p25hk5o8o.apps.googleusercontent.com"
 
 STOPWORDS_ZH = {
     "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一",
@@ -589,6 +599,18 @@ def run_check(job_id: str, text: str):
 
     _save_stats(report_items, runtime)
 
+    db = SessionLocal()
+    try:
+        db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
+        if db_job:
+            db_job.status = JOBS[job_id]["status"]
+            if db_job.status == "done":
+                db_job.result_json = json.dumps(JOBS[job_id])
+                db_job.finished_at = datetime.now()
+            db.commit()
+    finally:
+        db.close()
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HTML REPORT
@@ -772,6 +794,10 @@ app.add_middleware(
 
 class CheckRequest(BaseModel):
     text: str = Field(..., min_length=10, description="Văn bản tiếng Trung cần kiểm tra")
+    file_name: Optional[str] = "Manual Input"
+
+class LoginRequest(BaseModel):
+    token: str
 
 class JobStatus(BaseModel):
     job_id: str
@@ -789,19 +815,88 @@ class JobStatus(BaseModel):
 def health():
     return {"status": "ok", "version": "5.0.0"}
 
+security = HTTPBearer(auto_error=False)
+
+def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = request.query_params.get("token")
+    if not token and credentials:
+        token = credentials.credentials
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        user = db.query(User).filter(User.id == user_id).first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+@app.post("/login")
+def login(req: LoginRequest, db: Session = Depends(get_db)):
+    try:
+        idinfo = id_token.verify_oauth2_token(req.token, google_requests.Request(), GOOGLE_CLIENT_ID)
+        google_id = idinfo['sub']
+        email = idinfo.get('email')
+        name = idinfo.get('name')
+        picture = idinfo.get('picture')
+
+        user = db.query(User).filter(User.google_id == google_id).first()
+        if not user:
+            user = User(google_id=google_id, email=email, name=name, picture=picture)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
+        return {
+            "access_token": access_token, 
+            "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture}
+        }
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid Google token: {e}")
+
+@app.get("/history")
+def get_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    jobs = db.query(DBJob).filter(DBJob.user_id == current_user.id).order_by(DBJob.created_at.desc()).all()
+    history = []
+    for j in jobs:
+        if j.status == "done" and j.result_json:
+            try:
+                res = json.loads(j.result_json)
+                history.append({
+                    "job_id": j.job_id,
+                    "fileName": j.file_name,
+                    "timestamp": j.created_at.isoformat(),
+                    "verdict": res.get("verdict", "LOW"),
+                    "verdict_text": res.get("verdict_text", ""),
+                    "max_score": res.get("max_score", 0),
+                    "matches_found": res.get("matches_found", 0),
+                    "result": res
+                })
+            except Exception:
+                pass
+    return history
 
 @app.post("/check", response_model=dict, status_code=202)
-def submit_check(req: CheckRequest, background_tasks: BackgroundTasks):
+def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     job_id = str(uuid.uuid4())
     JOBS[job_id] = {
         "status": "queued",
         "progress": "0/0",
         "current_sentence": None,
         "created_at": datetime.now().isoformat(),
-        "finished_at": None,
-        "error": None,
     }
+
+    db_job = DBJob(job_id=job_id, user_id=current_user.id, file_name=req.file_name, status="queued")
+    db.add(db_job)
+    db.commit()
+
     background_tasks.add_task(run_check, job_id, req.text)
+
     return {
         "job_id": job_id,
         "status": "queued",
@@ -831,6 +926,13 @@ def get_status(job_id: str):
 def get_result(job_id: str):
     job = JOBS.get(job_id)
     if not job:
+        db = SessionLocal()
+        try:
+            db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
+        finally:
+            db.close()
+        if db_job and db_job.status == "done" and db_job.result_json:
+            return json.loads(db_job.result_json)
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] != "done":
         return JSONResponse(
@@ -849,6 +951,34 @@ def get_result(job_id: str):
         "finished_at": job["finished_at"],
         "report_items": job["report_items"],
     }
+
+@app.get("/stream/{job_id}")
+async def stream_status(job_id: str, current_user: User = Depends(get_current_user)):
+    async def event_generator():
+        while True:
+            job = JOBS.get(job_id)
+            if not job:
+                db = SessionLocal()
+                try:
+                    db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
+                finally:
+                    db.close()
+                if db_job and db_job.status == "done" and db_job.result_json:
+                    res = json.loads(db_job.result_json)
+                    yield f"data: {json.dumps({'status': res['status'], 'progress': res.get('progress'), 'current_sentence': res.get('current_sentence'), 'error': res.get('error')})}\n\n"
+                    break
+                else:
+                    yield "data: {\"status\": \"not_found\"}\n\n"
+                    break
+            
+            yield f"data: {json.dumps({'status': job['status'], 'progress': job.get('progress'), 'current_sentence': job.get('current_sentence'), 'error': job.get('error')})}\n\n"
+            
+            if job["status"] in ("done", "failed"):
+                break
+                
+            await asyncio.sleep(1.0)
+            
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @app.get("/report/{job_id}", response_class=HTMLResponse)

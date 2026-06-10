@@ -1,11 +1,12 @@
 // API client for C-checker v5 backend
 
-const API_BASE = 'https://longcg18-c-checker-demo.hf.space';
+const API_BASE = 'http://localhost:8000';
 
 export interface SubmitResponse {
   job_id: string;
   status: string;
   poll_url: string;
+  stream_url: string;
   report_url: string;
   result_url: string;
 }
@@ -48,9 +49,25 @@ export interface JobResult {
   report_items: ReportItem[];
 }
 
+export function setToken(token: string) {
+  localStorage.setItem('c_checker_token', token);
+}
+export function getToken() {
+  return localStorage.getItem('c_checker_token');
+}
+export function removeToken() {
+  localStorage.removeItem('c_checker_token');
+}
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...headers, ...(options?.headers || {}) },
     ...options,
   });
   if (!res.ok && res.status !== 202) {
@@ -61,31 +78,38 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  /** Kiểm tra backend có online không */
   health(): Promise<{ status: string; version: string }> {
     return apiFetch('/health');
   },
 
-  /** Gửi văn bản để kiểm tra — trả về job_id ngay */
-  submitCheck(text: string): Promise<SubmitResponse> {
-    return apiFetch('/check', {
+  login(googleToken: string): Promise<{ access_token: string; user: any }> {
+    return apiFetch('/login', {
       method: 'POST',
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ token: googleToken })
     });
   },
 
-  /** Poll trạng thái job */
-  pollStatus(job_id: string): Promise<JobStatus> {
-    return apiFetch(`/status/${job_id}`);
+  getHistory(): Promise<any[]> {
+    return apiFetch('/history');
   },
 
-  /** Lấy kết quả đầy đủ khi job done */
+  submitCheck(text: string, fileName?: string): Promise<SubmitResponse> {
+    return apiFetch('/check', {
+      method: 'POST',
+      body: JSON.stringify({ text, file_name: fileName || "Manual Input" }),
+    });
+  },
+
   getResult(job_id: string): Promise<JobResult> {
     return apiFetch(`/result/${job_id}`);
   },
 
-  /** URL của HTML report */
   reportUrl(job_id: string): string {
     return `${API_BASE}/report/${job_id}`;
   },
+
+  streamUrl(job_id: string): string {
+    const token = getToken();
+    return `${API_BASE}/stream/${job_id}?token=${token || ''}`;
+  }
 };

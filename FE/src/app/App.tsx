@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
-import { api, JobStatus, JobResult } from './lib/api';
+import { useState, useCallback, useEffect } from 'react';
+import { api, JobStatus, JobResult, getToken } from './lib/api';
 import { UploadSection } from './components/UploadSection';
 import { AnalysisResults } from './components/AnalysisResults';
 import { HistoryPanel } from './components/HistoryPanel';
 import { JobProgress } from './components/JobProgress';
+import { Login } from './components/Login';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -30,67 +31,105 @@ type AppState =
 export default function App() {
   const [appState, setAppState] = useState<AppState>({ phase: 'idle' });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [user, setUser] = useState<any>(null);
 
-const handleAnalyze = useCallback(async (fileName: string, text: string) => {
-  setAppState({ phase: 'submitting' });
+  const loadHistory = useCallback(async () => {
+    try {
+      const data = await api.getHistory();
+      setHistory(data.map((d: any) => ({
+        ...d,
+        timestamp: new Date(d.timestamp)
+      })));
+    } catch (e) {
+      console.error("Failed to load history", e);
+    }
+  }, []);
 
-  try {
-    // 1. Submit job
-    const submitRes = await api.submitCheck(text);
-    const { job_id } = submitRes;
-    const startTime = Date.now();
-
-    // 2. Initial status
-    const initialStatus = await api.pollStatus(job_id);
-    setAppState({ phase: 'polling', job_id, status: initialStatus, startTime });
-
-    // 3. Poll loop
-    const MAX_WAIT_MS = 60 * 60 * 1000; // 60 phút
-
-    while (true) {
-      await new Promise((r) => setTimeout(r, 2000));
-
-      if (Date.now() - startTime > MAX_WAIT_MS) {
-        setAppState({ phase: 'error', message: 'Quá thời gian chờ (60 phút)' });
-        break;
+  useEffect(() => {
+    if (getToken()) {
+      const storedUser = localStorage.getItem('c_checker_user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
+      loadHistory();
+    }
+  }, [loadHistory]);
 
-      const status = await api.pollStatus(job_id);
+  const handleLogin = (userData: any) => {
+    setUser(userData);
+    localStorage.setItem('c_checker_user', JSON.stringify(userData));
+    loadHistory();
+  };
 
-      if (status.status === 'done') {
-        const result = await api.getResult(job_id);
-        setAppState({ phase: 'done', result });
-        setHistory((prev) => [
-          {
-            job_id,
-            fileName,
-            timestamp: new Date(),
-            verdict: result.verdict,
-            verdict_text: result.verdict_text,
-            max_score: result.max_score,
-            matches_found: result.matches_found,
-            result,
-          },
-          ...prev,
-        ]);
-        break;
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('c_checker_user');
+    setHistory([]);
+    setAppState({ phase: 'idle' });
+  };
 
-      } else if (status.status === 'failed') {
-        setAppState({ phase: 'error', message: status.error || 'Xử lý thất bại' });
-        break;
-
-      } else {
-        setAppState((prev) =>
-          prev.phase === 'polling' ? { ...prev, status } : prev
-        );
-      }
+  const handleAnalyze = useCallback(async (fileName: string, text: string) => {
+    if (!getToken()) {
+      setAppState({ phase: 'error', message: 'Vui lòng đăng nhập trước khi kiểm tra!' });
+      return;
     }
 
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    setAppState({ phase: 'error', message: msg });
-  }
-}, []);
+    setAppState({ phase: 'submitting' });
+
+    try {
+      // 1. Submit job
+      const submitRes = await api.submitCheck(text, fileName);
+      const { job_id } = submitRes;
+      const startTime = Date.now();
+
+      // Set initial status to show progress UI
+      setAppState({ phase: 'polling', job_id, status: { job_id, status: 'queued', progress: '0/0', current_sentence: null, created_at: new Date().toISOString(), finished_at: null, error: null }, startTime });
+
+      // 2. Use SSE to listen to progress
+      const source = new EventSource(api.streamUrl(job_id));
+
+      source.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.status === 'not_found') {
+            source.close();
+            setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
+            return;
+          }
+
+          if (data.status === 'done') {
+            source.close();
+            const result = await api.getResult(job_id);
+            setAppState({ phase: 'done', result });
+            
+            loadHistory();
+          } else if (data.status === 'failed') {
+            source.close();
+            setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
+          } else {
+            setAppState((prev) =>
+              prev.phase === 'polling' 
+                ? { ...prev, status: { ...prev.status, ...data } } 
+                : prev
+            );
+          }
+        } catch (e) {
+          console.error("Error parsing SSE data", e);
+        }
+      };
+
+      source.onerror = (err) => {
+        console.error("SSE Error", err);
+        source.close();
+        setAppState({ phase: 'error', message: 'Mất kết nối tới server!' });
+      };
+
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setAppState({ phase: 'error', message: msg });
+    }
+  }, [loadHistory]);
 
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
     setAppState({ phase: 'done', result: entry.result });
@@ -101,6 +140,28 @@ const handleAnalyze = useCallback(async (fileName: string, text: string) => {
   }, []);
 
   const isAnalyzing = appState.phase === 'submitting' || appState.phase === 'polling';
+
+  if (!user && !getToken()) {
+    return (
+      <div className="c-app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--c-bg)' }}>
+        <div style={{ textAlign: 'center', background: 'var(--c-surface)', padding: '40px', borderRadius: '16px', border: '1px solid var(--c-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" strokeWidth="2" width="64" height="64" style={{ margin: '0 auto' }}>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
+          <h1 style={{ fontFamily: 'var(--c-serif)', fontSize: '28px', color: '#fff', marginBottom: '8px' }}>C-checker v5</h1>
+          <p style={{ color: 'var(--c-text-dim)', marginBottom: '32px', maxWidth: '300px' }}>
+            Hệ thống phát hiện đạo văn tiếng Trung chuyên sâu. Vui lòng đăng nhập để bắt đầu sử dụng.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="c-app">
@@ -119,10 +180,13 @@ const handleAnalyze = useCallback(async (fileName: string, text: string) => {
               <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
             </div>
           </div>
-          <div className="c-header-badges">
+          <div className="c-header-badges" style={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
             <span className="c-badge c-badge--blue">MiniLM Semantic</span>
             <span className="c-badge c-badge--purple">LCS · N-gram</span>
             <span className="c-badge c-badge--green">DDGS Search</span>
+          </div>
+          <div className="c-header-auth">
+            <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
           </div>
         </div>
       </header>
@@ -207,7 +271,7 @@ const handleAnalyze = useCallback(async (fileName: string, text: string) => {
                 <h2 className="c-error-title">Đã xảy ra lỗi</h2>
                 <p className="c-error-msg">{appState.message}</p>
                 <p className="c-error-hint">
-                  Hãy đảm bảo backend đang chạy tại <code> Hugging Face </code>
+                  Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
                 </p>
                 <button className="c-btn c-btn--primary" onClick={handleReset}>
                   Thử lại
