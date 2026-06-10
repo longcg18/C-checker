@@ -31,63 +31,66 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>({ phase: 'idle' });
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
-  const handleAnalyze = useCallback(async (fileName: string, text: string) => {
-    setAppState({ phase: 'submitting' });
+const handleAnalyze = useCallback(async (fileName: string, text: string) => {
+  setAppState({ phase: 'submitting' });
 
-    try {
-      // 1. Submit job
-      const submitRes = await api.submitCheck(text);
-      const { job_id } = submitRes;
+  try {
+    // 1. Submit job
+    const submitRes = await api.submitCheck(text);
+    const { job_id } = submitRes;
+    const startTime = Date.now();
 
-      const startTime = Date.now();
+    // 2. Initial status
+    const initialStatus = await api.pollStatus(job_id);
+    setAppState({ phase: 'polling', job_id, status: initialStatus, startTime });
 
-      // 2. Initial status
-      const initialStatus = await api.pollStatus(job_id);
-      setAppState({ phase: 'polling', job_id, status: initialStatus, startTime });
+    // 3. Poll loop
+    const MAX_WAIT_MS = 60 * 60 * 1000; // 60 phút
 
-      // 3. Poll loop
-      const poll = async (): Promise<void> => {
-        await new Promise((r) => setTimeout(r, 2000));
-        try {
-          const status = await api.pollStatus(job_id);
-          if (status.status === 'done') {
-            const result = await api.getResult(job_id);
-            setAppState({ phase: 'done', result });
-            setHistory((prev) => [
-              {
-                job_id,
-                fileName,
-                timestamp: new Date(),
-                verdict: result.verdict,
-                verdict_text: result.verdict_text,
-                max_score: result.max_score,
-                matches_found: result.matches_found,
-                result,
-              },
-              ...prev,
-            ]);
-          } else if (status.status === 'failed') {
-            setAppState({ phase: 'error', message: status.error || 'Xử lý thất bại' });
-          } else {
-            setAppState((prev) =>
-              prev.phase === 'polling'
-                ? { ...prev, status }
-                : prev
-            );
-            await poll();
-          }
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : String(e);
-          setAppState({ phase: 'error', message: msg });
-        }
-      };
+    while (true) {
+      await new Promise((r) => setTimeout(r, 2000));
 
-      await poll();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setAppState({ phase: 'error', message: msg });
+      if (Date.now() - startTime > MAX_WAIT_MS) {
+        setAppState({ phase: 'error', message: 'Quá thời gian chờ (60 phút)' });
+        break;
+      }
+
+      const status = await api.pollStatus(job_id);
+
+      if (status.status === 'done') {
+        const result = await api.getResult(job_id);
+        setAppState({ phase: 'done', result });
+        setHistory((prev) => [
+          {
+            job_id,
+            fileName,
+            timestamp: new Date(),
+            verdict: result.verdict,
+            verdict_text: result.verdict_text,
+            max_score: result.max_score,
+            matches_found: result.matches_found,
+            result,
+          },
+          ...prev,
+        ]);
+        break;
+
+      } else if (status.status === 'failed') {
+        setAppState({ phase: 'error', message: status.error || 'Xử lý thất bại' });
+        break;
+
+      } else {
+        setAppState((prev) =>
+          prev.phase === 'polling' ? { ...prev, status } : prev
+        );
+      }
     }
-  }, []);
+
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    setAppState({ phase: 'error', message: msg });
+  }
+}, []);
 
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
     setAppState({ phase: 'done', result: entry.result });
