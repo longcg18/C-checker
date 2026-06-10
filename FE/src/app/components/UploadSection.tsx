@@ -1,4 +1,9 @@
 import { useState, useRef } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
+import mammoth from 'mammoth';
+
+// Set up PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 interface UploadSectionProps {
   onAnalyze: (fileName: string, text: string) => void;
@@ -12,6 +17,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
   const [textInput, setTextInput] = useState('');
   const [fileName, setFileName] = useState('');
   const [mode, setMode] = useState<'upload' | 'text'>('text');
+  const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const chineseCharCount = (text: string) =>
@@ -33,12 +39,41 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
     if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (e) => setTextInput(e.target?.result as string || '');
-    reader.readAsText(file, 'utf-8');
+    setIsParsing(true);
     setMode('text');
+
+    try {
+      if (file.name.toLowerCase().endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map((item: any) => item.str).join(' ') + '\n';
+        }
+        setTextInput(text);
+      } else if (file.name.toLowerCase().endsWith('.docx')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        setTextInput(result.value);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setTextInput(e.target?.result as string || '');
+          setIsParsing(false);
+        };
+        reader.readAsText(file, 'utf-8');
+        return; // Don't run setIsParsing(false) below since it's async
+      }
+    } catch (err) {
+      console.error('File parsing error', err);
+      setTextInput('Có lỗi xảy ra khi đọc file này. Vui lòng thử file khác.');
+    }
+    
+    setIsParsing(false);
   };
 
   const handleAnalyze = () => {
@@ -113,7 +148,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
             ref={fileInputRef}
             type="file"
             className="c-hidden"
-            accept=".txt"
+            accept=".txt,.pdf,.docx"
             onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
           />
           <div className="c-dropzone-icon">
@@ -123,7 +158,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
             </svg>
           </div>
           <p className="c-dropzone-text">Kéo thả file hoặc click để chọn</p>
-          <p className="c-dropzone-hint">Hỗ trợ .txt có nội dung tiếng Trung</p>
+          <p className="c-dropzone-hint">Hỗ trợ .txt, .pdf, .docx có nội dung tiếng Trung</p>
         </div>
       )}
 
@@ -132,16 +167,16 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
         <div className="c-textarea-wrap">
           <textarea
             className="c-textarea"
-            value={textInput}
+            value={isParsing ? 'Đang đọc nội dung file...' : textInput}
             onChange={(e) => setTextInput(e.target.value)}
             placeholder="粘贴中文文本到这里进行查重...&#10;&#10;（请输入至少包含6个汉字的中文文本）"
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || isParsing}
           />
         </div>
       )}
 
       {/* Stats bar */}
-      {textInput && (
+      {textInput && !isParsing && (
         <div className="c-stats-bar">
           <div className="c-stat-item">
             <span className="c-stat-num">{chineseCharCount(textInput).toLocaleString()}</span>
@@ -175,14 +210,19 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
         )}
         <button
           id="btn-analyze"
-          className={`c-btn c-btn--primary c-btn--full ${isAnalyzing ? 'c-btn--loading' : ''}`}
+          className={`c-btn c-btn--primary c-btn--full ${isAnalyzing || isParsing ? 'c-btn--loading' : ''}`}
           onClick={handleAnalyze}
-          disabled={!textInput.trim() || !hasChineseText || isAnalyzing}
+          disabled={!textInput.trim() || !hasChineseText || isAnalyzing || isParsing}
         >
           {isAnalyzing ? (
             <>
               <span className="c-btn-spinner" />
               Đang phân tích...
+            </>
+          ) : isParsing ? (
+             <>
+              <span className="c-btn-spinner" />
+              Đang đọc file...
             </>
           ) : (
             <>

@@ -59,13 +59,7 @@ export function JobProgress({ progress, currentSentence, status, startTime }: Jo
         </div>
       )}
 
-      {/* Current sentence */}
-      {currentSentence && (
-        <div className="c-current-sentence">
-          <div className="c-sentence-label">🔍 Đang kiểm tra câu:</div>
-          <div className="c-sentence-text">{currentSentence}</div>
-        </div>
-      )}
+
 
       {/* Info pills */}
       <div className="c-info-pills">
