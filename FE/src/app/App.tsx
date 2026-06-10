@@ -204,7 +204,7 @@ export default function App() {
                 <h2 className="c-error-title">Đã xảy ra lỗi</h2>
                 <p className="c-error-msg">{appState.message}</p>
                 <p className="c-error-hint">
-                  Hãy đảm bảo backend đang chạy tại <code>http://localhost:8000</code>
+                  Hãy đảm bảo backend đang chạy tại <code> Hugging Face </code>
                 </p>
                 <button className="c-btn c-btn--primary" onClick={handleReset}>
                   Thử lại
