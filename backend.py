@@ -43,11 +43,11 @@ from sentence_transformers import SentenceTransformer, util
 CONFIG = {
     # Search
     "max_results_per_query": 4,
-    "search_window_sizes": [4, 5, 6],
+    "search_window_sizes": [5],
     "step": 1,
     "delay_between_requests": 0.3,
     "fetch_timeout": 10,
-    "max_page_length": 4000,
+    "max_page_length": 2000,
 
     # Scoring thresholds
     "lcs_threshold": 0.12,
@@ -340,10 +340,22 @@ def highlight_tokens(tokens: List[str], matched_idxs: List[int]) -> str:
             i += 1
     return "".join(result)
 
+def highlight_original_text(original: str, matched_tokens: List[str]) -> str:
+    """highlight base on original text"""
+    if not matched_tokens:
+        return original
+    
+    result = original
+    for token in sorted(set(matched_tokens), key=len, reverse=True):  # dài trước để tránh overlap
+        if token and len(token) > 1:  # bỏ qua token 1 ký tự
+            result = result.replace(token, f"<mark>{token}</mark>")
+    return result
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CORE ANALYSIS
 # ══════════════════════════════════════════════════════════════════════════════
+"""
+
 
 def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
     sentence_tokens = tokenize(sentence)
@@ -432,7 +444,96 @@ def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
         })
     return output
 
+"""
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
+    sentence_tokens = tokenize(sentence)
+    if not sentence_tokens:
+        return []
+
+    queries = generate_queries(sentence_tokens)
+    
+    # Thu thập tất cả search results trước
+    all_results: Dict[str, Dict] = {}  # url_key → result
+    for q in queries:
+        for r in search_query(q, ddgs):
+            url = normalize_url(r.get("href", ""))
+            if url and url not in all_results:
+                all_results[url] = r
+
+    # Fetch song song
+    def fetch_and_score(url_key, r):
+        url = r.get("href", "")
+        full_text = fetch_page(url)
+        title = r.get("title", "")
+        body = r.get("body", "")
+        ref_text = full_text if len(full_text) > 200 else (title + " " + body)
+        ref_tokens = tokenize(ref_text)
+        if not ref_tokens:
+            return None
+        
+        lcs_result = lcs_with_indexes(sentence_tokens, ref_tokens)
+        lcs_score = calc_lcs_score(lcs_result["length"], len(sentence_tokens), len(ref_tokens))
+        ngram_score = max(
+            ngram_overlap_score(sentence_tokens, ref_tokens, n=2),
+            ngram_overlap_score(sentence_tokens, ref_tokens, n=3),
+        )
+        cont_len = longest_contiguous(sentence_tokens, ref_tokens)
+        contiguous_score = cont_len / max(len(sentence_tokens), len(ref_tokens), 1)
+        semantic_score = 0.0
+        if lcs_score > CONFIG["lcs_threshold"] or ngram_score > 0.05:
+            snippet_text = " ".join(ref_tokens[:200])
+            raw_sem = semantic_similarity(sentence, snippet_text)
+            semantic_score = raw_sem if raw_sem >= CONFIG["min_semantic_score"] else 0.0
+
+        score = compute_final_score(lcs_score, ngram_score, semantic_score, contiguous_score)
+        return (url_key, score, {
+            "url": url, "title": title, "body": body[:300],
+            "lcs_score": lcs_score, "ngram_score": ngram_score,
+            "semantic_score": semantic_score, "contiguous_score": contiguous_score,
+            "final_score": score, "lcs": lcs_result,
+            "snippet": extract_snippet(ref_tokens, lcs_result["indexes"]),
+        })
+
+    candidate_scores: Dict[str, float] = defaultdict(float)
+    candidate_data: Dict[str, Dict] = {}
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        futures = {executor.submit(fetch_and_score, k, v): k for k, v in all_results.items()}
+        for future in as_completed(futures):
+            result = future.result()
+            if result is None:
+                continue
+            url_key, score, data = result
+            if score > candidate_scores[url_key]:
+                candidate_scores[url_key] = score
+                candidate_data[url_key] = data
+
+    # Phần sort và output giữ nguyên
+    sorted_cands = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
+    output = []
+    for url_key, total_score in sorted_cands[:CONFIG["top_candidates"]]:
+        if total_score < CONFIG["min_final_score"]:
+            continue
+        d = candidate_data[url_key]
+        highlighted = highlight_original_text(sentence, d["lcs"]["tokens"])
+        #highlighted = highlight_tokens(sentence_tokens, d["lcs"]["indexes"])
+        output.append({
+            "sentence": sentence,
+            "url": d["url"],
+            "title": d["title"],
+            "body": d["body"],
+            "highlighted": highlighted,
+            "matched_tokens": d["lcs"]["tokens"],
+            "snippet": d["snippet"],
+            "lcs_score": round(d["lcs_score"], 4),
+            "ngram_score": round(d["ngram_score"], 4),
+            "semantic_score": round(d["semantic_score"], 4),
+            "contiguous_score": round(d["contiguous_score"], 4),
+            "final_score": round(d["final_score"], 4),
+        })
+    return output
 def run_check(job_id: str, text: str):
     """Background worker — cập nhật JOBS[job_id] khi xong."""
     start = time.time()
@@ -656,7 +757,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
