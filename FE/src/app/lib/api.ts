@@ -1,6 +1,6 @@
 // API client for C-checker v5 backend
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://longcg18-c-checker-demo.hf.space';
 
 export interface SubmitResponse {
   job_id: string;
