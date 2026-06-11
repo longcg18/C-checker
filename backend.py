@@ -605,7 +605,10 @@ def run_check(job_id: str, text: str):
         if db_job:
             db_job.status = JOBS[job_id]["status"]
             if db_job.status == "done":
-                db_job.result_json = json.dumps(JOBS[job_id])
+                db_job.result_json = json.dumps({
+                        k: v for k, v in JOBS[job_id].items() 
+                        if k != "html_report"
+                    })
                 db_job.finished_at = datetime.now()
             db.commit()
     finally:
@@ -984,17 +987,37 @@ async def stream_status(job_id: str, current_user: User = Depends(get_current_us
 @app.get("/report/{job_id}", response_class=HTMLResponse)
 def get_report(job_id: str):
     job = JOBS.get(job_id)
+
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
+        db = SessionLocal()
+        try:
+            db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
+        finally:
+            db.close()
+        
+        if not db_job:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        if db_job.status == "done" and db_job.result_json:
+            data = json.loads(db_job.result_json)
+            html = build_html_report(
+                data["report_items"],
+                "",  # original_text không cần thiết lắm
+                data["runtime"],
+                data["verdict_text"],
+            )
+            return HTMLResponse(content=html)
+        
+        raise HTTPException(status_code=404, detail="Job not ready")
+    
     if job["status"] == "queued":
-        return HTMLResponse(content=_waiting_html("⏳ Job đang xếp hàng..."), status_code=202)
+        return HTMLResponse(content=_waiting_html("⏳ Chờ xử lý..."), status_code=202)
     if job["status"] == "running":
         prog = job.get("progress", "?/?")
         return HTMLResponse(content=_waiting_html(f"⚙️ Đang xử lý... ({prog})"), status_code=202)
     if job["status"] == "failed":
         return HTMLResponse(content=_waiting_html(f"❌ Lỗi: {job.get('error')}"), status_code=500)
     return HTMLResponse(content=job["html_report"])
-
 
 def _waiting_html(msg: str) -> str:
     return f"""<!DOCTYPE html>
