@@ -91,7 +91,7 @@ export default function App() {
       source.onmessage = async (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.status === 'not_found') {
             source.close();
             setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
@@ -102,15 +102,15 @@ export default function App() {
             source.close();
             const result = await api.getResult(job_id);
             setAppState({ phase: 'done', result });
-            
+
             loadHistory();
           } else if (data.status === 'failed') {
             source.close();
             setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
           } else {
             setAppState((prev) =>
-              prev.phase === 'polling' 
-                ? { ...prev, status: { ...prev.status, ...data } } 
+              prev.phase === 'polling'
+                ? { ...prev, status: { ...prev.status, ...data } }
                 : prev
             );
           }
@@ -143,67 +143,59 @@ export default function App() {
 
   if (!user && !getToken()) {
     return (
-      <div className="c-app" style={{ display: 'flex', height: '100vh', background: 'var(--c-bg)' }}>
-        {/* Left side: Advertisement / Features */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10%', background: 'linear-gradient(135deg, var(--c-surface), var(--c-bg))', borderRight: '1px solid var(--c-border)' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--c-text)', marginBottom: '24px', lineHeight: '1.2' }}>
-            Phát hiện đạo văn tiếng Trung <span style={{ color: 'var(--c-accent)' }}>chính xác & toàn diện</span>
+      <div className="c-landing">
+        {/* Left: Advertisement */}
+        <div className="c-landing-left">
+          <h1 className="c-landing-title">
+            Phát hiện đạo văn tiếng Trung <span>chính xác &amp; toàn diện</span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: 'var(--c-text-dim)', marginBottom: '40px', maxWidth: '600px', lineHeight: '1.6' }}>
-            Hệ thống <strong>C-checker v5</strong> là giải pháp hàng đầu kết hợp công nghệ AI (MiniLM) và tìm kiếm Web DDGS để rà soát hàng ngàn nguồn tài liệu chỉ trong vài giây. Bảo vệ chất lượng bài viết của bạn ngay hôm nay!
+          <p className="c-landing-desc">
+            Hệ thống <strong>C-checker v5</strong> là giải pháp hàng đầu kết hợp công nghệ AI (MiniLM)
+            và tìm kiếm Web DDGS để rà soát hàng ngàn nguồn tài liệu chỉ trong vài giây.
+            Bảo vệ chất lượng bài viết của bạn ngay hôm nay!
           </p>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-accent)', fontSize: '24px' }}>
-                🚀
-              </div>
+          <div className="c-landing-features">
+            <div className="c-landing-feature">
+              <div className="c-landing-feature-icon c-landing-feature-icon--blue">🚀</div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--c-text)', marginBottom: '4px' }}>Kiểm tra siêu tốc</h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--c-text-dim)', margin: 0 }}>Hỗ trợ txt, docx, pdf và phân tích hàng trăm câu trong nháy mắt.</p>
+                <div className="c-landing-feature-title">Kiểm tra siêu tốc</div>
+                <p className="c-landing-feature-desc">Hỗ trợ txt, docx, pdf và phân tích hàng trăm câu trong nháy mắt.</p>
               </div>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: 'rgba(139, 92, 246, 0.1)', width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-accent2)', fontSize: '24px' }}>
-                🧠
-              </div>
+            <div className="c-landing-feature">
+              <div className="c-landing-feature-icon c-landing-feature-icon--purple">🧠</div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--c-text)', marginBottom: '4px' }}>AI Ngữ Nghĩa sâu</h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--c-text-dim)', margin: 0 }}>Không chỉ so khớp từ ngữ, chúng tôi phân tích cấu trúc và ý nghĩa tiềm ẩn.</p>
+                <div className="c-landing-feature-title">AI Ngữ Nghĩa sâu</div>
+                <p className="c-landing-feature-desc">Không chỉ so khớp từ ngữ, chúng tôi phân tích cấu trúc và ý nghĩa tiềm ẩn.</p>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', fontSize: '24px' }}>
-                🌐
-              </div>
+            <div className="c-landing-feature">
+              <div className="c-landing-feature-icon c-landing-feature-icon--green">🌐</div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--c-text)', marginBottom: '4px' }}>Quét đa nền tảng</h3>
-                <p style={{ fontSize: '0.95rem', color: 'var(--c-text-dim)', margin: 0 }}>Tự động tra cứu nội dung trên hệ thống Internet khổng lồ để đối chiếu nguồn.</p>
+                <div className="c-landing-feature-title">Quét đa nền tảng</div>
+                <p className="c-landing-feature-desc">Tự động tra cứu nội dung trên hệ thống Internet khổng lồ để đối chiếu nguồn.</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right side: Login box */}
-        <div style={{ width: '40%', minWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', background: 'var(--c-surface)' }}>
-          <div style={{ width: '100%', maxWidth: '360px', textAlign: 'center' }}>
-            <div style={{ marginBottom: '32px' }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" strokeWidth="2" width="72" height="72" style={{ margin: '0 auto' }}>
+        {/* Right: Login */}
+        <div className="c-landing-right">
+          <div className="c-login-box">
+            <div className="c-login-box-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" strokeWidth="2" width="68" height="68" style={{ margin: '0 auto', display: 'block' }}>
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <path d="M9 12l2 2 4-4" />
               </svg>
             </div>
-            <h2 style={{ fontFamily: 'var(--c-serif)', fontSize: '28px', color: 'var(--c-text)', marginBottom: '12px' }}>Tham gia C-checker</h2>
-            <p style={{ color: 'var(--c-text-dim)', marginBottom: '40px', fontSize: '1.05rem' }}>
+            <h2 className="c-login-box-title">Tham gia C-checker</h2>
+            <p className="c-login-box-desc">
               Vui lòng đăng nhập bằng Google để bắt đầu sử dụng công cụ miễn phí ngay hôm nay.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="c-login-box-google">
               <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
             </div>
-            
-            <p style={{ marginTop: '32px', fontSize: '0.85rem', color: 'var(--c-text-dim)', lineHeight: '1.5' }}>
+            <p className="c-login-box-terms">
               Bằng cách đăng nhập, bạn xác nhận đã đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi.
             </p>
           </div>
