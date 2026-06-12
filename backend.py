@@ -633,8 +633,8 @@ def run_check(job_id: str, text: str):
 
 def build_html_report(items, original_text, runtime, verdict):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    max_score = max((i["final_score"] for i in items), default=0.0)
-    avg_score = (sum(i["final_score"] for i in items) / len(items)) if items else 0.0
+    max_score = max((i.get("final_score", 0.0) for i in items), default=0.0)
+    avg_score = (sum(i.get("final_score", 0.0) for i in items) / len(items)) if items else 0.0
 
     verdict_color = {
         "H": "#e74c3c",
@@ -644,34 +644,50 @@ def build_html_report(items, original_text, runtime, verdict):
 
     rows = ""
     for idx, item in enumerate(items, 1):
-        score_bar_w = int(item["final_score"] * 100)
+        final_score = item.get("final_score") or 0.0
+        lcs_score = item.get("lcs_score") or 0.0
+        ngram_score = item.get("ngram_score") or 0.0
+        semantic_score = item.get("semantic_score") or 0.0
+        contiguous_score = item.get("contiguous_score") or 0.0
+        score_bar_w = int(final_score * 100)
+        
+        highlighted = item.get("highlighted")
+        if not highlighted:
+            highlighted = highlight_original_text(item.get("sentence", ""), item.get("matched_tokens", []))
+            
+        snippet = item.get("snippet") or item.get("body") or "—"
+        matched_tokens = item.get("matched_tokens") or []
+        title = item.get("title") or "(no title)"
+        url = item.get("url") or ""
+        sentence = item.get("sentence") or ""
+
         rows += f"""
         <div class="card" id="card-{idx}">
           <div class="card-header">
             <span class="badge">#{idx}</span>
-            <span class="card-title">{item['title'][:100] or '(no title)'}</span>
+            <span class="card-title">{title[:100]}</span>
           </div>
           <div class="card-meta">
-            <a href="{item['url']}" target="_blank" rel="noopener">{item['url'][:90]}</a>
+            <a href="{url}" target="_blank" rel="noopener">{url[:90]}</a>
           </div>
           <div class="score-row">
-            <div class="score-pill">LCS <strong>{item['lcs_score']:.3f}</strong></div>
-            <div class="score-pill">N-gram <strong>{item['ngram_score']:.3f}</strong></div>
-            <div class="score-pill">Semantic <strong>{item['semantic_score']:.3f}</strong></div>
-            <div class="score-pill">Contiguous <strong>{item['contiguous_score']:.3f}</strong></div>
-            <div class="score-pill final">Final <strong>{item['final_score']:.3f}</strong></div>
+            <div class="score-pill">LCS <strong>{lcs_score:.3f}</strong></div>
+            <div class="score-pill">N-gram <strong>{ngram_score:.3f}</strong></div>
+            <div class="score-pill">Semantic <strong>{semantic_score:.3f}</strong></div>
+            <div class="score-pill">Contiguous <strong>{contiguous_score:.3f}</strong></div>
+            <div class="score-pill final">Final <strong>{final_score:.3f}</strong></div>
           </div>
           <div class="bar-wrap">
             <div class="bar-fill" style="width:{score_bar_w}%"></div>
           </div>
           <div class="section-label">📝 Câu nguồn</div>
-          <div class="sentence-box">{item['sentence']}</div>
+          <div class="sentence-box">{sentence}</div>
           <div class="section-label">🔆 Token trùng khớp (highlight)</div>
-          <div class="highlight-box">{item['highlighted']}</div>
+          <div class="highlight-box">{highlighted}</div>
           <div class="section-label">🔗 Token khớp</div>
-          <div class="token-box">{' · '.join(item['matched_tokens']) if item['matched_tokens'] else '—'}</div>
+          <div class="token-box">{' · '.join(matched_tokens) if matched_tokens else '—'}</div>
           <div class="section-label">📄 Snippet từ nguồn</div>
-          <div class="snippet-box">{item['snippet'] or item['body'] or '—'}</div>
+          <div class="snippet-box">{snippet}</div>
         </div>
         """
 
