@@ -1,41 +1,179 @@
-from sqlalchemy import create_engine, Column, String, Float, Integer, Text, ForeignKey, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+import requests
 import datetime
 import uuid
+import json
+from typing import Optional, List, Dict, Any
 
-DATABASE_URL = "sqlite:///./c_checker.db"
+SUPABASE_URL = "https://qsyydjpuzjirxkqyjvqw.supabase.co"
+SUPABASE_KEY = "sb_publishable_dccy2bN7gpHHT41CHqaKQQ_LHDR6g2U"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+}
 
-Base = declarative_base()
+class User:
+    def __init__(self, id: str, google_id: str, email: str = None, name: str = None, picture: str = None, plan: str = "free", checks_used: int = 0, created_at: str = None):
+        self.id = id
+        self.google_id = google_id
+        self.email = email
+        self.name = name
+        self.picture = picture
+        self.plan = plan
+        self.checks_used = checks_used
+        self.created_at = created_at
 
-class User(Base):
-    __tablename__ = "users"
+class Job:
+    def __init__(self, id: str, user_id: str, job_id: str, file_name: str = None, status: str = "queued", verdict: str = None, max_score: float = None, runtime: float = None, result_json: Any = None, created_at: str = None, finished_at: str = None):
+        self.id = id
+        self.user_id = user_id
+        self.job_id = job_id
+        self.file_name = file_name
+        self.status = status
+        self.verdict = verdict
+        self.max_score = max_score
+        self.runtime = runtime
+        self.result_json = result_json
+        self.created_at = created_at
+        self.finished_at = finished_at
 
-    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    google_id = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    name = Column(String)
-    picture = Column(String)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-
-class Job(Base):
-    __tablename__ = "jobs"
-
-    job_id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String, ForeignKey("users.id"))
-    file_name = Column(String, default="Manual Input")
-    status = Column(String, default="queued") # queued, running, done, failed
-    result_json = Column(Text, nullable=True) # Store JSON result here
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    finished_at = Column(DateTime, nullable=True)
-
-Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
+def get_user_by_id(user_id: str) -> Optional[User]:
     try:
-        yield db
-    finally:
-        db.close()
+        url = f"{SUPABASE_URL}/rest/v1/users?id=eq.{user_id}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return User(**data[0])
+    except Exception as e:
+        print(f"Error getting user by id: {e}")
+    return None
+
+def get_user_by_google_id(google_id: str) -> Optional[User]:
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/users?google_id=eq.{google_id}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return User(**data[0])
+    except Exception as e:
+        print(f"Error getting user by google_id: {e}")
+    return None
+
+def create_user(google_id: str, email: str, name: str, picture: str) -> User:
+    url = f"{SUPABASE_URL}/rest/v1/users"
+    payload = {
+        "google_id": google_id,
+        "email": email,
+        "name": name,
+        "picture": picture
+    }
+    res = requests.post(url, headers=HEADERS, json=payload)
+    res.raise_for_status()
+    data = res.json()
+    return User(**data[0])
+
+def create_job(job_id: str, user_id: str, file_name: str) -> Job:
+    url = f"{SUPABASE_URL}/rest/v1/jobs"
+    payload = {
+        "job_id": job_id,
+        "user_id": user_id,
+        "file_name": file_name,
+        "status": "queued"
+    }
+    res = requests.post(url, headers=HEADERS, json=payload)
+    res.raise_for_status()
+    data = res.json()
+    return Job(**data[0])
+
+def get_job_by_job_id(job_id: str) -> Optional[Job]:
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/jobs?job_id=eq.{job_id}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return Job(**data[0])
+    except Exception as e:
+        print(f"Error getting job by job_id: {e}")
+    return None
+
+def get_jobs_by_user_id(user_id: str) -> List[Job]:
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/jobs?user_id=eq.{user_id}&order=created_at.desc"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            return [Job(**item) for item in data]
+    except Exception as e:
+        print(f"Error getting jobs by user_id: {e}")
+    return []
+
+def complete_job(job_id: str, status: str, verdict: str = None, max_score: float = None, runtime: float = None, result_json: dict = None, report_items: list = None):
+    try:
+        job = get_job_by_job_id(job_id)
+        if not job:
+            print(f"Job {job_id} not found to complete.")
+            return
+        
+        url = f"{SUPABASE_URL}/rest/v1/jobs?id=eq.{job.id}"
+        payload = {
+            "status": status,
+            "verdict": verdict,
+            "max_score": max_score,
+            "runtime": runtime,
+            "result_json": result_json,
+            "finished_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        res = requests.patch(url, headers=HEADERS, json=payload)
+        res.raise_for_status()
+        
+        if report_items:
+            items_url = f"{SUPABASE_URL}/rest/v1/report_items"
+            payload_items = []
+            for item in report_items:
+                payload_items.append({
+                    "job_id": job.id,
+                    "sentence": item.get("sentence"),
+                    "url": item.get("url"),
+                    "title": item.get("title"),
+                    "final_score": item.get("final_score"),
+                    "lcs_score": item.get("lcs_score"),
+                    "ngram_score": item.get("ngram_score"),
+                    "semantic_score": item.get("semantic_score"),
+                    "matched_tokens": item.get("matched_tokens", []),
+                    "snippet": item.get("snippet")
+                })
+            res_items = requests.post(items_url, headers=HEADERS, json=payload_items)
+            res_items.raise_for_status()
+    except Exception as e:
+        print(f"Error completing job {job_id}: {e}")
+
+def fail_job(job_id: str, error_msg: str):
+    try:
+        job = get_job_by_job_id(job_id)
+        if not job:
+            return
+        url = f"{SUPABASE_URL}/rest/v1/jobs?id=eq.{job.id}"
+        payload = {
+            "status": "failed",
+            "result_json": {"error": error_msg},
+            "finished_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        res = requests.patch(url, headers=HEADERS, json=payload)
+        res.raise_for_status()
+    except Exception as e:
+        print(f"Error failing job {job_id}: {e}")
+
+def get_report_items(job_uuid: str) -> List[dict]:
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/report_items?job_id=eq.{job_uuid}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            return res.json()
+    except Exception as e:
+        print(f"Error getting report items for job {job_uuid}: {e}")
+    return []

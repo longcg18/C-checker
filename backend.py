@@ -28,8 +28,18 @@ import json
 import jwt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-from database import SessionLocal, get_db, User, Job as DBJob
-from sqlalchemy.orm import Session
+from database import (
+    User,
+    get_user_by_id,
+    get_user_by_google_id,
+    create_user,
+    create_job,
+    get_job_by_job_id,
+    get_jobs_by_user_id,
+    complete_job,
+    fail_job,
+    get_report_items
+)
 
 # ─── THIRD-PARTY ───────────────────────────────────────────────────────────
 import jieba
@@ -569,6 +579,7 @@ def run_check(job_id: str, text: str):
     except Exception as e:
         JOBS[job_id]["status"] = "failed"
         JOBS[job_id]["error"] = str(e)
+        fail_job(job_id, str(e))
         return
 
     runtime = round(time.time() - start, 2)
@@ -599,20 +610,21 @@ def run_check(job_id: str, text: str):
 
     _save_stats(report_items, runtime)
 
-    db = SessionLocal()
-    try:
-        db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
-        if db_job:
-            db_job.status = JOBS[job_id]["status"]
-            if db_job.status == "done":
-                db_job.result_json = json.dumps({
-                        k: v for k, v in JOBS[job_id].items() 
-                        if k != "html_report"
-                    })
-                db_job.finished_at = datetime.now()
-            db.commit()
-    finally:
-        db.close()
+    status = JOBS[job_id]["status"]
+    if status == "done":
+        res_json = {
+            k: v for k, v in JOBS[job_id].items()
+            if k not in ("html_report", "report_items")
+        }
+        complete_job(
+            job_id=job_id,
+            status="done",
+            verdict=JOBS[job_id]["verdict"],
+            max_score=JOBS[job_id]["max_score"],
+            runtime=JOBS[job_id]["runtime"],
+            result_json=res_json,
+            report_items=report_items
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -820,7 +832,7 @@ def health():
 
 security = HTTPBearer(auto_error=False)
 
-def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = request.query_params.get("token")
     if not token and credentials:
         token = credentials.credentials
@@ -831,7 +843,7 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
         user_id = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        user = db.query(User).filter(User.id == user_id).first()
+        user = get_user_by_id(user_id)
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
         return user
@@ -839,7 +851,7 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 @app.post("/login")
-def login(req: LoginRequest, db: Session = Depends(get_db)):
+def login(req: LoginRequest):
     try:
         idinfo = id_token.verify_oauth2_token(req.token, google_requests.Request(), GOOGLE_CLIENT_ID)
         google_id = idinfo['sub']
@@ -847,12 +859,9 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         name = idinfo.get('name')
         picture = idinfo.get('picture')
 
-        user = db.query(User).filter(User.google_id == google_id).first()
+        user = get_user_by_google_id(google_id)
         if not user:
-            user = User(google_id=google_id, email=email, name=name, picture=picture)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
+            user = create_user(google_id=google_id, email=email, name=name, picture=picture)
 
         access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
         return {
@@ -863,30 +872,36 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail=f"Invalid Google token: {e}")
 
 @app.get("/history")
-def get_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    jobs = db.query(DBJob).filter(DBJob.user_id == current_user.id).order_by(DBJob.created_at.desc()).all()
+def get_history(current_user: User = Depends(get_current_user)):
+    jobs = get_jobs_by_user_id(current_user.id)
     history = []
     for j in jobs:
         if j.status == "done" and j.result_json:
             try:
-                res = json.loads(j.result_json)
+                res = dict(j.result_json) if isinstance(j.result_json, dict) else json.loads(j.result_json)
                 res["job_id"] = j.job_id
+                
+                # Fetch report items for this job
+                # Note: report_items references jobs.id (j.id)
+                items = get_report_items(j.id)
+                res["report_items"] = items
+                
                 history.append({
                     "job_id": j.job_id,
                     "fileName": j.file_name,
-                    "timestamp": j.created_at.isoformat(),
+                    "timestamp": j.created_at if isinstance(j.created_at, str) else j.created_at.isoformat(),
                     "verdict": res.get("verdict", "LOW"),
                     "verdict_text": res.get("verdict_text", ""),
                     "max_score": res.get("max_score", 0),
                     "matches_found": res.get("matches_found", 0),
                     "result": res
                 })
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error loading history job {j.job_id}: {e}")
     return history
 
 @app.post("/check", response_model=dict, status_code=202)
-def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)):
     job_id = str(uuid.uuid4())
     JOBS[job_id] = {
         "status": "queued",
@@ -895,10 +910,7 @@ def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_u
         "created_at": datetime.now().isoformat(),
     }
 
-    db_job = DBJob(job_id=job_id, user_id=current_user.id, file_name=req.file_name, status="queued")
-    db.add(db_job)
-    db.commit()
-
+    create_job(job_id=job_id, user_id=current_user.id, file_name=req.file_name)
     background_tasks.add_task(run_check, job_id, req.text)
 
     return {
@@ -930,14 +942,11 @@ def get_status(job_id: str):
 def get_result(job_id: str):
     job = JOBS.get(job_id)
     if not job:
-        db = SessionLocal()
-        try:
-            db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
-        finally:
-            db.close()
+        db_job = get_job_by_job_id(job_id)
         if db_job and db_job.status == "done" and db_job.result_json:
-            data = json.loads(db_job.result_json)
+            data = dict(db_job.result_json) if isinstance(db_job.result_json, dict) else json.loads(db_job.result_json)
             data["job_id"] = job_id
+            data["report_items"] = get_report_items(db_job.id)
             return data
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] != "done":
@@ -964,13 +973,9 @@ async def stream_status(job_id: str, current_user: User = Depends(get_current_us
         while True:
             job = JOBS.get(job_id)
             if not job:
-                db = SessionLocal()
-                try:
-                    db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
-                finally:
-                    db.close()
+                db_job = get_job_by_job_id(job_id)
                 if db_job and db_job.status == "done" and db_job.result_json:
-                    res = json.loads(db_job.result_json)
+                    res = dict(db_job.result_json) if isinstance(db_job.result_json, dict) else json.loads(db_job.result_json)
                     yield f"data: {json.dumps({'status': res['status'], 'progress': res.get('progress'), 'current_sentence': res.get('current_sentence'), 'error': res.get('error')})}\n\n"
                     break
                 else:
@@ -992,19 +997,15 @@ def get_report(job_id: str):
     job = JOBS.get(job_id)
 
     if not job:
-        db = SessionLocal()
-        try:
-            db_job = db.query(DBJob).filter(DBJob.job_id == job_id).first()
-        finally:
-            db.close()
-        
+        db_job = get_job_by_job_id(job_id)
         if not db_job:
             raise HTTPException(status_code=404, detail="Job not found")
         
         if db_job.status == "done" and db_job.result_json:
-            data = json.loads(db_job.result_json)
+            data = dict(db_job.result_json) if isinstance(db_job.result_json, dict) else json.loads(db_job.result_json)
+            report_items = get_report_items(db_job.id)
             html = build_html_report(
-                data["report_items"],
+                report_items,
                 "",  # original_text không cần thiết lắm
                 data["runtime"],
                 data["verdict_text"],
