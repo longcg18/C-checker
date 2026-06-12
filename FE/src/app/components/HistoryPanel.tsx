@@ -51,7 +51,7 @@ export function HistoryPanel({ history, onSelectEntry, currentJobId }: HistoryPa
                 </div>
               </div>
               <div className="c-history-item-score" style={{ color: vs.color }}>
-                {(entry.max_score * 100).toFixed(0)}%
+                {((entry.max_score ?? 0) * 100).toFixed(0)}%
               </div>
             </button>
           );

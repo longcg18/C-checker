@@ -75,7 +75,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
         </div>
         <div className="c-verdict-score">
           <div className="c-verdict-score-num" style={{ color: vc.color }}>
-            {(result.max_score * 100).toFixed(0)}%
+            {((result.max_score ?? 0) * 100).toFixed(0)}%
           </div>
           <div className="c-verdict-score-label">Điểm cao nhất</div>
         </div>
@@ -94,7 +94,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
           <div className="c-stat-card-label">Đoạn nghi ngờ</div>
         </div>
         <div className="c-stat-card">
-          <div className="c-stat-card-value">{result.max_score.toFixed(3)}</div>
+          <div className="c-stat-card-value">{(result.max_score ?? 0).toFixed(3)}</div>
           <div className="c-stat-card-label">Điểm max</div>
         </div>
         <div className="c-stat-card">
@@ -160,7 +160,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
                     color: item.final_score >= 0.7 ? 'var(--c-red)' : item.final_score >= 0.45 ? '#e8a838' : 'var(--c-green)',
                   }}
                 >
-                  {(item.final_score * 100).toFixed(0)}%
+                  {((item.final_score ?? 0) * 100).toFixed(0)}%
                 </div>
               </div>
 

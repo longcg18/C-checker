@@ -144,11 +144,30 @@ def complete_job(job_id: str, status: str, verdict: str = None, max_score: float
                     "lcs_score": item.get("lcs_score"),
                     "ngram_score": item.get("ngram_score"),
                     "semantic_score": item.get("semantic_score"),
+                    "contiguous_score": item.get("contiguous_score", 0.0),
                     "matched_tokens": item.get("matched_tokens", []),
                     "snippet": item.get("snippet")
                 })
             res_items = requests.post(items_url, headers=HEADERS, json=payload_items)
-            res_items.raise_for_status()
+            
+            # Fallback if inserting contiguous_score fails (e.g. column not yet added to Supabase)
+            if res_items.status_code not in (200, 201):
+                payload_fallback = []
+                for item in report_items:
+                    payload_fallback.append({
+                        "job_id": job.id,
+                        "sentence": item.get("sentence"),
+                        "url": item.get("url"),
+                        "title": item.get("title"),
+                        "final_score": item.get("final_score"),
+                        "lcs_score": item.get("lcs_score"),
+                        "ngram_score": item.get("ngram_score"),
+                        "semantic_score": item.get("semantic_score"),
+                        "matched_tokens": item.get("matched_tokens", []),
+                        "snippet": item.get("snippet")
+                    })
+                res_fallback = requests.post(items_url, headers=HEADERS, json=payload_fallback)
+                res_fallback.raise_for_status()
     except Exception as e:
         print(f"Error completing job {job_id}: {e}")
 
@@ -173,7 +192,11 @@ def get_report_items(job_uuid: str) -> List[dict]:
         url = f"{SUPABASE_URL}/rest/v1/report_items?job_id=eq.{job_uuid}"
         res = requests.get(url, headers=HEADERS)
         if res.status_code == 200:
-            return res.json()
+            items = res.json()
+            for item in items:
+                if "contiguous_score" not in item or item["contiguous_score"] is None:
+                    item["contiguous_score"] = 0.0
+            return items
     except Exception as e:
         print(f"Error getting report items for job {job_uuid}: {e}")
     return []
