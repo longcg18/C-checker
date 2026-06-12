@@ -387,8 +387,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  position: sticky;
-  top: 88px;
 }
 
 .c-right-panel {
