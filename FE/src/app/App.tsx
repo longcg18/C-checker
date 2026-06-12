@@ -132,7 +132,13 @@ export default function App() {
   }, [loadHistory]);
 
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
-    setAppState({ phase: 'done', result: entry.result });
+    setAppState({
+      phase: 'done',
+      result: {
+        ...entry.result,
+        job_id: entry.job_id
+      }
+    });
   }, []);
 
   const handleReset = useCallback(() => {

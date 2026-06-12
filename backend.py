@@ -870,6 +870,7 @@ def get_history(current_user: User = Depends(get_current_user), db: Session = De
         if j.status == "done" and j.result_json:
             try:
                 res = json.loads(j.result_json)
+                res["job_id"] = j.job_id
                 history.append({
                     "job_id": j.job_id,
                     "fileName": j.file_name,
@@ -935,7 +936,9 @@ def get_result(job_id: str):
         finally:
             db.close()
         if db_job and db_job.status == "done" and db_job.result_json:
-            return json.loads(db_job.result_json)
+            data = json.loads(db_job.result_json)
+            data["job_id"] = job_id
+            return data
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] != "done":
         return JSONResponse(
