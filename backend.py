@@ -603,8 +603,9 @@ def run_check(job_id: str, text: str):
         "max_score": max_score,
         "verdict": verdict,
         "verdict_text": verdict_text,
+        "text_length": len(text),
         "report_items": report_items,
-        "html_report": build_html_report(report_items, text, runtime, verdict_text),
+        "html_report": build_html_report(report_items, len(text), runtime, verdict_text),
         "finished_at": datetime.now().isoformat(),
     })
 
@@ -631,7 +632,7 @@ def run_check(job_id: str, text: str):
 # HTML REPORT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def build_html_report(items, original_text, runtime, verdict):
+def build_html_report(items, text_length: int, runtime, verdict):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     max_score = max((i.get("final_score", 0.0) for i in items), default=0.0)
     avg_score = (sum(i.get("final_score", 0.0) for i in items) / len(items)) if items else 0.0
@@ -752,7 +753,7 @@ def build_html_report(items, original_text, runtime, verdict):
     <div class="hero-title">Báo cáo kiểm tra đạo văn</div>
     <div class="hero-sub">Được tạo lúc {now} · Runtime {runtime}s</div>
     <div class="summary-grid">
-      <div class="stat-card"><div class="stat-label">Số ký tự</div><div class="stat-value">{len(original_text):,}</div></div>
+      <div class="stat-card"><div class="stat-label">Số ký tự</div><div class="stat-value">{text_length:,}</div></div>
       <div class="stat-card"><div class="stat-label">Số câu nghi ngờ</div><div class="stat-value {'red' if items else 'green'}">{len(items)}</div></div>
       <div class="stat-card"><div class="stat-label">Điểm cao nhất</div><div class="stat-value {'red' if max_score > 0.6 else 'green'}">{max_score:.3f}</div></div>
       <div class="stat-card"><div class="stat-label">Điểm trung bình</div><div class="stat-value">{avg_score:.3f}</div></div>
@@ -892,28 +893,104 @@ def get_history(current_user: User = Depends(get_current_user)):
     jobs = get_jobs_by_user_id(current_user.id)
     history = []
     for j in jobs:
-        if j.status == "done" and j.result_json:
+        # Check if there is an in-memory job with updated status
+        status = j.status
+        if j.job_id in JOBS:
+            status = JOBS[j.job_id]["status"]
+            
+        job_data = {
+            "job_id": j.job_id,
+            "fileName": j.file_name or "Manual Input",
+            "timestamp": j.created_at if isinstance(j.created_at, str) else j.created_at.isoformat(),
+            "status": status,
+        }
+        
+        if status == "done":
             try:
-                res = dict(j.result_json) if isinstance(j.result_json, dict) else json.loads(j.result_json)
-                res["job_id"] = j.job_id
+                res = None
+                if j.result_json:
+                    res = dict(j.result_json) if isinstance(j.result_json, dict) else json.loads(j.result_json)
+                elif j.job_id in JOBS and JOBS[j.job_id]["status"] == "done":
+                    # Construct result from memory job if not saved to db yet
+                    mem_job = JOBS[j.job_id]
+                    res = {
+                        "job_id": j.job_id,
+                        "status": "done",
+                        "verdict": mem_job.get("verdict", "LOW"),
+                        "verdict_text": mem_job.get("verdict_text", ""),
+                        "max_score": mem_job.get("max_score", 0.0),
+                        "runtime": mem_job.get("runtime", 0.0),
+                        "sentences_checked": mem_job.get("sentences_checked", 0),
+                        "matches_found": mem_job.get("matches_found", 0),
+                        "finished_at": mem_job.get("finished_at"),
+                    }
                 
-                # Fetch report items for this job
-                # Note: report_items references jobs.id (j.id)
-                items = get_report_items(j.id)
-                res["report_items"] = items
-                
-                history.append({
-                    "job_id": j.job_id,
-                    "fileName": j.file_name,
-                    "timestamp": j.created_at if isinstance(j.created_at, str) else j.created_at.isoformat(),
-                    "verdict": res.get("verdict", "LOW"),
-                    "verdict_text": res.get("verdict_text", ""),
-                    "max_score": res.get("max_score", 0),
-                    "matches_found": res.get("matches_found", 0),
-                    "result": res
-                })
+                if res:
+                    res["job_id"] = j.job_id
+                    if "report_items" not in res:
+                        # Load from database report_items table
+                        items = get_report_items(j.id)
+                        res["report_items"] = items
+                    
+                    job_data.update({
+                        "verdict": res.get("verdict", "LOW"),
+                        "verdict_text": res.get("verdict_text", ""),
+                        "max_score": res.get("max_score", 0.0),
+                        "matches_found": res.get("matches_found", 0),
+                        "result": res
+                    })
+                else:
+                    job_data.update({
+                        "verdict": "LOW",
+                        "verdict_text": "Không có kết quả",
+                        "max_score": 0.0,
+                        "matches_found": 0,
+                        "result": None
+                    })
             except Exception as e:
                 print(f"Error loading history job {j.job_id}: {e}")
+                job_data.update({
+                    "verdict": "LOW",
+                    "verdict_text": "Lỗi tải dữ liệu",
+                    "max_score": 0.0,
+                    "matches_found": 0,
+                    "result": None
+                })
+        elif status == "failed":
+            error_msg = "Xử lý thất bại"
+            if j.job_id in JOBS:
+                error_msg = JOBS[j.job_id].get("error", "Xử lý thất bại")
+            elif j.result_json:
+                try:
+                    res_err = dict(j.result_json) if isinstance(j.result_json, dict) else json.loads(j.result_json)
+                    error_msg = res_err.get("error", "Xử lý thất bại")
+                except Exception:
+                    pass
+            job_data.update({
+                "verdict": "LOW",
+                "verdict_text": "Thất bại",
+                "max_score": 0.0,
+                "matches_found": 0,
+                "error": error_msg,
+                "result": {"status": "failed", "error": error_msg}
+            })
+        else: # queued, running
+            progress = "0/0"
+            current_sentence = ""
+            if j.job_id in JOBS:
+                progress = JOBS[j.job_id].get("progress", "0/0")
+                current_sentence = JOBS[j.job_id].get("current_sentence", "")
+            
+            job_data.update({
+                "verdict": "LOW",
+                "verdict_text": "Đang xử lý..." if status == "running" else "Đang chờ...",
+                "max_score": 0.0,
+                "matches_found": 0,
+                "progress": progress,
+                "current_sentence": current_sentence,
+                "result": {"status": status, "progress": progress, "current_sentence": current_sentence}
+            })
+        history.append(job_data)
     return history
 
 @app.post("/check", response_model=dict, status_code=202)
@@ -1022,7 +1099,7 @@ def get_report(job_id: str):
             report_items = get_report_items(db_job.id)
             html = build_html_report(
                 report_items,
-                "",  # original_text không cần thiết lắm
+                data.get("text_length", 0),
                 data["runtime"],
                 data["verdict_text"],
             )

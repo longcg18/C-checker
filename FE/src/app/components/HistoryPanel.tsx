@@ -28,7 +28,7 @@ export function HistoryPanel({ history, onSelectEntry, currentJobId }: HistoryPa
 
       <div className="c-history-list">
         {history.map((entry) => {
-          const vs = VERDICT_STYLE[entry.verdict] || VERDICT_STYLE.LOW;
+          const vs = VERDICT_STYLE[entry.verdict ?? 'LOW'] || VERDICT_STYLE.LOW;
           const isActive = entry.job_id === currentJobId;
 
           return (
@@ -45,7 +45,7 @@ export function HistoryPanel({ history, onSelectEntry, currentJobId }: HistoryPa
                 <div className="c-history-item-meta">
                   <span style={{ color: vs.color }}>{vs.label}</span>
                   <span>·</span>
-                  <span>{entry.matches_found} đoạn</span>
+                  <span>{entry.matches_found ?? 0} đoạn</span>
                   <span>·</span>
                   <span>{entry.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>

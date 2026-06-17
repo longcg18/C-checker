@@ -7,7 +7,7 @@ interface JobProgressProps {
   startTime: number;
 }
 
-export function JobProgress({ progress, currentSentence, status, startTime }: JobProgressProps) {
+export function JobProgress({ progress, status, startTime }: JobProgressProps) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -38,28 +38,26 @@ export function JobProgress({ progress, currentSentence, status, startTime }: Jo
             {status === 'queued' ? '⏳ Đang xếp hàng...' : '⚙️ Đang phân tích văn bản...'}
           </div>
           <div className="c-progress-sub">
-            Sử dụng MiniLM semantic + DDGS search · Thời gian: {formatTime(elapsed)}
+            MiniLM semantic + DDGS search · Thời gian: {formatTime(elapsed)}
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      {total > 0 && (
-        <div className="c-progress-section">
-          <div className="c-progress-meta">
-            <span>Câu {current} / {total}</span>
-            <span className="c-progress-pct">{pct}%</span>
-          </div>
-          <div className="c-progress-track">
-            <div
-              className="c-progress-fill"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+      <div className="c-progress-section">
+        <div className="c-progress-meta">
+          <span>
+            {total > 0 ? `Câu ${current} / ${total}` : 'Chuẩn bị...'}
+          </span>
+          <span className="c-progress-pct">{total > 0 ? `${pct}%` : '—'}</span>
         </div>
-      )}
-
-
+        <div className="c-progress-track">
+          <div
+            className="c-progress-fill"
+            style={{ width: total > 0 ? `${pct}%` : '0%' }}
+          />
+        </div>
+      </div>
 
       {/* Info pills */}
       <div className="c-info-pills">

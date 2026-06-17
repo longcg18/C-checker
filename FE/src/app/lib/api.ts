@@ -49,6 +49,21 @@ export interface JobResult {
   report_items: ReportItem[];
 }
 
+export interface HistoryItemRaw {
+  job_id: string;
+  fileName: string;
+  timestamp: string;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  verdict?: 'HIGH' | 'MEDIUM' | 'LOW';
+  verdict_text?: string;
+  max_score?: number;
+  matches_found?: number;
+  progress?: string;
+  current_sentence?: string;
+  error?: string;
+  result?: JobResult;
+}
+
 export function setToken(token: string) {
   localStorage.setItem('c_checker_token', token);
 }
@@ -89,7 +104,7 @@ export const api = {
     });
   },
 
-  getHistory(): Promise<any[]> {
+  getHistory(): Promise<HistoryItemRaw[]> {
     return apiFetch('/history');
   },
 

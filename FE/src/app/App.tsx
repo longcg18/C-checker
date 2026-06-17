@@ -5,6 +5,7 @@ import { AnalysisResults } from './components/AnalysisResults';
 import { HistoryPanel } from './components/HistoryPanel';
 import { JobProgress } from './components/JobProgress';
 import { Login } from './components/Login';
+import { DashboardTable } from './components/DashboardTable';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -12,11 +13,15 @@ export interface HistoryEntry {
   job_id: string;
   fileName: string;
   timestamp: Date;
-  verdict: 'HIGH' | 'MEDIUM' | 'LOW';
-  verdict_text: string;
-  max_score: number;
-  matches_found: number;
-  result: JobResult;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  verdict?: 'HIGH' | 'MEDIUM' | 'LOW';
+  verdict_text?: string;
+  max_score?: number;
+  matches_found?: number;
+  progress?: string;
+  current_sentence?: string;
+  error?: string;
+  result?: JobResult;
 }
 
 type AppState =
@@ -36,7 +41,7 @@ export default function App() {
   const loadHistory = useCallback(async () => {
     try {
       const data = await api.getHistory();
-      setHistory(data.map((d: any) => ({
+      setHistory(data.map((d) => ({
         ...d,
         timestamp: new Date(d.timestamp)
       })));
@@ -132,6 +137,7 @@ export default function App() {
   }, [loadHistory]);
 
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
+    if (!entry.result) return;
     setAppState({
       phase: 'done',
       result: {
@@ -140,6 +146,78 @@ export default function App() {
       }
     });
   }, []);
+
+  const handleSelectProgress = useCallback((job_id: string, fileName: string, startTimeMs: number) => {
+    setAppState({
+      phase: 'polling',
+      job_id,
+      status: {
+        job_id,
+        status: 'running',
+        progress: '0/0',
+        current_sentence: null,
+        created_at: new Date(startTimeMs).toISOString(),
+        finished_at: null,
+        error: null
+      },
+      startTime: startTimeMs
+    });
+
+    const source = new EventSource(api.streamUrl(job_id));
+
+    source.onmessage = async (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.status === 'not_found') {
+          source.close();
+          setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
+          return;
+        }
+
+        if (data.status === 'done') {
+          source.close();
+          const result = await api.getResult(job_id);
+          setAppState({ phase: 'done', result });
+          loadHistory();
+        } else if (data.status === 'failed') {
+          source.close();
+          setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
+        } else {
+          setAppState((prev) =>
+            prev.phase === 'polling'
+              ? { ...prev, status: { ...prev.status, ...data } }
+              : prev
+          );
+        }
+      } catch (e) {
+        console.error("Error parsing SSE data", e);
+      }
+    };
+
+    source.onerror = (err) => {
+      console.error("SSE Error", err);
+      source.close();
+      setAppState({ phase: 'error', message: 'Mất kết nối tới server!' });
+    };
+  }, [loadHistory]);
+
+  // Auto-poll history if there are pending jobs (queued or running)
+  useEffect(() => {
+    if (!user || appState.phase !== 'idle') return;
+
+    const hasPendingJobs = history.some(
+      (h) => h.status === 'queued' || h.status === 'running'
+    );
+
+    if (!hasPendingJobs) return;
+
+    const interval = setInterval(() => {
+      loadHistory();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [user, appState.phase, history, loadHistory]);
 
   const handleReset = useCallback(() => {
     setAppState({ phase: 'idle' });
@@ -250,7 +328,7 @@ export default function App() {
               currentPhase={appState.phase}
             />
             <HistoryPanel
-              history={history}
+              history={history.filter(h => h.status === 'done')}
               onSelectEntry={handleSelectHistory}
               currentJobId={appState.phase === 'done' ? appState.result.job_id : undefined}
             />
@@ -259,33 +337,12 @@ export default function App() {
           {/* Right panel */}
           <div className="c-right-panel">
             {appState.phase === 'idle' && (
-              <div className="c-empty-state">
-                <div className="c-empty-icon">
-                  <svg viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="32" r="30" stroke="var(--c-border)" strokeWidth="2" />
-                    <path d="M20 32h24M32 20v24" stroke="var(--c-accent)" strokeWidth="2.5" strokeLinecap="round" />
-                    <circle cx="32" cy="32" r="8" stroke="var(--c-accent2)" strokeWidth="2" />
-                  </svg>
-                </div>
-                <h2 className="c-empty-title">Sẵn sàng kiểm tra</h2>
-                <p className="c-empty-desc">
-                  Nhập hoặc upload văn bản tiếng Trung để bắt đầu phân tích đạo văn với độ chính xác cao.
-                </p>
-                <div className="c-empty-features">
-                  <div className="c-feature-item">
-                    <span className="c-feature-dot" style={{ background: 'var(--c-accent)' }} />
-                    Phát hiện theo từng câu
-                  </div>
-                  <div className="c-feature-item">
-                    <span className="c-feature-dot" style={{ background: 'var(--c-accent2)' }} />
-                    So sánh ngữ nghĩa MiniLM
-                  </div>
-                  <div className="c-feature-item">
-                    <span className="c-feature-dot" style={{ background: '#44c98a' }} />
-                    Tìm kiếm web tự động
-                  </div>
-                </div>
-              </div>
+              <DashboardTable
+                history={history}
+                onSelectEntry={handleSelectHistory}
+                onSelectProgress={handleSelectProgress}
+                onRefresh={loadHistory}
+              />
             )}
 
             {appState.phase === 'submitting' && (
