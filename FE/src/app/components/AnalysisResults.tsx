@@ -116,6 +116,16 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
           </svg>
           Xem báo cáo HTML
         </button>
+        <button
+          className="c-btn c-btn--primary"
+          style={{ background: 'linear-gradient(135deg, var(--c-accent2, #d97706), #f59e0b)', boxShadow: '0 2px 10px rgba(217, 119, 6, 0.25)' }}
+          onClick={() => window.open(`${api.reportUrl(result.job_id)}?print=true`, '_blank')}
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" width="15" height="15">
+            <path d="M4 4h8v-2h-8v2zM4 12h8v2h-8v-2zm-2-6h12v6h-2v-2h-8v2h-2v-6z" />
+          </svg>
+          Xuất báo cáo PDF
+        </button>
         <button className="c-btn c-btn--ghost" onClick={onReset}>
           Kiểm tra mới
         </button>

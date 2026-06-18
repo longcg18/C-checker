@@ -744,9 +744,38 @@ def build_html_report(items, text_length: int, runtime, verdict):
   .snippet-box {{ color: var(--text-dim); font-size: 13px; border-left: 3px solid var(--accent); }}
   .empty {{ text-align: center; padding: 60px 20px; color: var(--green); font-size: 18px; font-family: var(--serif); }}
   .footer {{ text-align: center; font-family: var(--mono); font-size: 11px; color: var(--text-dim); padding: 24px; border-top: 1px solid var(--border); }}
+
+  .print-btn-wrap {{ max-width: 900px; margin: 24px auto -12px; display: flex; justify-content: flex-end; padding: 0 24px; }}
+  .print-btn {{ background: var(--accent2); color: #000; font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(232, 168, 56, 0.2); transition: all 0.2s; }}
+  .print-btn:hover {{ transform: translateY(-1px); box-shadow: 0 6px 16px rgba(232, 168, 56, 0.3); }}
+  .print-btn svg {{ width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }}
+
+  @media print {{
+    body {{ background: #fff !important; color: #000 !important; }}
+    .hero {{ background: #f0f2f5 !important; color: #000 !important; border-bottom: 1px solid #ccc !important; padding: 24px 20px !important; }}
+    .hero-title, .hero-sub, .hero-tag, .stat-value {{ color: #000 !important; }}
+    .stat-card {{ background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }}
+    .verdict-banner {{ background: #fff !important; border: 1px solid #ccc !important; border-left: 4px solid {verdict_color} !important; color: #000 !important; }}
+    .card {{ background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; page-break-inside: avoid; }}
+    .card-title {{ color: #000 !important; }}
+    .sentence-box, .highlight-box, .snippet-box, .token-box {{ background: #f9f9f9 !important; border: 1px solid #ddd !important; color: #000 !important; }}
+    .print-btn-wrap {{ display: none !important; }}
+    .footer {{ color: #555 !important; border-top: 1px solid #ccc !important; }}
+    mark {{ background: rgba(232, 168, 56, 0.35) !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+  }}
 </style>
 </head>
 <body>
+<div class="print-btn-wrap">
+  <button class="print-btn" onclick="window.print()">
+    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+    In báo cáo / Lưu PDF
+  </button>
+</div>
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-tag">C-checker v5 · Chinese Plagiarism Detection</div>
@@ -768,6 +797,15 @@ def build_html_report(items, text_length: int, runtime, verdict):
   {rows}
 </div>
 <div class="footer">C-CHECKER V5 · SENTENCE-LEVEL · MINILM SEMANTIC · DDGS SEARCH</div>
+<script>
+  if (new URLSearchParams(window.location.search).get('print') === 'true') {{
+    window.addEventListener('load', function() {{
+      setTimeout(function() {{
+        window.print();
+      }}, 800);
+    }});
+  }}
+</script>
 </body>
 </html>"""
 
