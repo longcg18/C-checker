@@ -234,30 +234,30 @@ export default function App() {
             Phát hiện đạo văn tiếng Trung <span>chính xác &amp; toàn diện</span>
           </h1>
           <p className="c-landing-desc">
-            Hệ thống <strong>C-checker v5</strong> là giải pháp hàng đầu kết hợp công nghệ AI (MiniLM)
-            và tìm kiếm Web DDGS để rà soát hàng ngàn nguồn tài liệu chỉ trong vài giây.
-            Bảo vệ chất lượng bài viết của bạn ngay hôm nay!
+            Hệ thống <strong>C-checker</strong> là giải pháp tiên phong trong việc phát hiện đạo văn
+            văn bản tiếng Trung, kết hợp sử dụng AI (MiniLM) và các công cụ tìm kiếm online để rà soát hàng ngàn nguồn tài liệu.
+            Hãy đảm bảo bài viết của bạn là duy nhất!
           </p>
           <div className="c-landing-features">
             <div className="c-landing-feature">
               <div className="c-landing-feature-icon c-landing-feature-icon--blue">🚀</div>
               <div>
-                <div className="c-landing-feature-title">Kiểm tra siêu tốc</div>
-                <p className="c-landing-feature-desc">Hỗ trợ txt, docx, pdf và phân tích hàng trăm câu trong nháy mắt.</p>
+                <div className="c-landing-feature-title">Multiple File Types</div>
+                <p className="c-landing-feature-desc">Xử lý các tài liệu định dạng txt, docx, pdf và phân tích hàng trăm câu, hàng ngàn kí tự.</p>
               </div>
             </div>
             <div className="c-landing-feature">
               <div className="c-landing-feature-icon c-landing-feature-icon--purple">🧠</div>
               <div>
                 <div className="c-landing-feature-title">AI Ngữ Nghĩa sâu</div>
-                <p className="c-landing-feature-desc">Không chỉ so khớp từ ngữ, chúng tôi phân tích cấu trúc và ý nghĩa tiềm ẩn.</p>
+                <p className="c-landing-feature-desc">Không chỉ so khớp từ ngữ, C-checker phân tích cấu trúc và ý nghĩa tiềm ẩn, đảm bảo không một phần nào bị bỏ sót.</p>
               </div>
             </div>
             <div className="c-landing-feature">
               <div className="c-landing-feature-icon c-landing-feature-icon--green">🌐</div>
               <div>
                 <div className="c-landing-feature-title">Quét đa nền tảng</div>
-                <p className="c-landing-feature-desc">Tự động tra cứu nội dung trên hệ thống Internet khổng lồ để đối chiếu nguồn.</p>
+                <p className="c-landing-feature-desc">Tự động tra cứu nội dung trên Internet, đa dạng nguồn để đối chiếu.</p>
               </div>
             </div>
           </div>
@@ -274,13 +274,13 @@ export default function App() {
             </div>
             <h2 className="c-login-box-title">Tham gia C-checker</h2>
             <p className="c-login-box-desc">
-              Vui lòng đăng nhập bằng Google để bắt đầu sử dụng công cụ miễn phí ngay hôm nay.
+              C-checker hiện tại đang hoàn toàn miễn phí
             </p>
             <div className="c-login-box-google">
               <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
             </div>
             <p className="c-login-box-terms">
-              Bằng cách đăng nhập, bạn xác nhận đã đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của chúng tôi.
+              Đăng nhập để kiểm tra tài liệu ngay.
             </p>
           </div>
         </div>
