@@ -87,55 +87,76 @@ export default function App() {
       const { job_id } = submitRes;
       const startTime = Date.now();
 
-      // Set initial status to show progress UI
-      setAppState({ phase: 'polling', job_id, status: { job_id, status: 'queued', progress: '0/0', current_sentence: null, created_at: new Date().toISOString(), finished_at: null, error: null }, startTime });
+      setAppState({
+        phase: 'polling',
+        job_id,
+        status: {
+          job_id, status: 'queued', progress: '0/0',
+          current_sentence: null, created_at: new Date().toISOString(),
+          finished_at: null, error: null
+        },
+        startTime
+      });
 
-      // 2. Use SSE to listen to progress
-      const source = new EventSource(api.streamUrl(job_id));
+      // 2. SSE với auto-reconnect
+      let retryCount = 0;
+      const MAX_RETRIES = 5;
+      let source: EventSource;
 
-      source.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data);
+      const connect = () => {
+        source = new EventSource(api.streamUrl(job_id));
 
-          if (data.status === 'not_found') {
-            source.close();
-            setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
-            return;
+        source.onmessage = async (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            retryCount = 0; // reset khi nhận được data thành công
+
+            if (data.status === 'not_found') {
+              source.close();
+              setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
+              return;
+            }
+
+            if (data.status === 'done') {
+              source.close();
+              const result = await api.getResult(job_id);
+              setAppState({ phase: 'done', result });
+              loadHistory();
+            } else if (data.status === 'failed') {
+              source.close();
+              setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
+            } else {
+              setAppState((prev) =>
+                prev.phase === 'polling'
+                  ? { ...prev, status: { ...prev.status, ...data } }
+                  : prev
+              );
+            }
+          } catch (e) {
+            console.error("Error parsing SSE data", e);
           }
+        };
 
-          if (data.status === 'done') {
-            source.close();
-            const result = await api.getResult(job_id);
-            setAppState({ phase: 'done', result });
+        source.onerror = () => {
+          source.close();
+          retryCount++;
 
-            loadHistory();
-          } else if (data.status === 'failed') {
-            source.close();
-            setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
+          if (retryCount <= MAX_RETRIES) {
+            console.warn(`SSE mất kết nối, đang thử lại lần ${retryCount}/${MAX_RETRIES}...`);
+            setTimeout(connect, 2000); // tự nối lại sau 2s
           } else {
-            setAppState((prev) =>
-              prev.phase === 'polling'
-                ? { ...prev, status: { ...prev.status, ...data } }
-                : prev
-            );
+            setAppState({ phase: 'error', message: 'Mất kết nối tới server sau nhiều lần thử lại!' });
           }
-        } catch (e) {
-          console.error("Error parsing SSE data", e);
-        }
+        };
       };
 
-      source.onerror = (err) => {
-        console.error("SSE Error", err);
-        source.close();
-        setAppState({ phase: 'error', message: 'Mất kết nối tới server!' });
-      };
+      connect();
 
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setAppState({ phase: 'error', message: msg });
     }
   }, [loadHistory]);
-
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
     if (!entry.result) return;
     setAppState({

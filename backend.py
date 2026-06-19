@@ -1101,6 +1101,9 @@ def get_result(job_id: str):
 @app.get("/stream/{job_id}")
 async def stream_status(job_id: str, current_user: User = Depends(get_current_user)):
     async def event_generator():
+        last_sent = None
+        idle_count = 0
+        
         while True:
             job = JOBS.get(job_id)
             if not job:
@@ -1112,15 +1115,38 @@ async def stream_status(job_id: str, current_user: User = Depends(get_current_us
                 else:
                     yield "data: {\"status\": \"not_found\"}\n\n"
                     break
-            
-            yield f"data: {json.dumps({'status': job['status'], 'progress': job.get('progress'), 'current_sentence': job.get('current_sentence'), 'error': job.get('error')})}\n\n"
-            
+
+            current = {
+                'status': job['status'],
+                'progress': job.get('progress'),
+                'current_sentence': job.get('current_sentence'),
+                'error': job.get('error')
+            }
+
+            # Chỉ gửi data thật khi có thay đổi
+            if current != last_sent:
+                yield f"data: {json.dumps(current)}\n\n"
+                last_sent = current
+                idle_count = 0
+            else:
+                idle_count += 1
+
             if job["status"] in ("done", "failed"):
                 break
-                
+
+            # Gửi heartbeat comment mỗi giây để giữ connection sống
+            yield ": heartbeat\n\n"
             await asyncio.sleep(1.0)
-            
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # quan trọng — tắt buffering ở nginx/proxy
+            "Connection": "keep-alive",
+        }
+    )
 
 
 @app.get("/report/{job_id}", response_class=HTMLResponse)

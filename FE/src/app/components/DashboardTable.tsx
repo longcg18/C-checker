@@ -154,7 +154,7 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onRef
                 <th style={{ width: '45%' }}>Tên tài liệu</th>
                 <th style={{ width: '22%' }}>Thời gian kiểm tra</th>
                 <th style={{ width: '15%' }}>Trạng thái</th>
-                <th style={{ width: '18%' }}>Kết quả trùng</th>
+                <th style={{ width: '18%' }}>Độ trùng lặp</th>
               </tr>
             </thead>
             <tbody>
@@ -163,7 +163,7 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onRef
                 const isRunning = entry.status === 'queued' || entry.status === 'running';
                 const isDone = entry.status === 'done';
                 const isFailed = entry.status === 'failed';
-                
+
                 const vs = isDone && entry.verdict ? (VERDICT_STYLE[entry.verdict] || VERDICT_STYLE.LOW) : null;
                 const maxScorePct = isDone && entry.max_score !== undefined ? ((entry.max_score ?? 0) * 100).toFixed(0) : null;
 
