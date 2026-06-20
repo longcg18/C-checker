@@ -23,7 +23,7 @@ from collections import defaultdict
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import json
 import jwt
 from google.oauth2 import id_token
@@ -386,7 +386,7 @@ def highlight_original_text(original: str, matched_tokens: List[str]) -> str:
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
+def analyze_sentence(sentence: str, ddgs: DDGS) -> Tuple[List[Dict], float]:
     sentence_tokens = tokenize(sentence)
     if not sentence_tokens:
         return []
@@ -471,7 +471,9 @@ def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
             "contiguous_score": round(d["contiguous_score"], 4),
             "final_score": round(d["final_score"], 4),
         })
-    return output
+    # Tính điểm lcs lớn nhất trong số tất cả ứng viên được quét qua (dùng làm baseline điểm nhỏ nhất)
+    max_lcs = max((d["lcs_score"] for d in candidate_data.values()), default=0.0)
+    return output, max_lcs
 def run_check(job_id: str, text: str):
     """Background worker — cập nhật JOBS[job_id] khi xong."""
     start = time.time()
@@ -481,8 +483,9 @@ def run_check(job_id: str, text: str):
     sentences = split_sentences(text)
 
     report_items: List[Dict] = []
+    sentence_scores: List[float] = []
     total = len(sentences)
-
+ 
     try:
         with DDGS() as ddgs:
             for idx, sentence in enumerate(sentences, 1):
@@ -492,27 +495,25 @@ def run_check(job_id: str, text: str):
                     print(f"[job {job_id[:8]}] ({idx}/{total}) {sentence[:60]}")
                 except UnicodeEncodeError:
                     print(f"[job {job_id[:8]}] ({idx}/{total}) [Chinese Text]")
-                results = analyze_sentence(sentence, ddgs)
+                results, max_lcs = analyze_sentence(sentence, ddgs)
                 report_items.extend(results)
+                
+                # Điểm của câu này là final_score lớn nhất nếu có trùng, hoặc lcs lớn nhất tìm được làm điểm tối thiểu
+                max_sentence_score = max((r["final_score"] for r in results), default=max_lcs)
+                sentence_scores.append(max_sentence_score)
     except Exception as e:
         JOBS[job_id]["status"] = "failed"
         JOBS[job_id]["error"] = str(e)
         fail_job(job_id, str(e))
         return
-
+ 
     runtime = round(time.time() - start, 2)
-
+ 
     max_score = max((i["final_score"] for i in report_items), default=0.0)
-
-    # Tính avg_score dựa trên điểm cao nhất của từng câu
-    sentence_max_scores = {}
-    for item in report_items:
-        s = item.get("sentence")
-        score = item.get("final_score", 0.0)
-        if s:
-            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
-    avg_score = sum(sentence_max_scores.values()) / total if total > 0 else 0.0
-
+ 
+    # Tính avg_score dựa trên điểm thực tế của từng câu
+    avg_score = sum(sentence_scores) / total if total > 0 else 0.0
+ 
     # Logic kết luận mới kết hợp cả avg_score và max_score
     if avg_score > 0.25 or max_score > 0.80:
         verdict = "HIGH"
@@ -523,7 +524,7 @@ def run_check(job_id: str, text: str):
     else:
         verdict = "LOW"
         verdict_text = "LOW — Không phát hiện đạo văn rõ ràng"
-
+ 
     JOBS[job_id].update({
         "status": "done",
         "runtime": runtime,
@@ -535,11 +536,11 @@ def run_check(job_id: str, text: str):
         "verdict_text": verdict_text,
         "text_length": len(text),
         "report_items": report_items,
-        "html_report": build_html_report(report_items, len(text), runtime, verdict_text, total),
+        "html_report": build_html_report(report_items, len(text), runtime, verdict_text, total, avg_score),
         "finished_at": datetime.now().isoformat(),
     })
-
-    _save_stats(report_items, runtime, total)
+ 
+    _save_stats(report_items, runtime, total, avg_score)
 
     status = JOBS[job_id]["status"]
     if status == "done":
@@ -562,20 +563,21 @@ def run_check(job_id: str, text: str):
 # HTML REPORT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def build_html_report(items, text_length: int, runtime, verdict, sentences_checked: int = None):
+def build_html_report(items, text_length: int, runtime, verdict, sentences_checked: int = None, avg_score: float = None):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     max_score = max((i.get("final_score", 0.0) for i in items), default=0.0)
     
-    # Tính điểm trung bình thực tế của toàn bài (lấy điểm lớn nhất của mỗi câu, mặc định 0.0)
-    sentence_max_scores = {}
-    for item in items:
-        s = item.get("sentence")
-        score = item.get("final_score", 0.0)
-        if s:
-            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
-            
-    num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
-    avg_score = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
+    if avg_score is None:
+        # Tính điểm trung bình thực tế của toàn bài (lấy điểm lớn nhất của mỗi câu, mặc định 0.0)
+        sentence_max_scores = {}
+        for item in items:
+            s = item.get("sentence")
+            score = item.get("final_score", 0.0)
+            if s:
+                sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
+                
+        num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
+        avg_score = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
 
     verdict_color = {
         "H": "#e74c3c",
@@ -754,22 +756,25 @@ def build_html_report(items, text_length: int, runtime, verdict, sentences_check
 # STATS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _save_stats(items: List[Dict], runtime: float, sentences_checked: int = None):
+def _save_stats(items: List[Dict], runtime: float, sentences_checked: int = None, avg_score: float = None):
     if not items:
         return
     path = Path(CONFIG["stats_file"])
     write_header = not path.exists()
     
-    # Tính điểm trung bình của toàn bài
-    sentence_max_scores = {}
-    for item in items:
-        s = item.get("sentence")
-        score = item.get("final_score", 0.0)
-        if s:
-            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
-            
-    num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
-    avg_final = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
+    if avg_score is None:
+        # Tính điểm trung bình của toàn bài
+        sentence_max_scores = {}
+        for item in items:
+            s = item.get("sentence")
+            score = item.get("final_score", 0.0)
+            if s:
+                sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
+                
+        num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
+        avg_final = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
+    else:
+        avg_final = avg_score
 
     row = [
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -1120,6 +1125,7 @@ def get_report(job_id: str):
                 data["runtime"],
                 data["verdict_text"],
                 data.get("sentences_checked"),
+                data.get("avg_score"),
             )
             return HTMLResponse(content=html)
         
