@@ -102,6 +102,15 @@ STOPWORDS_ZH = {
     "更", "还", "又", "再", "才", "刚", "往往", "经常", "通常",
 }
 
+# ─── INITIATE JIEBA ───────────────────────────────────────────────────
+
+def _init_jieba():
+    """Force Jiebar build cache when it startup."""
+    list(jieba.cut("初始化"))  # trigger cache build ngay
+    print("[✓] Jieba cache initialized.")
+
+_init_jieba()
+
 # ─── IN-MEMORY JOB STORE ───────────────────────────────────────────────────
 JOBS: Dict[str, Dict[str, Any]] = {}
 SEARCH_CACHE: Dict[str, list] = {}
@@ -374,97 +383,7 @@ def highlight_original_text(original: str, matched_tokens: List[str]) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 # CORE ANALYSIS
 # ══════════════════════════════════════════════════════════════════════════════
-"""
 
-
-def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
-    sentence_tokens = tokenize(sentence)
-    if not sentence_tokens:
-        return []
-
-    queries = generate_queries(sentence_tokens)
-    candidate_scores: Dict[str, float] = defaultdict(float)
-    candidate_data: Dict[str, Dict] = {}
-
-    for q in queries:
-        results = search_query(q, ddgs)
-        for r in results:
-            url = r.get("href", "")
-            title = r.get("title", "")
-            body = r.get("body", "")
-
-            full_text = ""
-            if url:
-                full_text = fetch_page(url)
-            ref_text = full_text if len(full_text) > 200 else (title + " " + body)
-
-            ref_tokens = tokenize(ref_text)
-            if not ref_tokens:
-                continue
-
-            lcs_result = lcs_with_indexes(sentence_tokens, ref_tokens)
-            lcs_score = calc_lcs_score(
-                lcs_result["length"], len(sentence_tokens), len(ref_tokens)
-            )
-
-            ngram_score = max(
-                ngram_overlap_score(sentence_tokens, ref_tokens, n=2),
-                ngram_overlap_score(sentence_tokens, ref_tokens, n=3),
-            )
-
-            cont_len = longest_contiguous(sentence_tokens, ref_tokens)
-            contiguous_score = cont_len / max(len(sentence_tokens), len(ref_tokens), 1)
-
-            semantic_score = 0.0
-            if lcs_score > CONFIG["lcs_threshold"] or ngram_score > 0.05:
-                snippet_text = " ".join(ref_tokens[:200])
-                raw_sem = semantic_similarity(sentence, snippet_text)
-                semantic_score = raw_sem if raw_sem >= CONFIG["min_semantic_score"] else 0.0
-
-            score = compute_final_score(lcs_score, ngram_score, semantic_score, contiguous_score)
-            url_key = normalize_url(url)
-
-            if score > candidate_scores[url_key]:
-                candidate_scores[url_key] = score
-                candidate_data[url_key] = {
-                    "url": url,
-                    "title": title,
-                    "body": body[:300],
-                    "lcs_score": lcs_score,
-                    "ngram_score": ngram_score,
-                    "semantic_score": semantic_score,
-                    "contiguous_score": contiguous_score,
-                    "final_score": score,
-                    "lcs": lcs_result,
-                    "snippet": extract_snippet(ref_tokens, lcs_result["indexes"]),
-                }
-
-        time.sleep(CONFIG["delay_between_requests"])
-
-    sorted_cands = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
-    output = []
-    for url_key, total_score in sorted_cands[: CONFIG["top_candidates"]]:
-        if total_score < CONFIG["min_final_score"]:
-            continue
-        d = candidate_data[url_key]
-        highlighted = highlight_tokens(sentence_tokens, d["lcs"]["indexes"])
-        output.append({
-            "sentence": sentence,
-            "url": d["url"],
-            "title": d["title"],
-            "body": d["body"],
-            "highlighted": highlighted,
-            "matched_tokens": d["lcs"]["tokens"],
-            "snippet": d["snippet"],
-            "lcs_score": round(d["lcs_score"], 4),
-            "ngram_score": round(d["ngram_score"], 4),
-            "semantic_score": round(d["semantic_score"], 4),
-            "contiguous_score": round(d["contiguous_score"], 4),
-            "final_score": round(d["final_score"], 4),
-        })
-    return output
-
-"""
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
@@ -530,7 +449,6 @@ def analyze_sentence(sentence: str, ddgs: DDGS) -> List[Dict]:
                 candidate_scores[url_key] = score
                 candidate_data[url_key] = data
 
-    # Phần sort và output giữ nguyên
     sorted_cands = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
     output = []
     for url_key, total_score in sorted_cands[:CONFIG["top_candidates"]]:
@@ -585,10 +503,21 @@ def run_check(job_id: str, text: str):
     runtime = round(time.time() - start, 2)
 
     max_score = max((i["final_score"] for i in report_items), default=0.0)
-    if max_score > 0.70:
+
+    # Tính avg_score dựa trên điểm cao nhất của từng câu
+    sentence_max_scores = {}
+    for item in report_items:
+        s = item.get("sentence")
+        score = item.get("final_score", 0.0)
+        if s:
+            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
+    avg_score = sum(sentence_max_scores.values()) / total if total > 0 else 0.0
+
+    # Logic kết luận mới kết hợp cả avg_score và max_score
+    if avg_score > 0.25 or max_score > 0.80:
         verdict = "HIGH"
         verdict_text = "HIGH — Nguy cơ đạo văn cao"
-    elif max_score > 0.45:
+    elif avg_score >= 0.15 or max_score >= 0.50:
         verdict = "MEDIUM"
         verdict_text = "MEDIUM — Có dấu hiệu nghi ngờ"
     else:
@@ -601,15 +530,16 @@ def run_check(job_id: str, text: str):
         "sentences_checked": total,
         "matches_found": len(report_items),
         "max_score": max_score,
+        "avg_score": round(avg_score, 4),
         "verdict": verdict,
         "verdict_text": verdict_text,
         "text_length": len(text),
         "report_items": report_items,
-        "html_report": build_html_report(report_items, len(text), runtime, verdict_text),
+        "html_report": build_html_report(report_items, len(text), runtime, verdict_text, total),
         "finished_at": datetime.now().isoformat(),
     })
 
-    _save_stats(report_items, runtime)
+    _save_stats(report_items, runtime, total)
 
     status = JOBS[job_id]["status"]
     if status == "done":
@@ -632,10 +562,20 @@ def run_check(job_id: str, text: str):
 # HTML REPORT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def build_html_report(items, text_length: int, runtime, verdict):
+def build_html_report(items, text_length: int, runtime, verdict, sentences_checked: int = None):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     max_score = max((i.get("final_score", 0.0) for i in items), default=0.0)
-    avg_score = (sum(i.get("final_score", 0.0) for i in items) / len(items)) if items else 0.0
+    
+    # Tính điểm trung bình thực tế của toàn bài (lấy điểm lớn nhất của mỗi câu, mặc định 0.0)
+    sentence_max_scores = {}
+    for item in items:
+        s = item.get("sentence")
+        score = item.get("final_score", 0.0)
+        if s:
+            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
+            
+    num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
+    avg_score = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
 
     verdict_color = {
         "H": "#e74c3c",
@@ -814,18 +754,30 @@ def build_html_report(items, text_length: int, runtime, verdict):
 # STATS
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _save_stats(items: List[Dict], runtime: float):
+def _save_stats(items: List[Dict], runtime: float, sentences_checked: int = None):
     if not items:
         return
     path = Path(CONFIG["stats_file"])
     write_header = not path.exists()
+    
+    # Tính điểm trung bình của toàn bài
+    sentence_max_scores = {}
+    for item in items:
+        s = item.get("sentence")
+        score = item.get("final_score", 0.0)
+        if s:
+            sentence_max_scores[s] = max(sentence_max_scores.get(s, 0.0), score)
+            
+    num_sentences = sentences_checked if (sentences_checked is not None and sentences_checked > 0) else len(sentence_max_scores)
+    avg_final = sum(sentence_max_scores.values()) / num_sentences if num_sentences > 0 else 0.0
+
     row = [
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         len(items),
-        round(sum(i["lcs_score"] for i in items) / len(items), 4),
-        round(sum(i["semantic_score"] for i in items) / len(items), 4),
-        round(sum(i["final_score"] for i in items) / len(items), 4),
-        round(max(i["final_score"] for i in items), 4),
+        round(sum(i["lcs_score"] for i in items) / len(items), 4) if items else 0.0,
+        round(sum(i["semantic_score"] for i in items) / len(items), 4) if items else 0.0,
+        round(avg_final, 4),
+        round(max(i["final_score"] for i in items), 4) if items else 0.0,
         round(runtime, 2),
     ]
     with open(path, "a", newline="", encoding="utf-8") as f:
@@ -1091,6 +1043,7 @@ def get_result(job_id: str):
         "verdict": job["verdict"],
         "verdict_text": job["verdict_text"],
         "max_score": job["max_score"],
+        "avg_score": job.get("avg_score", 0.0),
         "runtime": job["runtime"],
         "sentences_checked": job["sentences_checked"],
         "matches_found": job["matches_found"],
@@ -1166,6 +1119,7 @@ def get_report(job_id: str):
                 data.get("text_length", 0),
                 data["runtime"],
                 data["verdict_text"],
+                data.get("sentences_checked"),
             )
             return HTMLResponse(content=html)
         

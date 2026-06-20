@@ -42,6 +42,7 @@ export interface JobResult {
   verdict: 'HIGH' | 'MEDIUM' | 'LOW';
   verdict_text: string;
   max_score: number;
+  avg_score?: number;
   runtime: number;
   sentences_checked: number;
   matches_found: number;

@@ -55,6 +55,22 @@ function ScorePill({ label, value, highlight }: { label: string; value: number; 
 export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
   const vc = VERDICT_CONFIG[result.verdict] || VERDICT_CONFIG.LOW;
 
+  const avgScore = result.avg_score !== undefined
+    ? result.avg_score
+    : (() => {
+        const sentenceMaxScores: Record<string, number> = {};
+        result.report_items.forEach((item) => {
+          const s = item.sentence;
+          if (s) {
+            sentenceMaxScores[s] = Math.max(sentenceMaxScores[s] || 0, item.final_score);
+          }
+        });
+        const numSentences = result.sentences_checked || Object.keys(sentenceMaxScores).length;
+        return numSentences > 0
+          ? Object.values(sentenceMaxScores).reduce((a, b) => a + b, 0) / numSentences
+          : 0;
+      })();
+
   const formatRuntime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = (s % 60).toFixed(1);
@@ -92,6 +108,12 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
             {result.matches_found}
           </div>
           <div className="c-stat-card-label">Đoạn nghi ngờ</div>
+        </div>
+        <div className="c-stat-card">
+          <div className="c-stat-card-value" style={{ color: avgScore > 0.25 ? 'var(--c-red)' : avgScore >= 0.15 ? '#e8a838' : 'var(--c-green)' }}>
+            {(avgScore * 100).toFixed(1)}%
+          </div>
+          <div className="c-stat-card-label">Trùng lặp cả bài</div>
         </div>
         <div className="c-stat-card">
           <div className="c-stat-card-value">{(result.max_score ?? 0).toFixed(3)}</div>
