@@ -389,7 +389,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def analyze_sentence(sentence: str, ddgs: DDGS) -> Tuple[List[Dict], float]:
     sentence_tokens = tokenize(sentence)
     if not sentence_tokens:
-        return []
+        return [], 0.0
 
     queries = generate_queries(sentence_tokens)
     
