@@ -15,7 +15,9 @@ HEADERS = {
 }
 
 class User:
-    def __init__(self, id: str, google_id: str, email: str = None, name: str = None, picture: str = None, plan: str = "free", checks_used: int = 0, created_at: str = None):
+    def __init__(self, id: str, google_id: str = None, email: str = None, name: str = None,
+                 picture: str = None, plan: str = "free", checks_used: int = 0,
+                 created_at: str = None, password_hash: str = None):
         self.id = id
         self.google_id = google_id
         self.email = email
@@ -24,6 +26,7 @@ class User:
         self.plan = plan
         self.checks_used = checks_used
         self.created_at = created_at
+        self.password_hash = password_hash
 
 class Job:
     def __init__(self, id: str, user_id: str, job_id: str, file_name: str = None, status: str = "queued", verdict: str = None, max_score: float = None, runtime: float = None, result_json: Any = None, created_at: str = None, finished_at: str = None):
@@ -62,6 +65,34 @@ def get_user_by_google_id(google_id: str) -> Optional[User]:
     except Exception as e:
         print(f"Error getting user by google_id: {e}")
     return None
+
+def get_user_by_email(email: str) -> Optional[User]:
+    try:
+        from urllib.parse import quote
+        url = f"{SUPABASE_URL}/rest/v1/users?email=eq.{quote(email)}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return User(**data[0])
+    except Exception as e:
+        print(f"Error getting user by email: {e}")
+    return None
+
+def create_local_user(email: str, name: str, password_hash: str) -> User:
+    """Tạo user đăng ký bằng email/password (không có google_id)."""
+    url = f"{SUPABASE_URL}/rest/v1/users"
+    payload = {
+        "email": email,
+        "name": name,
+        "password_hash": password_hash,
+        "picture": None,
+        "google_id": None,
+    }
+    res = requests.post(url, headers=HEADERS, json=payload)
+    res.raise_for_status()
+    data = res.json()
+    return User(**data[0])
 
 def create_user(google_id: str, email: str, name: str, picture: str) -> User:
     url = f"{SUPABASE_URL}/rest/v1/users"

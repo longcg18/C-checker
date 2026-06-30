@@ -105,6 +105,20 @@ export const api = {
     });
   },
 
+  loginLocal(email: string, password: string): Promise<{ access_token: string; user: any }> {
+    return apiFetch('/login/local', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+  },
+
+  register(email: string, password: string, name: string): Promise<{ access_token: string; user: any }> {
+    return apiFetch('/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name })
+    });
+  },
+
   getHistory(): Promise<HistoryItemRaw[]> {
     return apiFetch('/history');
   },

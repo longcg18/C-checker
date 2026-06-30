@@ -26,13 +26,16 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 import json
 import jwt
+from passlib.context import CryptContext
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from database import (
     User,
     get_user_by_id,
     get_user_by_google_id,
+    get_user_by_email,
     create_user,
+    create_local_user,
     create_job,
     get_job_by_job_id,
     get_jobs_by_user_id,
@@ -89,6 +92,7 @@ CONFIG = {
 
 JWT_SECRET = "c-checker-super-secret-key"
 GOOGLE_CLIENT_ID = "988401071814-56kve7lfi1sg4vqckqju6v0p25hk5o8o.apps.googleusercontent.com"
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 STOPWORDS_ZH = {
     "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一",
@@ -828,6 +832,15 @@ class CheckRequest(BaseModel):
 class LoginRequest(BaseModel):
     token: str
 
+class LocalLoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
 class JobStatus(BaseModel):
     job_id: str
     status: str
@@ -884,6 +897,39 @@ def login(req: LoginRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid Google token: {e}")
+
+@app.post("/register")
+def register(req: RegisterRequest):
+    """Tạo tài khoản bằng email và password."""
+    # Kiểm tra email đã tồn tại chưa
+    existing = get_user_by_email(req.email)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email đã được sử dụng")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu phải tối thiểu 6 ký tự")
+    hashed = pwd_context.hash(req.password)
+    user = create_local_user(email=req.email, name=req.name, password_hash=hashed)
+    access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
+    return {
+        "access_token": access_token,
+        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture}
+    }
+
+@app.post("/login/local")
+def login_local(req: LocalLoginRequest):
+    """Xác thực bằng email và password."""
+    user = get_user_by_email(req.email)
+    if not user:
+        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
+    if not user.password_hash:
+        raise HTTPException(status_code=401, detail="Tài khoản này đăng nhập bằng Google, vui lòng dùng Google đăng nhập")
+    if not pwd_context.verify(req.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
+    access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
+    return {
+        "access_token": access_token,
+        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture}
+    }
 
 @app.get("/history")
 def get_history(current_user: User = Depends(get_current_user)):
