@@ -219,53 +219,104 @@ body {
   line-height: 1.5;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Landing Page
+══════════════════════════════════════════════════════════════════ */
 
-/* Tablet (≤900px): xếp dọc, trái thành gọn */
+/* ── Tablet (≤900px): xếp dọc, left panel thu gọn ── */
 @media (max-width: 900px) {
   .c-landing {
     flex-direction: column;
     overflow-y: auto;
+    height: auto;
+    min-height: 100%;
   }
 
   .c-landing-left {
-    padding: 48px 32px 36px;
+    padding: 48px 32px 40px;
     border-right: none;
     border-bottom: 1px solid var(--c-border);
     flex: unset;
   }
 
   .c-landing-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
+  }
+
+  .c-landing-desc {
+    font-size: 0.97rem;
+    margin-bottom: 28px;
   }
 
   .c-landing-right {
     width: 100%;
-    padding: 40px 24px;
     flex-shrink: unset;
+    padding: 48px 32px 60px;
+  }
+
+  .c-login-box {
+    max-width: 440px;
+    margin: 0 auto;
   }
 }
 
-/* Mobile (≤600px): ẩn quảng cáo, chỉ hiện login */
+/* ── Mobile (≤600px): UI tối giản, chỉ hiện login card đẹp ── */
 @media (max-width: 600px) {
+  .c-landing {
+    background: linear-gradient(160deg, #eef2ff 0%, #f0f4ff 50%, #e8f0fe 100%);
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  /* Ẩn phần quảng cáo trên mobile — không cần thiết */
   .c-landing-left {
     display: none;
   }
 
-  .c-landing {
-    background: var(--c-bg);
-    align-items: center;
-    justify-content: center;
-  }
-
   .c-landing-right {
     width: 100%;
-    padding: 32px 20px;
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 60px;
     background: transparent;
+  }
+
+  .c-login-box {
+    width: 100%;
+    max-width: 380px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--c-radius-xl);
+    padding: 36px 24px 32px;
+    box-shadow: 0 4px 32px rgba(37, 99, 235, 0.10),
+                0 1px 8px rgba(30, 40, 80, 0.08);
+  }
+
+  .c-login-box-icon {
+    margin-bottom: 20px;
+  }
+
+  .c-login-box-icon svg {
+    width: 56px;
+    height: 56px;
   }
 
   .c-login-box-title {
     font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .c-login-box-desc {
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .c-login-box-terms {
+    font-size: 0.78rem;
+    margin-top: 20px;
   }
 }
 
@@ -1986,6 +2037,123 @@ body {
   }
   to {
     transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — Main App (Authenticated)
+══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤1024px): thu hẹp left panel ── */
+@media (max-width: 1024px) {
+  .c-layout {
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+  }
+
+  .c-main {
+    padding: 20px 16px 48px;
+  }
+
+  /* Ẩn badge ở header, giữ lại logo + auth */
+  .c-header-badges {
+    display: none;
+  }
+}
+
+/* ── Tablet nhỏ / Mobile lớn (≤768px): 1 cột, left panel lên trên ── */
+@media (max-width: 768px) {
+  .c-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .c-main {
+    padding: 16px 12px 80px;
+  }
+
+  .c-right-panel {
+    min-height: 300px;
+  }
+
+  /* Header gọn lại */
+  .c-header {
+    padding: 12px 16px;
+  }
+
+  .c-logo-sub {
+    display: none;
+  }
+
+  .c-logo-title {
+    font-size: 18px;
+  }
+
+  .c-logo-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Upload card full width */
+  .c-upload-card {
+    padding: 16px;
+  }
+
+  /* Modal full-screen trên mobile */
+  .c-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .c-modal-container {
+    max-width: 100%;
+    border-radius: var(--c-radius-lg) var(--c-radius-lg) 0 0;
+    animation: c-slide-up 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+
+  .c-modal-body {
+    max-height: 75vh;
+  }
+}
+
+/* ── Mobile nhỏ (≤480px) ── */
+@media (max-width: 480px) {
+  .c-main {
+    padding: 12px 10px 80px;
+  }
+
+  .c-header {
+    padding: 10px 12px;
+  }
+
+  .c-logo-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .c-logo-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .c-logo-title {
+    font-size: 16px;
+  }
+
+  /* Các nút đăng xuất nhỏ hơn */
+  .c-user-profile span {
+    display: none;
+  }
+}
+
+@keyframes c-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
 }

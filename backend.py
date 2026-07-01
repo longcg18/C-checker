@@ -73,6 +73,7 @@ CONFIG = {
 
     # Scoring thresholds
     "lcs_threshold": 0.12,
+    "ngram_threshold": 0.12,
     "min_final_score": 0.35,
     "min_semantic_score": 0.12,
     "top_candidates": 3,
@@ -439,7 +440,7 @@ def analyze_sentence(sentence: str, ddgs: DDGS) -> Tuple[List[Dict], float]:
         cont_len = longest_contiguous(sentence_tokens, ref_tokens)
         contiguous_score = cont_len / max(len(sentence_tokens), len(ref_tokens), 1)
         semantic_score = 0.0
-        if lcs_score > CONFIG["lcs_threshold"] or ngram_score > 0.05:
+        if lcs_score > CONFIG["lcs_threshold"] or ngram_score > CONFIG["ngram_threshold"]:
             snippet_text = " ".join(ref_tokens[:200])
             raw_sem = semantic_similarity(sentence, snippet_text)
             semantic_score = raw_sem if raw_sem >= CONFIG["min_semantic_score"] else 0.0
