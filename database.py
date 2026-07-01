@@ -17,7 +17,7 @@ HEADERS = {
 class User:
     def __init__(self, id: str, google_id: str = None, email: str = None, name: str = None,
                  picture: str = None, plan: str = "free", checks_used: int = 0,
-                 created_at: str = None, password_hash: str = None):
+                 created_at: str = None, password_hash: str = None, username: str = None):
         self.id = id
         self.google_id = google_id
         self.email = email
@@ -27,6 +27,7 @@ class User:
         self.checks_used = checks_used
         self.created_at = created_at
         self.password_hash = password_hash
+        self.username = username
 
 class Job:
     def __init__(self, id: str, user_id: str, job_id: str, file_name: str = None, status: str = "queued", verdict: str = None, max_score: float = None, runtime: float = None, result_json: Any = None, created_at: str = None, finished_at: str = None):
@@ -79,12 +80,26 @@ def get_user_by_email(email: str) -> Optional[User]:
         print(f"Error getting user by email: {e}")
     return None
 
-def create_local_user(email: str, name: str, password_hash: str) -> User:
-    """Tạo user đăng ký bằng email/password (không có google_id)."""
+def get_user_by_username(username: str) -> Optional[User]:
+    try:
+        from urllib.parse import quote
+        url = f"{SUPABASE_URL}/rest/v1/users?username=eq.{quote(username)}"
+        res = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                return User(**data[0])
+    except Exception as e:
+        print(f"Error getting user by username: {e}")
+    return None
+
+def create_local_user(username: str, password_hash: str, email: str = None, name: str = None) -> User:
+    """Tạo user đăng ký bằng username/password."""
     url = f"{SUPABASE_URL}/rest/v1/users"
     payload = {
+        "username": username,
         "email": email,
-        "name": name,
+        "name": name or username,
         "password_hash": password_hash,
         "picture": None,
         "google_id": None,

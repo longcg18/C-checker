@@ -26,7 +26,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 import json
 import jwt
-from passlib.context import CryptContext
+import bcrypt
+import hashlib
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from database import (
@@ -34,6 +35,7 @@ from database import (
     get_user_by_id,
     get_user_by_google_id,
     get_user_by_email,
+    get_user_by_username,
     create_user,
     create_local_user,
     create_job,
@@ -92,7 +94,19 @@ CONFIG = {
 
 JWT_SECRET = "c-checker-super-secret-key"
 GOOGLE_CLIENT_ID = "988401071814-56kve7lfi1sg4vqckqju6v0p25hk5o8o.apps.googleusercontent.com"
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _pw_bytes(password: str) -> bytes:
+    """Pre-hash password with SHA-256 to bypass bcrypt's 72-byte limit."""
+    return hashlib.sha256(password.encode("utf-8")).digest()
+
+def hash_password(password: str) -> str:
+    """Hash a password securely using SHA-256 pre-hash + bcrypt."""
+    hashed = bcrypt.hashpw(_pw_bytes(password), bcrypt.gensalt(rounds=12))
+    return hashed.decode("utf-8")
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify a password against its bcrypt hash."""
+    return bcrypt.checkpw(_pw_bytes(password), hashed.encode("utf-8"))
 
 STOPWORDS_ZH = {
     "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一",
@@ -833,13 +847,14 @@ class LoginRequest(BaseModel):
     token: str
 
 class LocalLoginRequest(BaseModel):
-    email: str
+    username: str
     password: str
 
 class RegisterRequest(BaseModel):
-    email: str
+    username: str
     password: str
-    name: str
+    email: Optional[str] = None
+    name: Optional[str] = None
 
 class JobStatus(BaseModel):
     job_id: str
@@ -900,35 +915,49 @@ def login(req: LoginRequest):
 
 @app.post("/register")
 def register(req: RegisterRequest):
-    """Tạo tài khoản bằng email và password."""
-    # Kiểm tra email đã tồn tại chưa
-    existing = get_user_by_email(req.email)
-    if existing:
-        raise HTTPException(status_code=400, detail="Email đã được sử dụng")
+    """Tạo tài khoản bằng username và password."""
+    # Validate username
+    if len(req.username) < 3:
+        raise HTTPException(status_code=400, detail="Tên đăng nhập phải tối thiểu 3 ký tự")
+    if not re.match(r"^[a-zA-Z0-9_]+$", req.username):
+        raise HTTPException(status_code=400, detail="Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới")
+    
+    # Kiểm tra username đã tồn tại chưa
+    existing_username = get_user_by_username(req.username)
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Tên đăng nhập đã được sử dụng")
+        
+    # Kiểm tra email đã tồn tại chưa (nếu có cung cấp)
+    if req.email:
+        existing_email = get_user_by_email(req.email)
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email đã được sử dụng")
+            
     if len(req.password) < 6:
         raise HTTPException(status_code=400, detail="Mật khẩu phải tối thiểu 6 ký tự")
-    hashed = pwd_context.hash(req.password)
-    user = create_local_user(email=req.email, name=req.name, password_hash=hashed)
-    access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
+        
+    hashed = hash_password(req.password)
+    user = create_local_user(username=req.username, password_hash=hashed, email=req.email, name=req.name)
+    access_token = jwt.encode({"sub": user.id, "email": user.email, "username": user.username}, JWT_SECRET, algorithm="HS256")
     return {
         "access_token": access_token,
-        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture}
+        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture, "username": user.username}
     }
 
 @app.post("/login/local")
 def login_local(req: LocalLoginRequest):
-    """Xác thực bằng email và password."""
-    user = get_user_by_email(req.email)
+    """Xác thực bằng username và password."""
+    user = get_user_by_username(req.username)
     if not user:
-        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
+        raise HTTPException(status_code=401, detail="Tên đăng nhập hoặc mật khẩu không đúng")
     if not user.password_hash:
         raise HTTPException(status_code=401, detail="Tài khoản này đăng nhập bằng Google, vui lòng dùng Google đăng nhập")
-    if not pwd_context.verify(req.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không đúng")
-    access_token = jwt.encode({"sub": user.id, "email": user.email}, JWT_SECRET, algorithm="HS256")
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Tên đăng nhập hoặc mật khẩu không đúng")
+    access_token = jwt.encode({"sub": user.id, "email": user.email, "username": user.username}, JWT_SECRET, algorithm="HS256")
     return {
         "access_token": access_token,
-        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture}
+        "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture, "username": user.username}
     }
 
 @app.get("/history")

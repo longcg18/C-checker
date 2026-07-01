@@ -1,6 +1,8 @@
 // API client for C-checker v5 backend
 
-const API_BASE = 'https://api.c-checker.io.vn';
+const API_BASE = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000'
+  : 'https://api.c-checker.io.vn';
 
 export interface SubmitResponse {
   job_id: string;
@@ -105,17 +107,17 @@ export const api = {
     });
   },
 
-  loginLocal(email: string, password: string): Promise<{ access_token: string; user: any }> {
+  loginLocal(username: string, password: string): Promise<{ access_token: string; user: any }> {
     return apiFetch('/login/local', {
       method: 'POST',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ username, password })
     });
   },
 
-  register(email: string, password: string, name: string): Promise<{ access_token: string; user: any }> {
+  register(username: string, password: string, email?: string, name?: string): Promise<{ access_token: string; user: any }> {
     return apiFetch('/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name })
+      body: JSON.stringify({ username, password, email, name })
     });
   },
 
