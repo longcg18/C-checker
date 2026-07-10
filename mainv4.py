@@ -450,7 +450,7 @@ def main():
 """)
 
     # Đường dẫn file cần kiểm tra
-    FILE_PATH = r"test.txt"  # <-- SỬA ĐƯỜNG DẪN FILE CỦA BẠN
+    FILE_PATH = r"input.txt"  # <-- SỬA ĐƯỜNG DẪN FILE CỦA BẠN
     try:
         with open(FILE_PATH, "r", encoding="utf-8") as f:
             text = f.read()
