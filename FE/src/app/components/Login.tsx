@@ -1,6 +1,7 @@
 import { GoogleLogin } from '@react-oauth/google';
 import { api, setToken, removeToken } from '../lib/api';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface User {
   id: string;
@@ -18,7 +19,7 @@ interface LoginProps {
 export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showModal, setShowModal] = useState<'login' | 'register' | null>(null);
 
   // Local login state
   const [loginUsername, setLoginUsername] = useState('');
@@ -39,6 +40,7 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
       const data = await api.login(credentialResponse.credential);
       setToken(data.access_token);
       onLogin(data.user);
+      setShowModal(null);
     } catch (err: any) {
       setError(err.message || 'Đăng nhập Google thất bại');
     } finally {
@@ -58,6 +60,10 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
       const data = await api.loginLocal(loginUsername, loginPassword);
       setToken(data.access_token);
       onLogin(data.user);
+      setShowModal(null);
+      // Reset fields
+      setLoginUsername('');
+      setLoginPassword('');
     } catch (err: any) {
       const msg = err.message || '';
       const match = msg.match(/"detail"\s*:\s*"([^"]+)"/);
@@ -111,7 +117,7 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
       );
       setToken(data.access_token);
       onLogin(data.user);
-      setShowRegisterModal(false);
+      setShowModal(null);
       // Reset register state
       setRegUsername('');
       setRegPassword('');
@@ -134,20 +140,19 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
 
   if (currentUser) {
     return (
-      <div className="c-user-profile" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="c-user-profile">
         {currentUser.picture ? (
-          <img src={currentUser.picture} alt="Profile" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+          <img src={currentUser.picture} alt="Profile" className="c-user-avatar" />
         ) : (
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%', background: 'var(--c-accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '14px', fontWeight: 700, color: '#fff'
-          }}>
+          <div className="c-user-avatar-placeholder">
             {currentUser.name?.[0]?.toUpperCase() || '?'}
           </div>
         )}
-        <span style={{ fontSize: '14px', color: 'var(--c-text)' }}>{currentUser.name}</span>
-        <button onClick={handleLogout} className="c-btn c-btn--ghost" style={{ padding: '4px 8px', fontSize: '12px' }}>
+        <div className="c-user-info">
+          <span className="c-user-name">{currentUser.name}</span>
+          {currentUser.email && <span className="c-user-email">{currentUser.email}</span>}
+        </div>
+        <button onClick={handleLogout} className="c-btn c-btn--logout">
           Đăng xuất
         </button>
       </div>
@@ -155,180 +160,214 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
   }
 
   return (
-    <div className="c-auth-panel">
-      {error && (
-        <div className="c-auth-error">
-          <span>⚠ {error}</span>
-        </div>
-      )}
+    <div className="c-auth-trigger">
+      <button 
+        className="c-btn c-btn--primary c-btn--signin" 
+        onClick={() => { setShowModal('login'); setError(''); }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+        </svg>
+        Đăng nhập
+      </button>
 
-      <div className="c-auth-content">
-        {/* Google login */}
-        <div className="c-auth-google">
-          {loading ? (
-            <span className="c-auth-loading">Đang đăng nhập...</span>
-          ) : (
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError('Đăng nhập Google thất bại')}
-              useOneTap
-            />
-          )}
-        </div>
-
-        <div className="c-auth-divider"><span>hoặc</span></div>
-
-        {/* Username/password login form */}
-        <form className="c-auth-form" onSubmit={handleLocalLogin}>
-          <div className="c-auth-field">
-            <label className="c-auth-label">Tên đăng nhập</label>
-            <input
-              className="c-auth-input"
-              type="text"
-              placeholder="Username"
-              value={loginUsername}
-              onChange={e => setLoginUsername(e.target.value)}
-              disabled={loading}
-              autoComplete="username"
-            />
-          </div>
-          <div className="c-auth-field">
-            <label className="c-auth-label">Mật khẩu</label>
-            <input
-              className="c-auth-input"
-              type="password"
-              placeholder="••••••••"
-              value={loginPassword}
-              onChange={e => setLoginPassword(e.target.value)}
-              disabled={loading}
-              autoComplete="current-password"
-            />
-          </div>
-          <button
-            className="c-btn c-btn--primary c-auth-submit"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-          </button>
-        </form>
-
-        <div className="c-auth-register-link" style={{ marginTop: '16px', textAlign: 'center', fontSize: '13px' }}>
-          <span style={{ color: 'var(--c-text-dim)' }}>Chưa có tài khoản? </span>
-          <button
-            type="button"
-            className="c-btn-link"
-            style={{
-              background: 'none', border: 'none', color: 'var(--c-accent)',
-              fontWeight: 600, cursor: 'pointer', padding: 0, font: 'inherit',
-              textDecoration: 'underline'
-            }}
-            onClick={() => { setShowRegisterModal(true); setRegError(''); }}
-          >
-            Đăng ký ngay
-          </button>
-        </div>
-      </div>
-
-      {/* Register Modal */}
-      {showRegisterModal && (
-        <div className="c-modal-overlay" onClick={() => setShowRegisterModal(false)}>
+      {showModal && createPortal(
+        <div className="c-modal-overlay" onClick={() => setShowModal(null)}>
           <div className="c-modal-container" onClick={e => e.stopPropagation()}>
             <div className="c-modal-header">
-              <h3 className="c-modal-title">Tạo tài khoản mới</h3>
+              <h3 className="c-modal-title">
+                {showModal === 'login' ? 'Đăng nhập C-checker' : 'Tạo tài khoản mới'}
+              </h3>
               <button
                 type="button"
                 className="c-modal-close"
-                onClick={() => setShowRegisterModal(false)}
+                onClick={() => setShowModal(null)}
               >
                 &times;
               </button>
             </div>
+
             <div className="c-modal-body">
-              {regError && (
-                <div className="c-auth-error" style={{ marginBottom: '16px' }}>
-                  <span>⚠ {regError}</span>
-                </div>
+              {showModal === 'login' ? (
+                <>
+                  {error && (
+                    <div className="c-auth-error">
+                      <span>⚠ {error}</span>
+                    </div>
+                  )}
+
+                  <div className="c-auth-content">
+                    {/* Google login */}
+                    <div className="c-auth-google">
+                      {loading ? (
+                        <span className="c-auth-loading">Đang đăng nhập...</span>
+                      ) : (
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={() => setError('Đăng nhập Google thất bại')}
+                          useOneTap
+                        />
+                      )}
+                    </div>
+
+                    <div className="c-auth-divider"><span>hoặc</span></div>
+
+                    {/* Username/password login form */}
+                    <form className="c-auth-form" onSubmit={handleLocalLogin}>
+                      <div className="c-auth-field">
+                        <label className="c-auth-label">Tên đăng nhập</label>
+                        <input
+                          className="c-auth-input"
+                          type="text"
+                          placeholder="Username"
+                          value={loginUsername}
+                          onChange={e => setLoginUsername(e.target.value)}
+                          disabled={loading}
+                          autoComplete="username"
+                        />
+                      </div>
+                      <div className="c-auth-field">
+                        <label className="c-auth-label">Mật khẩu</label>
+                        <input
+                          className="c-auth-input"
+                          type="password"
+                          placeholder="••••••••"
+                          value={loginPassword}
+                          onChange={e => setLoginPassword(e.target.value)}
+                          disabled={loading}
+                          autoComplete="current-password"
+                        />
+                      </div>
+                      <button
+                        className="c-btn c-btn--primary c-auth-submit"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+                      </button>
+                    </form>
+
+                    <div className="c-auth-register-link" style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--c-text-dim)' }}>Chưa có tài khoản? </span>
+                      <button
+                        type="button"
+                        className="c-btn-link"
+                        style={{
+                          background: 'none', border: 'none', color: 'var(--c-accent)',
+                          fontWeight: 600, cursor: 'pointer', padding: 0, font: 'inherit',
+                          textDecoration: 'underline'
+                        }}
+                        onClick={() => { setShowModal('register'); setRegError(''); }}
+                      >
+                        Đăng ký ngay
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {regError && (
+                    <div className="c-auth-error" style={{ marginBottom: '16px' }}>
+                      <span>⚠ {regError}</span>
+                    </div>
+                  )}
+                  <form onSubmit={handleRegister} className="c-auth-form">
+                    <div className="c-auth-field">
+                      <label className="c-auth-label">Tên đăng nhập <span style={{ color: 'var(--c-red)' }}>*</span></label>
+                      <input
+                        className="c-auth-input"
+                        type="text"
+                        placeholder="Chỉ dùng chữ, số và gạch dưới"
+                        value={regUsername}
+                        onChange={e => setRegUsername(e.target.value)}
+                        disabled={loading}
+                        autoComplete="username"
+                      />
+                    </div>
+                    
+                    <div className="c-auth-field">
+                      <label className="c-auth-label">Mật khẩu <span style={{ color: 'var(--c-red)' }}>*</span> <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tối thiểu 6 ký tự)</span></label>
+                      <input
+                        className="c-auth-input"
+                        type="password"
+                        placeholder="••••••••"
+                        value={regPassword}
+                        onChange={e => setRegPassword(e.target.value)}
+                        disabled={loading}
+                        autoComplete="new-password"
+                      />
+                    </div>
+
+                    <div className="c-auth-field">
+                      <label className="c-auth-label">Xác nhận mật khẩu <span style={{ color: 'var(--c-red)' }}>*</span></label>
+                      <input
+                        className="c-auth-input"
+                        type="password"
+                        placeholder="••••••••"
+                        value={regPassword2}
+                        onChange={e => setRegPassword2(e.target.value)}
+                        disabled={loading}
+                        autoComplete="new-password"
+                      />
+                    </div>
+
+                    <div className="c-auth-field">
+                      <label className="c-auth-label">Họ tên <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tùy chọn)</span></label>
+                      <input
+                        className="c-auth-input"
+                        type="text"
+                        placeholder="Nguyễn Văn A"
+                        value={regName}
+                        onChange={e => setRegName(e.target.value)}
+                        disabled={loading}
+                        autoComplete="name"
+                      />
+                    </div>
+
+                    <div className="c-auth-field">
+                      <label className="c-auth-label">Email <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tùy chọn)</span></label>
+                      <input
+                        className="c-auth-input"
+                        type="text"
+                        placeholder="example@domain.com"
+                        value={regEmail}
+                        onChange={e => setRegEmail(e.target.value)}
+                        disabled={loading}
+                        autoComplete="email"
+                      />
+                    </div>
+
+                    <button
+                      className="c-btn c-btn--primary c-auth-submit"
+                      type="submit"
+                      disabled={loading}
+                      style={{ marginTop: '8px' }}
+                    >
+                      {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tài khoản'}
+                    </button>
+                  </form>
+                  
+                  <div className="c-auth-register-link" style={{ marginTop: '20px', textAlign: 'center', fontSize: '13px' }}>
+                    <span style={{ color: 'var(--c-text-dim)' }}>Đã có tài khoản? </span>
+                    <button
+                      type="button"
+                      className="c-btn-link"
+                      style={{
+                        background: 'none', border: 'none', color: 'var(--c-accent)',
+                        fontWeight: 600, cursor: 'pointer', padding: 0, font: 'inherit',
+                        textDecoration: 'underline'
+                      }}
+                      onClick={() => { setShowModal('login'); setError(''); }}
+                    >
+                      Đăng nhập ngay
+                    </button>
+                  </div>
+                </>
               )}
-              <form onSubmit={handleRegister} className="c-auth-form">
-                <div className="c-auth-field">
-                  <label className="c-auth-label">Tên đăng nhập <span style={{ color: 'var(--c-red)' }}>*</span></label>
-                  <input
-                    className="c-auth-input"
-                    type="text"
-                    placeholder="Chỉ dùng chữ, số và gạch dưới"
-                    value={regUsername}
-                    onChange={e => setRegUsername(e.target.value)}
-                    disabled={loading}
-                    autoComplete="username"
-                  />
-                </div>
-                
-                <div className="c-auth-field">
-                  <label className="c-auth-label">Mật khẩu <span style={{ color: 'var(--c-red)' }}>*</span> <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tối thiểu 6 ký tự)</span></label>
-                  <input
-                    className="c-auth-input"
-                    type="password"
-                    placeholder="••••••••"
-                    value={regPassword}
-                    onChange={e => setRegPassword(e.target.value)}
-                    disabled={loading}
-                    autoComplete="new-password"
-                  />
-                </div>
-
-                <div className="c-auth-field">
-                  <label className="c-auth-label">Xác nhận mật khẩu <span style={{ color: 'var(--c-red)' }}>*</span></label>
-                  <input
-                    className="c-auth-input"
-                    type="password"
-                    placeholder="••••••••"
-                    value={regPassword2}
-                    onChange={e => setRegPassword2(e.target.value)}
-                    disabled={loading}
-                    autoComplete="new-password"
-                  />
-                </div>
-
-                <div className="c-auth-field">
-                  <label className="c-auth-label">Họ tên <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tùy chọn)</span></label>
-                  <input
-                    className="c-auth-input"
-                    type="text"
-                    placeholder="Nguyễn Văn A"
-                    value={regName}
-                    onChange={e => setRegName(e.target.value)}
-                    disabled={loading}
-                    autoComplete="name"
-                  />
-                </div>
-
-                <div className="c-auth-field">
-                  <label className="c-auth-label">Email <span style={{ color: 'var(--c-text-dim)', fontWeight: 400 }}>(tùy chọn)</span></label>
-                  <input
-                    className="c-auth-input"
-                    type="text"
-                    placeholder="example@domain.com"
-                    value={regEmail}
-                    onChange={e => setRegEmail(e.target.value)}
-                    disabled={loading}
-                    autoComplete="email"
-                  />
-                </div>
-
-                <button
-                  className="c-btn c-btn--primary c-auth-submit"
-                  type="submit"
-                  disabled={loading}
-                  style={{ marginTop: '8px' }}
-                >
-                  {loading ? 'Đang tạo tài khoản...' : 'Đăng ký tài khoản'}
-                </button>
-              </form>
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 }

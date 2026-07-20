@@ -272,7 +272,7 @@ export default function App() {
               <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
             </div>
           </div>
-          <div className="c-header-badges" style={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+          <div className="c-header-badges">
             <span className="c-badge c-badge--blue">MiniLM Semantic</span>
             <span className="c-badge c-badge--purple">LCS · N-gram</span>
             <span className="c-badge c-badge--green">DDGS Search</span>
@@ -285,154 +285,158 @@ export default function App() {
 
       {/* ── Main Layout ── */}
       <main className="c-main">
-        <div className="c-layout">
-          {/* Left panel */}
-          <div className="c-left-panel">
-            <UploadSection
-              onAnalyze={handleAnalyze}
-              isAnalyzing={isAnalyzing}
-              onReset={handleReset}
-              currentPhase={appState.phase}
-              isLoggedIn={isLoggedIn}
-            />
-            <HistoryPanel
-              history={history.filter(h => h.status === 'done')}
-              onSelectEntry={handleSelectHistory}
-              currentJobId={appState.phase === 'done' ? appState.result.job_id : undefined}
-              isLoggedIn={isLoggedIn}
-            />
-          </div>
-
-          {/* Right panel */}
-          <div className="c-right-panel">
-            {appState.phase === 'idle' && (
-              isLoggedIn ? (
-                <DashboardTable
-                  history={history}
-                  onSelectEntry={handleSelectHistory}
-                  onSelectProgress={handleSelectProgress}
-                  onRefresh={loadHistory}
-                />
+        {appState.phase === 'idle' && (
+          <div className="c-workspace-layout">
+            <div className="c-workspace-content">
+              <UploadSection
+                onAnalyze={handleAnalyze}
+                isAnalyzing={isAnalyzing}
+                onReset={handleReset}
+                currentPhase={appState.phase}
+                isLoggedIn={isLoggedIn}
+              />
+              
+              {isLoggedIn ? (
+                <div className="c-workspace-dashboard">
+                  <DashboardTable
+                    history={history}
+                    onSelectEntry={handleSelectHistory}
+                    onSelectProgress={handleSelectProgress}
+                    onRefresh={loadHistory}
+                  />
+                </div>
               ) : (
                 <div className="c-public-intro">
-                  <div className="c-intro-hero" style={{ marginBottom: '24px' }}>
-                    <h1 className="c-intro-title" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--c-text)', marginBottom: '12px' }}>
+                  <div className="c-intro-hero">
+                    <h1 className="c-intro-title">
                       Phát hiện đạo văn tiếng Trung thông minh
                     </h1>
-                    <p className="c-intro-subtitle" style={{ color: 'var(--c-text-dim)', fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>
+                    <p className="c-intro-subtitle">
                       Hệ thống <strong>C-checker</strong> là giải pháp tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng AI (MiniLM) và các thuật toán chuyên sâu.
                     </p>
                   </div>
                   
-                  <div className="c-intro-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🚀</span> Dùng thử miễn phí
+                  <div className="c-intro-grid">
+                    <div className="c-intro-card">
+                      <h3 className="c-intro-card-title c-text-blue">
+                        <span className="c-intro-card-icon">🚀</span> Dùng thử miễn phí
                       </h3>
-                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                      <p className="c-intro-card-desc">
                         Không cần tài khoản, bạn có thể dán đoạn văn bản trực tiếp để kiểm tra tính nguyên bản lên tới <strong>300 ký tự</strong>.
                       </p>
                     </div>
-                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🧠</span> AI ngữ nghĩa sâu
+                    <div className="c-intro-card">
+                      <h3 className="c-intro-card-title c-text-purple">
+                        <span className="c-intro-card-icon">🧠</span> AI ngữ nghĩa sâu
                       </h3>
-                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                      <p className="c-intro-card-desc">
                         Phân tích ngữ cảnh bằng MiniLM kết hợp thuật toán so khớp LCS & N-gram giúp phát hiện các hình thức chỉnh sửa tinh vi.
                       </p>
                     </div>
-                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🌐</span> So khớp Internet
+                    <div className="c-intro-card">
+                      <h3 className="c-intro-card-title c-text-green">
+                        <span className="c-intro-card-icon">🌐</span> So khớp Internet
                       </h3>
-                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                      <p className="c-intro-card-desc">
                         Tìm kiếm và đối chiếu trực tiếp dữ liệu theo thời gian thực trên các kho lưu trữ web để phát hiện nguồn sao chép.
                       </p>
                     </div>
-                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>📂</span> Mở khóa đầy đủ
+                    <div className="c-intro-card">
+                      <h3 className="c-intro-card-title c-text-amber">
+                        <span className="c-intro-card-icon">📂</span> Mở khóa đầy đủ
                       </h3>
-                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                      <p className="c-intro-card-desc">
                         Đăng nhập bằng tài khoản Google để tải lên các tệp <code>.docx</code>, <code>.pdf</code>, <code>.txt</code> và lưu trữ lịch sử kiểm tra.
                       </p>
                     </div>
                   </div>
                   
-                  <div className="c-intro-faq" style={{ background: 'var(--c-bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--c-border)' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '16px', borderBottom: '1px solid var(--c-border)', paddingBottom: '8px' }}>
+                  <div className="c-intro-faq">
+                    <h2 className="c-faq-heading">
                       Các câu hỏi thường gặp (FAQs)
                     </h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                    <div className="c-faq-list">
+                      <div className="c-faq-item">
+                        <h4 className="c-faq-q">
                           Q: Tôi có cần trả phí để sử dụng C-checker không?
                         </h4>
-                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        <p className="c-faq-a">
                           A: Không. C-checker được cung cấp hoàn toàn miễn phí nhằm hỗ trợ tối đa việc nghiên cứu và học thuật.
                         </p>
                       </div>
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                      <div className="c-faq-item">
+                        <h4 className="c-faq-q">
                           Q: Cách thức quét tài liệu lớn hơn 300 ký tự?
                         </h4>
-                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        <p className="c-faq-a">
                           A: Bạn chỉ cần đăng nhập bằng tài khoản Google thông qua nút Đăng nhập ở góc trên cùng bên phải màn hình.
                         </p>
                       </div>
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                      <div className="c-faq-item">
+                        <h4 className="c-faq-q">
                           Q: Dữ liệu của tôi có được bảo mật không?
                         </h4>
-                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        <p className="c-faq-a">
                           A: Chúng tôi cam kết bảo mật nội dung bạn đăng tải. Đối với phiên bản dùng thử của khách, văn bản sẽ không lưu vào cơ sở dữ liệu.
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )
-            )}
+              )}
+            </div>
+          </div>
+        )}
 
-            {appState.phase === 'submitting' && (
-              <div className="c-empty-state">
-                <div className="c-submitting-spinner" />
-                <h2 className="c-empty-title">Đang gửi văn bản...</h2>
-                <p className="c-empty-desc">Kết nối với server phân tích</p>
-              </div>
-            )}
+        {appState.phase === 'submitting' && (
+          <div className="c-workspace-layout c-workspace-layout--center">
+            <div className="c-empty-state">
+              <div className="c-submitting-spinner" />
+              <h2 className="c-empty-title">Đang gửi văn bản...</h2>
+              <p className="c-empty-desc">Kết nối với server phân tích</p>
+            </div>
+          </div>
+        )}
 
-            {appState.phase === 'polling' && (
+        {appState.phase === 'polling' && (
+          <div className="c-workspace-layout c-workspace-layout--center">
+            <div className="c-workspace-content c-workspace-content--state">
               <JobProgress
                 progress={appState.status.progress}
                 currentSentence={appState.status.current_sentence}
                 status={appState.status.status as 'queued' | 'running'}
                 startTime={appState.startTime}
               />
-            )}
+            </div>
+          </div>
+        )}
 
-            {appState.phase === 'done' && (
+        {appState.phase === 'done' && (
+          <div className="c-results-layout">
+            <div className="c-results-container">
               <AnalysisResults
                 result={appState.result}
                 onReset={handleReset}
               />
-            )}
-
-            {appState.phase === 'error' && (
-              <div className="c-error-state">
-                <div className="c-error-icon">❌</div>
-                <h2 className="c-error-title">Đã xảy ra lỗi</h2>
-                <p className="c-error-msg">{appState.message}</p>
-                <p className="c-error-hint">
-                  Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
-                </p>
-                <button className="c-btn c-btn--primary" onClick={handleReset}>
-                  Thử lại
-                </button>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {appState.phase === 'error' && (
+          <div className="c-workspace-layout c-workspace-layout--center">
+            <div className="c-error-state">
+              <div className="c-error-icon">❌</div>
+              <h2 className="c-error-title">Đã xảy ra lỗi</h2>
+              <p className="c-error-msg">{appState.message}</p>
+              <p className="c-error-hint">
+                Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
+              </p>
+              <button className="c-btn c-btn--primary" onClick={handleReset}>
+                Thử lại
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
