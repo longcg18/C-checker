@@ -39,6 +39,7 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
 
   const loadHistory = useCallback(async () => {
+    if (!getToken()) return;
     try {
       const data = await api.getHistory();
       setHistory(data.map((d) => ({
@@ -74,9 +75,12 @@ export default function App() {
   };
 
   const handleAnalyze = useCallback(async (fileName: string, text: string) => {
-    if (!getToken()) {
-      setAppState({ phase: 'error', message: 'Vui lòng đăng nhập trước khi kiểm tra!' });
-      return;
+    const isUserLoggedIn = !!user || !!getToken();
+    if (!isUserLoggedIn) {
+      if (text.length > 300) {
+        setAppState({ phase: 'error', message: 'Vui lòng đăng nhập để kiểm tra văn bản lớn hơn 300 ký tự!' });
+        return;
+      }
     }
 
     setAppState({ phase: 'submitting' });
@@ -121,7 +125,9 @@ export default function App() {
               source.close();
               const result = await api.getResult(job_id);
               setAppState({ phase: 'done', result });
-              loadHistory();
+              if (!!getToken()) {
+                loadHistory();
+              }
             } else if (data.status === 'failed') {
               source.close();
               setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
@@ -200,7 +206,9 @@ export default function App() {
           source.close();
           const result = await api.getResult(job_id);
           setAppState({ phase: 'done', result });
-          loadHistory();
+          if (!!getToken()) {
+            loadHistory();
+          }
         } else if (data.status === 'failed') {
           source.close();
           setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
@@ -245,69 +253,7 @@ export default function App() {
   }, []);
 
   const isAnalyzing = appState.phase === 'submitting' || appState.phase === 'polling';
-
-  if (!user && !getToken()) {
-    return (
-      <div className="c-landing">
-        {/* Left: Advertisement */}
-        <div className="c-landing-left">
-          <h1 className="c-landing-title">
-            Phát hiện đạo văn tiếng Trung <span>chính xác &amp; toàn diện</span>
-          </h1>
-          <p className="c-landing-desc">
-            Hệ thống <strong>C-checker</strong> là giải pháp tiên phong trong việc phát hiện đạo văn
-            văn bản tiếng Trung, kết hợp sử dụng AI (MiniLM) và các công cụ tìm kiếm online để rà soát hàng ngàn nguồn tài liệu.
-            Hãy đảm bảo bài viết của bạn là duy nhất!
-          </p>
-          <div className="c-landing-features">
-            <div className="c-landing-feature">
-              <div className="c-landing-feature-icon c-landing-feature-icon--blue">🚀</div>
-              <div>
-                <div className="c-landing-feature-title">Multiple File Types</div>
-                <p className="c-landing-feature-desc">Xử lý các tài liệu định dạng txt, docx, pdf và phân tích hàng trăm câu, hàng ngàn kí tự.</p>
-              </div>
-            </div>
-            <div className="c-landing-feature">
-              <div className="c-landing-feature-icon c-landing-feature-icon--purple">🧠</div>
-              <div>
-                <div className="c-landing-feature-title">AI Ngữ Nghĩa sâu</div>
-                <p className="c-landing-feature-desc">Không chỉ so khớp từ ngữ, C-checker phân tích cấu trúc và ý nghĩa tiềm ẩn, đảm bảo không một phần nào bị bỏ sót.</p>
-              </div>
-            </div>
-            <div className="c-landing-feature">
-              <div className="c-landing-feature-icon c-landing-feature-icon--green">🌐</div>
-              <div>
-                <div className="c-landing-feature-title">Quét đa nền tảng</div>
-                <p className="c-landing-feature-desc">Tự động tra cứu nội dung trên Internet, đa dạng nguồn để đối chiếu.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Login */}
-        <div className="c-landing-right">
-          <div className="c-login-box">
-            <div className="c-login-box-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" strokeWidth="2" width="68" height="68" style={{ margin: '0 auto', display: 'block' }}>
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-            </div>
-            <h2 className="c-login-box-title">Tham gia C-checker</h2>
-            <p className="c-login-box-desc">
-              C-checker hiện tại đang hoàn toàn miễn phí
-            </p>
-            <div className="c-login-box-google">
-              <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
-            </div>
-            <p className="c-login-box-terms">
-              Đăng nhập để kiểm tra tài liệu ngay.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isLoggedIn = !!user || !!getToken();
 
   return (
     <div className="c-app">
@@ -347,23 +293,105 @@ export default function App() {
               isAnalyzing={isAnalyzing}
               onReset={handleReset}
               currentPhase={appState.phase}
+              isLoggedIn={isLoggedIn}
             />
             <HistoryPanel
               history={history.filter(h => h.status === 'done')}
               onSelectEntry={handleSelectHistory}
               currentJobId={appState.phase === 'done' ? appState.result.job_id : undefined}
+              isLoggedIn={isLoggedIn}
             />
           </div>
 
           {/* Right panel */}
           <div className="c-right-panel">
             {appState.phase === 'idle' && (
-              <DashboardTable
-                history={history}
-                onSelectEntry={handleSelectHistory}
-                onSelectProgress={handleSelectProgress}
-                onRefresh={loadHistory}
-              />
+              isLoggedIn ? (
+                <DashboardTable
+                  history={history}
+                  onSelectEntry={handleSelectHistory}
+                  onSelectProgress={handleSelectProgress}
+                  onRefresh={loadHistory}
+                />
+              ) : (
+                <div className="c-public-intro">
+                  <div className="c-intro-hero" style={{ marginBottom: '24px' }}>
+                    <h1 className="c-intro-title" style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--c-text)', marginBottom: '12px' }}>
+                      Phát hiện đạo văn tiếng Trung thông minh
+                    </h1>
+                    <p className="c-intro-subtitle" style={{ color: 'var(--c-text-dim)', fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>
+                      Hệ thống <strong>C-checker</strong> là giải pháp tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng AI (MiniLM) và các thuật toán chuyên sâu.
+                    </p>
+                  </div>
+                  
+                  <div className="c-intro-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>🚀</span> Dùng thử miễn phí
+                      </h3>
+                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        Không cần tài khoản, bạn có thể dán đoạn văn bản trực tiếp để kiểm tra tính nguyên bản lên tới <strong>300 ký tự</strong>.
+                      </p>
+                    </div>
+                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>🧠</span> AI ngữ nghĩa sâu
+                      </h3>
+                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        Phân tích ngữ cảnh bằng MiniLM kết hợp thuật toán so khớp LCS & N-gram giúp phát hiện các hình thức chỉnh sửa tinh vi.
+                      </p>
+                    </div>
+                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>🌐</span> So khớp Internet
+                      </h3>
+                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        Tìm kiếm và đối chiếu trực tiếp dữ liệu theo thời gian thực trên các kho lưu trữ web để phát hiện nguồn sao chép.
+                      </p>
+                    </div>
+                    <div className="c-intro-card" style={{ background: 'var(--c-bg-card)', padding: '16px', borderRadius: '12px', border: '1px solid var(--c-border)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--c-accent)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>📂</span> Mở khóa đầy đủ
+                      </h3>
+                      <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                        Đăng nhập bằng tài khoản Google để tải lên các tệp <code>.docx</code>, <code>.pdf</code>, <code>.txt</code> và lưu trữ lịch sử kiểm tra.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="c-intro-faq" style={{ background: 'var(--c-bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--c-border)' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '16px', borderBottom: '1px solid var(--c-border)', paddingBottom: '8px' }}>
+                      Các câu hỏi thường gặp (FAQs)
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                          Q: Tôi có cần trả phí để sử dụng C-checker không?
+                        </h4>
+                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                          A: Không. C-checker được cung cấp hoàn toàn miễn phí nhằm hỗ trợ tối đa việc nghiên cứu và học thuật.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                          Q: Cách thức quét tài liệu lớn hơn 300 ký tự?
+                        </h4>
+                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                          A: Bạn chỉ cần đăng nhập bằng tài khoản Google thông qua nút Đăng nhập ở góc trên cùng bên phải màn hình.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>
+                          Q: Dữ liệu của tôi có được bảo mật không?
+                        </h4>
+                        <p style={{ color: 'var(--c-text-dim)', fontSize: '13px', lineHeight: '1.5' }}>
+                          A: Chúng tôi cam kết bảo mật nội dung bạn đăng tải. Đối với phiên bản dùng thử của khách, văn bản sẽ không lưu vào cơ sở dữ liệu.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
             )}
 
             {appState.phase === 'submitting' && (

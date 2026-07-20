@@ -10,9 +10,10 @@ interface UploadSectionProps {
   isAnalyzing: boolean;
   onReset: () => void;
   currentPhase: string;
+  isLoggedIn?: boolean;
 }
 
-export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }: UploadSectionProps) {
+export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase, isLoggedIn = false }: UploadSectionProps) {
   const [dragActive, setDragActive] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [fileName, setFileName] = useState('');
@@ -24,6 +25,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
     (text.match(/[\u4e00-\u9fff]/g) || []).length;
 
   const hasChineseText = chineseCharCount(textInput) > 5;
+  const isTrialExceeded = !isLoggedIn && textInput.length > 300;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -78,6 +80,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
 
   const handleAnalyze = () => {
     if (textInput.trim() && hasChineseText) {
+      if (isTrialExceeded) return;
       onAnalyze(fileName || '手动输入', textInput);
     }
   };
@@ -105,7 +108,9 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
         </div>
         <div>
           <h2 className="c-upload-title">Kiểm tra văn bản</h2>
-          <p className="c-upload-sub">Nhập văn bản tiếng Trung để phân tích</p>
+          <p className="c-upload-sub">
+            {isLoggedIn ? 'Nhập văn bản tiếng Trung để phân tích' : 'Dùng thử miễn phí giới hạn 300 ký tự'}
+          </p>
         </div>
       </div>
 
@@ -136,30 +141,42 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
 
       {/* Upload area */}
       {mode === 'upload' && (
-        <div
-          className={`c-dropzone ${dragActive ? 'c-dropzone--active' : ''}`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="c-hidden"
-            accept=".txt,.pdf,.docx"
-            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-          />
-          <div className="c-dropzone-icon">
-            <svg viewBox="0 0 48 48" fill="none">
-              <path d="M24 32V16M16 24l8-8 8 8" stroke="var(--c-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 36v2a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-2" stroke="var(--c-text-dim)" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+        isLoggedIn ? (
+          <div
+            className={`c-dropzone ${dragActive ? 'c-dropzone--active' : ''}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="c-hidden"
+              accept=".txt,.pdf,.docx"
+              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+            />
+            <div className="c-dropzone-icon">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path d="M24 32V16M16 24l8-8 8 8" stroke="var(--c-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M8 36v2a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-2" stroke="var(--c-text-dim)" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p className="c-dropzone-text">Kéo thả file hoặc click để chọn</p>
+            <p className="c-dropzone-hint">Hỗ trợ .txt, .pdf, .docx có nội dung tiếng Trung</p>
           </div>
-          <p className="c-dropzone-text">Kéo thả file hoặc click để chọn</p>
-          <p className="c-dropzone-hint">Hỗ trợ .txt, .pdf, .docx có nội dung tiếng Trung</p>
-        </div>
+        ) : (
+          <div className="c-dropzone" style={{ cursor: 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 16px', borderStyle: 'dashed', borderColor: 'var(--c-border)', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.02)' }}>
+            <div className="c-dropzone-icon" style={{ opacity: 0.7, marginBottom: '8px', fontSize: '24px' }}>
+              🔒
+            </div>
+            <p className="c-dropzone-text" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--c-text)', marginBottom: '4px' }}>Tính năng tải file đã bị khóa</p>
+            <p className="c-dropzone-hint" style={{ textAlign: 'center', fontSize: '11px', color: 'var(--c-text-dim)', maxWidth: '280px', margin: '0 auto' }}>
+              Vui lòng đăng nhập ở góc trên cùng bên phải để tải file tài liệu (.docx, .pdf, .txt).
+            </p>
+          </div>
+        )
       )}
 
       {/* Text area */}
@@ -177,7 +194,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
 
       {/* Stats bar */}
       {textInput && !isParsing && (
-        <div className="c-stats-bar">
+        <div className="c-stats-bar" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <div className="c-stat-item">
             <span className="c-stat-num">{chineseCharCount(textInput).toLocaleString()}</span>
             <span className="c-stat-label">Hán tự</span>
@@ -198,6 +215,11 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
           {!hasChineseText && textInput.length > 0 && (
             <div className="c-warn-badge">⚠ Cần văn bản tiếng Trung</div>
           )}
+          {isTrialExceeded && (
+            <div className="c-warn-badge" style={{ color: 'var(--c-red)', background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+              ⚠ Vượt quá 300 ký tự dùng thử. Vui lòng đăng nhập để tiếp tục!
+            </div>
+          )}
         </div>
       )}
 
@@ -212,7 +234,7 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase }:
           id="btn-analyze"
           className={`c-btn c-btn--primary c-btn--full ${isAnalyzing || isParsing ? 'c-btn--loading' : ''}`}
           onClick={handleAnalyze}
-          disabled={!textInput.trim() || !hasChineseText || isAnalyzing || isParsing}
+          disabled={!textInput.trim() || !hasChineseText || isAnalyzing || isParsing || isTrialExceeded}
         >
           {isAnalyzing ? (
             <>

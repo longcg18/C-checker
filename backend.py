@@ -893,6 +893,21 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
     except Exception:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
+def get_current_user_optional(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = request.query_params.get("token")
+    if not token and credentials:
+        token = credentials.credentials
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        return get_user_by_id(user_id)
+    except Exception:
+        return None
+
 @app.post("/login")
 def login(req: LoginRequest):
     try:
@@ -1067,7 +1082,27 @@ def get_history(current_user: User = Depends(get_current_user)):
     return history
 
 @app.post("/check", response_model=dict, status_code=202)
-def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user)):
+def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: Optional[User] = Depends(get_current_user_optional)):
+    if not current_user:
+        # Khách dùng thử giới hạn 300 ký tự
+        if len(req.text) > 300:
+            raise HTTPException(status_code=400, detail="Vui lòng đăng nhập để kiểm tra văn bản lớn hơn 300 ký tự.")
+        
+        guest_user = get_user_by_username("guest")
+        if not guest_user:
+            try:
+                guest_user = create_local_user(
+                    username="guest",
+                    password_hash=hash_password("guest_c_checker_2026"),
+                    email="guest@c-checker.io.vn",
+                    name="Guest User"
+                )
+            except Exception as e:
+                guest_user = get_user_by_username("guest")
+                if not guest_user:
+                    raise HTTPException(status_code=500, detail=f"Không thể khởi tạo tài khoản khách: {e}")
+        current_user = guest_user
+
     job_id = str(uuid.uuid4())
     JOBS[job_id] = {
         "status": "queued",
@@ -1135,7 +1170,7 @@ def get_result(job_id: str):
     }
 
 @app.get("/stream/{job_id}")
-async def stream_status(job_id: str, current_user: User = Depends(get_current_user)):
+async def stream_status(job_id: str, current_user: Optional[User] = Depends(get_current_user_optional)):
     async def event_generator():
         last_sent = None
         idle_count = 0

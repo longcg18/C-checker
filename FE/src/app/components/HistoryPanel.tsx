@@ -4,6 +4,7 @@ interface HistoryPanelProps {
   history: HistoryEntry[];
   onSelectEntry: (entry: HistoryEntry) => void;
   currentJobId?: string;
+  isLoggedIn?: boolean;
 }
 
 const VERDICT_STYLE = {
@@ -12,7 +13,24 @@ const VERDICT_STYLE = {
   LOW: { color: 'var(--c-green)', label: 'THẤP', dot: '#44c98a' },
 };
 
-export function HistoryPanel({ history, onSelectEntry, currentJobId }: HistoryPanelProps) {
+export function HistoryPanel({ history, onSelectEntry, currentJobId, isLoggedIn = false }: HistoryPanelProps) {
+  if (!isLoggedIn) {
+    return (
+      <div className="c-history-panel" style={{ opacity: 0.85 }}>
+        <div className="c-history-header">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" width="14" height="14">
+            <circle cx="8" cy="8" r="6" />
+            <path d="M8 5v3l2 2" strokeLinecap="round" />
+          </svg>
+          Lịch sử kiểm tra
+        </div>
+        <div style={{ padding: '16px 12px', textAlign: 'center', fontSize: '12px', color: 'var(--c-text-dim)' }}>
+          🔒 Đăng nhập để lưu lịch sử kiểm tra.
+        </div>
+      </div>
+    );
+  }
+
   if (history.length === 0) return null;
 
   return (
