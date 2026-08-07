@@ -1589,6 +1589,29 @@ body {
 
   .c-verdict-banner {
     flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .c-verdict-icon {
+    font-size: 22px;
+  }
+
+  .c-verdict-label {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+
+  .c-verdict-text {
+    font-size: 13px;
+  }
+
+  .c-verdict-score-num {
+    font-size: 26px;
+  }
+
+  .c-verdict-score-label {
+    font-size: 10px;
   }
 
   .c-stats-grid {
