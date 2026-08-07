@@ -66,10 +66,15 @@ CONFIG = {
     # Search
     "max_results_per_query": 4,
     "search_window_sizes": [5],
-    "step": 1,
+    "step": 3,
     "delay_between_requests": 0.3,
     "fetch_timeout": 10,
     "max_page_length": 2000,
+
+    # Giới hạn khối lượng tìm kiếm/tải trang (tăng tốc độ, tránh DDGS ban IP)
+    "max_queries_per_sentence": 6,
+    "max_fetch_candidates": 8,
+    "page_cache_size": 200,
 
     # Scoring thresholds
     "lcs_threshold": 0.12,
@@ -133,6 +138,7 @@ _init_jieba()
 # ─── IN-MEMORY JOB STORE ───────────────────────────────────────────────────
 JOBS: Dict[str, Dict[str, Any]] = {}
 SEARCH_CACHE: Dict[str, list] = {}
+PAGE_CACHE: Dict[str, str] = {}  # url → text đã tải, tránh fetch lại URL trùng
 
 # ─── LAZY MODEL LOADER ─────────────────────────────────────────────────────
 _semantic_model: Optional[SentenceTransformer] = None
@@ -197,7 +203,7 @@ def normalize_url(url: str) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def generate_queries(tokens: List[str]) -> List[str]:
-    """Sliding window qua token list để tạo query đa dạng."""
+    """Sliding window qua token list để tạo query đa dạng, giới hạn số lượng."""
     queries: set = set()
     if not tokens:
         return []
@@ -209,7 +215,13 @@ def generate_queries(tokens: List[str]) -> List[str]:
             continue
         for i in range(0, len(tokens) - size + 1, CONFIG["step"]):
             queries.add(" ".join(tokens[i:i + size]))
-    return list(queries)
+    result = list(queries)
+    max_q = CONFIG.get("max_queries_per_sentence", 6)
+    if len(result) > max_q:
+        # Lấy đều khắp câu (đầu–giữa–cuối) thay vì chỉ chăm phần đầu
+        gap = len(result) / max_q
+        result = [result[int(i * gap)] for i in range(max_q)]
+    return result
 
 
 def search_query(query: str, ddgs: DDGS) -> List[Dict]:
@@ -231,8 +243,18 @@ def search_query(query: str, ddgs: DDGS) -> List[Dict]:
     return results
 
 
+def _trim_page_cache():
+    """Giữ page cache có giới hạn để không phình bộ nhớ mãi."""
+    limit = CONFIG.get("page_cache_size", 200)
+    if len(PAGE_CACHE) > limit:
+        PAGE_CACHE.clear()
+
+
 def fetch_page(url: str) -> str:
-    """Tải trang, dùng trafilatura rồi fallback BeautifulSoup."""
+    """Tải trang (có cache theo URL), dùng trafilatura rồi fallback BeautifulSoup."""
+    if url in PAGE_CACHE:
+        return PAGE_CACHE[url]
+
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -247,13 +269,19 @@ def fetch_page(url: str) -> str:
             import trafilatura
             main = trafilatura.extract(resp.text, include_comments=False, include_tables=False)
             if main and len(main) > 200:
-                return clean_text(main)[: CONFIG["max_page_length"]]
+                text = clean_text(main)[: CONFIG["max_page_length"]]
+                PAGE_CACHE[url] = text
+                _trim_page_cache()
+                return text
         except ImportError:
             pass
         soup = BeautifulSoup(resp.text, "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
-        return clean_text(soup.get_text(separator=" "))[: CONFIG["max_page_length"]]
+        text = clean_text(soup.get_text(separator=" "))[: CONFIG["max_page_length"]]
+        PAGE_CACHE[url] = text
+        _trim_page_cache()
+        return text
     except Exception:
         return ""
 
@@ -411,14 +439,22 @@ def analyze_sentence(sentence: str, ddgs: DDGS) -> Tuple[List[Dict], float]:
         return [], 0.0
 
     queries = generate_queries(sentence_tokens)
-    
-    # Thu thập tất cả search results trước
+
+    # Thu thập search results, đếm số query trúng từng URL
     all_results: Dict[str, Dict] = {}  # url_key → result
+    url_hits: Dict[str, int] = {}
     for q in queries:
         for r in search_query(q, ddgs):
             url = normalize_url(r.get("href", ""))
-            if url and url not in all_results:
-                all_results[url] = r
+            if url:
+                all_results.setdefault(url, r)
+                url_hits[url] = url_hits.get(url, 0) + 1
+
+    # Chỉ fetch top N URL được nhiều query trúng nhất (đủ để lọc candidate tốt)
+    max_fetch = CONFIG.get("max_fetch_candidates", 8)
+    if len(all_results) > max_fetch:
+        top_urls = sorted(url_hits, key=url_hits.get, reverse=True)[:max_fetch]
+        all_results = {u: all_results[u] for u in top_urls}
 
     # Fetch song song
     def fetch_and_score(url_key, r):
