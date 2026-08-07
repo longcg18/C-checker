@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api, JobStatus, JobResult, getToken } from './lib/api';
+import { useJobStream } from './lib/useJobStream';
 import { UploadSection } from './components/UploadSection';
 import { AnalysisResults } from './components/AnalysisResults';
-import { HistoryPanel } from './components/HistoryPanel';
 import { JobProgress } from './components/JobProgress';
 import { Login } from './components/Login';
 import { DashboardTable } from './components/DashboardTable';
@@ -61,6 +61,57 @@ export default function App() {
     }
   }, [loadHistory]);
 
+  // Follow the currently-polling job via SSE. The hook owns the EventSource
+  // lifecycle (auto-reconnect + cleanup), and every callback receives the
+  // originating jobId so we can ignore events from a superseded connection.
+  const pollingJobId = appState.phase === 'polling' ? appState.job_id : null;
+
+  useJobStream({
+    jobId: pollingJobId,
+    onStatus: (jobId, data) => {
+      setAppState((prev) =>
+        prev.phase === 'polling' && prev.job_id === jobId
+          ? { ...prev, status: { ...prev.status, ...data } }
+          : prev
+      );
+    },
+    onDone: async (jobId) => {
+      let result: JobResult;
+      try {
+        result = await api.getResult(jobId);
+      } catch (e) {
+        setAppState((prev) =>
+          prev.phase === 'polling' && prev.job_id === jobId
+            ? { phase: 'error', message: e instanceof Error ? e.message : String(e) }
+            : prev
+        );
+        return;
+      }
+      setAppState((prev) =>
+        prev.phase === 'polling' && prev.job_id === jobId
+          ? { phase: 'done', result }
+          : prev
+      );
+      if (getToken()) {
+        loadHistory();
+      }
+    },
+    onFailed: (jobId, message) => {
+      setAppState((prev) =>
+        prev.phase === 'polling' && prev.job_id === jobId
+          ? { phase: 'error', message }
+          : prev
+      );
+    },
+    onNotFound: (jobId) => {
+      setAppState((prev) =>
+        prev.phase === 'polling' && prev.job_id === jobId
+          ? { phase: 'error', message: 'Không tìm thấy Job' }
+          : prev
+      );
+    },
+  });
+
   const handleLogin = (userData: any) => {
     setUser(userData);
     localStorage.setItem('c_checker_user', JSON.stringify(userData));
@@ -102,67 +153,12 @@ export default function App() {
         startTime
       });
 
-      // 2. SSE với auto-reconnect
-      let retryCount = 0;
-      const MAX_RETRIES = 5;
-      let source: EventSource;
-
-      const connect = () => {
-        source = new EventSource(api.streamUrl(job_id));
-
-        source.onmessage = async (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            retryCount = 0; // reset khi nhận được data thành công
-
-            if (data.status === 'not_found') {
-              source.close();
-              setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
-              return;
-            }
-
-            if (data.status === 'done') {
-              source.close();
-              const result = await api.getResult(job_id);
-              setAppState({ phase: 'done', result });
-              if (!!getToken()) {
-                loadHistory();
-              }
-            } else if (data.status === 'failed') {
-              source.close();
-              setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
-            } else {
-              setAppState((prev) =>
-                prev.phase === 'polling'
-                  ? { ...prev, status: { ...prev.status, ...data } }
-                  : prev
-              );
-            }
-          } catch (e) {
-            console.error("Error parsing SSE data", e);
-          }
-        };
-
-        source.onerror = () => {
-          source.close();
-          retryCount++;
-
-          if (retryCount <= MAX_RETRIES) {
-            console.warn(`SSE mất kết nối, đang thử lại lần ${retryCount}/${MAX_RETRIES}...`);
-            setTimeout(connect, 2000); // tự nối lại sau 2s
-          } else {
-            setAppState({ phase: 'error', message: 'Mất kết nối tới server sau nhiều lần thử lại!' });
-          }
-        };
-      };
-
-      connect();
-
+      // Trạng thái polling được theo dõi bởi useJobStream bên trên
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setAppState({ phase: 'error', message: msg });
     }
-  }, [loadHistory]);
+  }, [user]);
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
     if (!entry.result) return;
     setAppState({
@@ -174,7 +170,7 @@ export default function App() {
     });
   }, []);
 
-  const handleSelectProgress = useCallback((job_id: string, fileName: string, startTimeMs: number) => {
+  const handleSelectProgress = useCallback((job_id: string, _fileName: string, startTimeMs: number) => {
     setAppState({
       phase: 'polling',
       job_id,
@@ -189,47 +185,8 @@ export default function App() {
       },
       startTime: startTimeMs
     });
-
-    const source = new EventSource(api.streamUrl(job_id));
-
-    source.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        if (data.status === 'not_found') {
-          source.close();
-          setAppState({ phase: 'error', message: 'Không tìm thấy Job' });
-          return;
-        }
-
-        if (data.status === 'done') {
-          source.close();
-          const result = await api.getResult(job_id);
-          setAppState({ phase: 'done', result });
-          if (!!getToken()) {
-            loadHistory();
-          }
-        } else if (data.status === 'failed') {
-          source.close();
-          setAppState({ phase: 'error', message: data.error || 'Xử lý thất bại' });
-        } else {
-          setAppState((prev) =>
-            prev.phase === 'polling'
-              ? { ...prev, status: { ...prev.status, ...data } }
-              : prev
-          );
-        }
-      } catch (e) {
-        console.error("Error parsing SSE data", e);
-      }
-    };
-
-    source.onerror = (err) => {
-      console.error("SSE Error", err);
-      source.close();
-      setAppState({ phase: 'error', message: 'Mất kết nối tới server!' });
-    };
-  }, [loadHistory]);
+    // Streaming được theo dõi bởi useJobStream bên trên
+  }, []);
 
   // Auto-poll history if there are pending jobs (queued or running)
   useEffect(() => {

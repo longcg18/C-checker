@@ -1145,6 +1145,7 @@ body {
 /* ── Result actions ──────────────────────────────────────────────── */
 .c-result-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -1592,6 +1593,18 @@ body {
 
   .c-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Trên màn hình hẹp, xếp các nút thao tác kết quả thành cột
+     full-width để không bị tràn/clip (nút "Kiểm tra mới" trước đây
+     bị đẩy ra ngoài mép và ẩn hẳn). */
+  .c-result-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .c-result-actions .c-btn {
+    width: 100%;
   }
 }
 

@@ -7,7 +7,7 @@ interface JobProgressProps {
   startTime: number;
 }
 
-export function JobProgress({ progress, status, startTime }: JobProgressProps) {
+export function JobProgress({ progress, status, startTime, currentSentence }: JobProgressProps) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -58,6 +58,14 @@ export function JobProgress({ progress, status, startTime }: JobProgressProps) {
           />
         </div>
       </div>
+
+      {/* Current sentence being scanned */}
+      {currentSentence && (
+        <div className="c-current-sentence">
+          <div className="c-sentence-label">Đang quét câu</div>
+          <div className="c-sentence-text">{currentSentence}</div>
+        </div>
+      )}
 
       {/* Info pills */}
       <div className="c-info-pills">

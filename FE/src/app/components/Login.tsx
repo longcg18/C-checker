@@ -65,9 +65,8 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
       setLoginUsername('');
       setLoginPassword('');
     } catch (err: any) {
-      const msg = err.message || '';
-      const match = msg.match(/"detail"\s*:\s*"([^"]+)"/);
-      setError(match ? match[1] : 'Tên đăng nhập hoặc mật khẩu không đúng');
+      // apiFetch đã trích `detail` từ JSON lỗi của backend
+      setError(err?.message || 'Tên đăng nhập hoặc mật khẩu không đúng');
     } finally {
       setLoading(false);
     }
@@ -125,9 +124,8 @@ export function Login({ onLogin, onLogout, currentUser }: LoginProps) {
       setRegName('');
       setRegEmail('');
     } catch (err: any) {
-      const msg = err.message || '';
-      const match = msg.match(/"detail"\s*:\s*"([^"]+)"/);
-      setRegError(match ? match[1] : 'Đăng ký thất bại, vui lòng thử lại');
+      // apiFetch đã trích `detail` từ JSON lỗi của backend
+      setRegError(err?.message || 'Đăng ký thất bại, vui lòng thử lại');
     } finally {
       setLoading(false);
     }

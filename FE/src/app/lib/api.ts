@@ -89,8 +89,20 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok && res.status !== 202) {
-    const body = await res.text();
-    throw new Error(`API error ${res.status}: ${body}`);
+    // FastAPI errors come back as {"detail": "..."} (or {"detail": [...]} for 422).
+    // Extract a human-readable message instead of dumping the raw body.
+    const raw = await res.text();
+    let message = `API error ${res.status}`;
+    try {
+      const data = JSON.parse(raw);
+      if (data && typeof data.detail === 'string') message = data.detail;
+      else if (data && typeof data.detail === 'object') message = JSON.stringify(data.detail);
+      else if (data && typeof data.message === 'string') message = data.message;
+      else if (raw) message = raw;
+    } catch {
+      if (raw) message = raw;
+    }
+    throw new Error(message);
   }
   return res.json() as Promise<T>;
 }

@@ -6,6 +6,36 @@ interface AnalysisResultsProps {
   onReset: () => void;
 }
 
+// Escape HTML special chars so attacker-controlled text renders as text, never markup.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Backend returns `highlighted` as raw HTML built from the user's own text
+ * (e.g. `text <mark>token</mark> text`), and it does NOT escape the rest of the
+ * content. We cannot trust it, so we rebuild the string: only `<mark>…</mark>`
+ * survives, everything else (including any injected <script>/<img>) is escaped.
+ */
+function sanitizeHighlighted(html: string): string {
+  if (!html) return '';
+  return html
+    .split(/<\/mark>/i)
+    .map((part) => {
+      const openIdx = part.lastIndexOf('<mark>');
+      if (openIdx === -1) return escapeHtml(part);
+      const before = escapeHtml(part.slice(0, openIdx));
+      const inner = escapeHtml(part.slice(openIdx + '<mark>'.length));
+      return `${before}<mark>${inner}</mark>`;
+    })
+    .join('');
+}
+
 const VERDICT_CONFIG = {
   HIGH: {
     label: 'CAO — Nguy cơ đạo văn cao',
@@ -220,7 +250,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
                   <div className="c-detail-label">🔆 Từ khớp (highlight)</div>
                   <div
                     className="c-detail-content c-highlighted"
-                    dangerouslySetInnerHTML={{ __html: item.highlighted }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHighlighted(item.highlighted) }}
                   />
                 </div>
               )}
