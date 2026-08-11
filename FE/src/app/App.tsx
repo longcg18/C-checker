@@ -24,17 +24,32 @@ export interface HistoryEntry {
   result?: JobResult;
 }
 
-type AppState =
-  | { phase: 'idle' }
-  | { phase: 'submitting' }
-  | { phase: 'polling'; job_id: string; status: JobStatus; startTime: number }
-  | { phase: 'done'; result: JobResult }
-  | { phase: 'error'; message: string };
+type ViewMode = 'workspace' | 'progress' | 'result' | 'error';
+
+interface ActiveJob {
+  job_id: string;
+  fileName: string;
+  startTime: number;
+  status: JobStatus;
+}
+
+interface ToastState {
+  id: string;
+  type: 'success' | 'error';
+  title: string;
+  desc?: string;
+  result?: JobResult;
+}
 
 // ── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [appState, setAppState] = useState<AppState>({ phase: 'idle' });
+  const [viewMode, setViewMode] = useState<ViewMode>('workspace');
+  const [activeJob, setActiveJob] = useState<ActiveJob | null>(null);
+  const [currentResult, setCurrentResult] = useState<JobResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [user, setUser] = useState<any>(null);
 
@@ -61,16 +76,12 @@ export default function App() {
     }
   }, [loadHistory]);
 
-  // Follow the currently-polling job via SSE. The hook owns the EventSource
-  // lifecycle (auto-reconnect + cleanup), and every callback receives the
-  // originating jobId so we can ignore events from a superseded connection.
-  const pollingJobId = appState.phase === 'polling' ? appState.job_id : null;
-
+  // Stream active job via SSE in background regardless of current viewMode
   useJobStream({
-    jobId: pollingJobId,
+    jobId: activeJob ? activeJob.job_id : null,
     onStatus: (jobId, data) => {
-      setAppState((prev) =>
-        prev.phase === 'polling' && prev.job_id === jobId
+      setActiveJob((prev) =>
+        prev && prev.job_id === jobId
           ? { ...prev, status: { ...prev.status, ...data } }
           : prev
       );
@@ -80,35 +91,64 @@ export default function App() {
       try {
         result = await api.getResult(jobId);
       } catch (e) {
-        setAppState((prev) =>
-          prev.phase === 'polling' && prev.job_id === jobId
-            ? { phase: 'error', message: e instanceof Error ? e.message : String(e) }
-            : prev
-        );
+        const msg = e instanceof Error ? e.message : String(e);
+        setViewMode((currentView) => {
+          if (currentView === 'progress') {
+            setErrorMessage(msg);
+            return 'error';
+          }
+          return currentView;
+        });
+        setToast({ id: String(Date.now()), type: 'error', title: 'Lỗi lấy kết quả', desc: msg });
+        setActiveJob(null);
         return;
       }
-      setAppState((prev) =>
-        prev.phase === 'polling' && prev.job_id === jobId
-          ? { phase: 'done', result }
-          : prev
-      );
+
       if (getToken()) {
         loadHistory();
       }
+
+      const completedFileName = activeJob?.fileName || 'văn bản';
+      setActiveJob(null);
+
+      setViewMode((currentView) => {
+        if (currentView === 'progress') {
+          setCurrentResult({ ...result, job_id: jobId });
+          return 'result';
+        } else {
+          setToast({
+            id: String(Date.now()),
+            type: 'success',
+            title: 'Hoàn tất kiểm tra đạo văn',
+            desc: `Tài liệu "${completedFileName}" đã phân tích xong.`,
+            result: { ...result, job_id: jobId }
+          });
+          return currentView;
+        }
+      });
     },
     onFailed: (jobId, message) => {
-      setAppState((prev) =>
-        prev.phase === 'polling' && prev.job_id === jobId
-          ? { phase: 'error', message }
-          : prev
-      );
+      setViewMode((currentView) => {
+        if (currentView === 'progress') {
+          setErrorMessage(message);
+          return 'error';
+        }
+        return currentView;
+      });
+      setToast({ id: String(Date.now()), type: 'error', title: 'Phân tích thất bại', desc: message });
+      setActiveJob(null);
     },
     onNotFound: (jobId) => {
-      setAppState((prev) =>
-        prev.phase === 'polling' && prev.job_id === jobId
-          ? { phase: 'error', message: 'Không tìm thấy Job' }
-          : prev
-      );
+      const msg = `Không tìm thấy Job ${jobId}`;
+      setViewMode((currentView) => {
+        if (currentView === 'progress') {
+          setErrorMessage(msg);
+          return 'error';
+        }
+        return currentView;
+      });
+      setToast({ id: String(Date.now()), type: 'error', title: 'Lỗi hệ thống', desc: msg });
+      setActiveJob(null);
     },
   });
 
@@ -122,58 +162,66 @@ export default function App() {
     setUser(null);
     localStorage.removeItem('c_checker_user');
     setHistory([]);
-    setAppState({ phase: 'idle' });
+    setViewMode('workspace');
+    setActiveJob(null);
+    setCurrentResult(null);
   };
 
   const handleAnalyze = useCallback(async (fileName: string, text: string) => {
     const isUserLoggedIn = !!user || !!getToken();
     if (!isUserLoggedIn) {
       if (text.length > 300) {
-        setAppState({ phase: 'error', message: 'Vui lòng đăng nhập để kiểm tra văn bản lớn hơn 300 ký tự!' });
+        setErrorMessage('Vui lòng đăng nhập để kiểm tra văn bản lớn hơn 300 ký tự!');
+        setViewMode('error');
         return;
       }
     }
 
-    setAppState({ phase: 'submitting' });
+    setIsSubmitting(true);
+    setViewMode('progress');
 
     try {
-      // 1. Submit job
       const submitRes = await api.submitCheck(text, fileName);
       const { job_id } = submitRes;
       const startTime = Date.now();
 
-      setAppState({
-        phase: 'polling',
+      setActiveJob({
         job_id,
+        fileName,
+        startTime,
         status: {
-          job_id, status: 'queued', progress: '0/0',
-          current_sentence: null, created_at: new Date().toISOString(),
-          finished_at: null, error: null
-        },
-        startTime
+          job_id,
+          status: 'queued',
+          progress: '0/0',
+          current_sentence: null,
+          created_at: new Date().toISOString(),
+          finished_at: null,
+          error: null
+        }
       });
-
-      // Trạng thái polling được theo dõi bởi useJobStream bên trên
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setAppState({ phase: 'error', message: msg });
+      setErrorMessage(msg);
+      setViewMode('error');
+    } finally {
+      setIsSubmitting(false);
     }
   }, [user]);
+
   const handleSelectHistory = useCallback((entry: HistoryEntry) => {
     if (!entry.result) return;
-    setAppState({
-      phase: 'done',
-      result: {
-        ...entry.result,
-        job_id: entry.job_id
-      }
+    setCurrentResult({
+      ...entry.result,
+      job_id: entry.job_id
     });
+    setViewMode('result');
   }, []);
 
-  const handleSelectProgress = useCallback((job_id: string, _fileName: string, startTimeMs: number) => {
-    setAppState({
-      phase: 'polling',
+  const handleSelectProgress = useCallback((job_id: string, fileName: string, startTimeMs: number) => {
+    setActiveJob({
       job_id,
+      fileName: fileName || 'Văn bản',
+      startTime: startTimeMs,
       status: {
         job_id,
         status: 'running',
@@ -182,34 +230,34 @@ export default function App() {
         created_at: new Date(startTimeMs).toISOString(),
         finished_at: null,
         error: null
-      },
-      startTime: startTimeMs
+      }
     });
-    // Streaming được theo dõi bởi useJobStream bên trên
+    setViewMode('progress');
   }, []);
 
-  // Auto-poll history if there are pending jobs (queued or running)
+  // Auto-poll history if there are pending jobs
   useEffect(() => {
-    if (!user || appState.phase !== 'idle') return;
+    if (!user) return;
 
     const hasPendingJobs = history.some(
       (h) => h.status === 'queued' || h.status === 'running'
     );
 
-    if (!hasPendingJobs) return;
+    if (!hasPendingJobs && !activeJob) return;
 
     const interval = setInterval(() => {
       loadHistory();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [user, appState.phase, history, loadHistory]);
+  }, [user, activeJob, history, loadHistory]);
 
   const handleReset = useCallback(() => {
-    setAppState({ phase: 'idle' });
+    setViewMode('workspace');
+    setErrorMessage(null);
   }, []);
 
-  const isAnalyzing = appState.phase === 'submitting' || appState.phase === 'polling';
+  const isAnalyzing = isSubmitting || activeJob !== null;
   const isLoggedIn = !!user || !!getToken();
 
   return (
@@ -217,7 +265,7 @@ export default function App() {
       {/* ── Header ── */}
       <header className="c-header">
         <div className="c-header-inner">
-          <div className="c-logo">
+          <div className="c-logo" style={{ cursor: 'pointer' }} onClick={() => setViewMode('workspace')}>
             <div className="c-logo-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -242,14 +290,53 @@ export default function App() {
 
       {/* ── Main Layout ── */}
       <main className="c-main">
-        {appState.phase === 'idle' && (
+        {viewMode === 'workspace' && (
           <div className="c-workspace-layout">
             <div className="c-workspace-content">
+              {/* Floating Mini Progress Banner if background job is running */}
+              {activeJob && (
+                <div className="c-mini-progress-banner">
+                  <div className="c-mini-progress-main">
+                    <div className="c-mini-progress-spinner" />
+                    <div className="c-mini-progress-info">
+                      <div className="c-mini-progress-title">
+                        <span>⚙️ Đang kiểm tra: <strong>{activeJob.fileName}</strong></span>
+                        <span className="c-mini-progress-badge">
+                          {activeJob.status.status === 'queued' ? 'Đang xếp hàng' : `Quét ${activeJob.status.progress || '0/0'}`}
+                        </span>
+                      </div>
+                      {activeJob.status.current_sentence && (
+                        <div className="c-mini-progress-sub">
+                          Đang quét: {activeJob.status.current_sentence}
+                        </div>
+                      )}
+                    </div>
+                    {activeJob.status.progress && activeJob.status.progress !== '0/0' && (() => {
+                      const [cur, tot] = activeJob.status.progress.split('/').map(Number);
+                      const p = tot > 0 ? Math.round((cur / tot) * 100) : 0;
+                      return (
+                        <div className="c-mini-progress-track" title={`${p}%`}>
+                          <div className="c-mini-progress-fill" style={{ width: `${p}%` }} />
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div className="c-mini-progress-actions">
+                    <button
+                      className="c-btn c-btn--primary c-btn--sm"
+                      onClick={() => setViewMode('progress')}
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <UploadSection
                 onAnalyze={handleAnalyze}
                 isAnalyzing={isAnalyzing}
                 onReset={handleReset}
-                currentPhase={appState.phase}
+                currentPhase={activeJob ? 'polling' : isSubmitting ? 'submitting' : 'idle'}
                 isLoggedIn={isLoggedIn}
               />
               
@@ -345,46 +432,52 @@ export default function App() {
           </div>
         )}
 
-        {appState.phase === 'submitting' && (
-          <div className="c-workspace-layout c-workspace-layout--center">
-            <div className="c-empty-state">
-              <div className="c-submitting-spinner" />
-              <h2 className="c-empty-title">Đang gửi văn bản...</h2>
-              <p className="c-empty-desc">Kết nối với server phân tích</p>
-            </div>
-          </div>
-        )}
-
-        {appState.phase === 'polling' && (
+        {viewMode === 'progress' && (
           <div className="c-workspace-layout c-workspace-layout--center">
             <div className="c-workspace-content c-workspace-content--state">
-              <JobProgress
-                progress={appState.status.progress}
-                currentSentence={appState.status.current_sentence}
-                status={appState.status.status as 'queued' | 'running'}
-                startTime={appState.startTime}
-              />
+              {isSubmitting ? (
+                <div className="c-empty-state">
+                  <div className="c-submitting-spinner" />
+                  <h2 className="c-empty-title">Đang gửi văn bản...</h2>
+                  <p className="c-empty-desc">Kết nối với server phân tích</p>
+                </div>
+              ) : activeJob ? (
+                <JobProgress
+                  progress={activeJob.status.progress}
+                  currentSentence={activeJob.status.current_sentence}
+                  status={(activeJob.status.status as 'queued' | 'running') || 'running'}
+                  startTime={activeJob.startTime}
+                  onMinimize={() => setViewMode('workspace')}
+                />
+              ) : (
+                <div className="c-empty-state">
+                  <h2 className="c-empty-title">Không có công việc đang chạy</h2>
+                  <button className="c-btn c-btn--primary" onClick={() => setViewMode('workspace')}>
+                    Quay lại trang chủ
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {appState.phase === 'done' && (
+        {viewMode === 'result' && currentResult && (
           <div className="c-results-layout">
             <div className="c-results-container">
               <AnalysisResults
-                result={appState.result}
+                result={currentResult}
                 onReset={handleReset}
               />
             </div>
           </div>
         )}
 
-        {appState.phase === 'error' && (
+        {viewMode === 'error' && (
           <div className="c-workspace-layout c-workspace-layout--center">
             <div className="c-error-state">
               <div className="c-error-icon">❌</div>
               <h2 className="c-error-title">Đã xảy ra lỗi</h2>
-              <p className="c-error-msg">{appState.message}</p>
+              <p className="c-error-msg">{errorMessage || 'Đã xảy ra lỗi không xác định'}</p>
               <p className="c-error-hint">
                 Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
               </p>
@@ -395,6 +488,39 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Toast Notification Container */}
+      {toast && (
+        <div className="c-toast-container">
+          <div className={`c-toast-notification ${toast.type === 'error' ? 'c-toast-notification--error' : ''}`}>
+            <div className="c-toast-content">
+              <div className="c-toast-icon">{toast.type === 'success' ? '✅' : '❌'}</div>
+              <div className="c-toast-text">
+                <div className="c-toast-title">{toast.title}</div>
+                {toast.desc && <div className="c-toast-desc">{toast.desc}</div>}
+              </div>
+            </div>
+            <div className="c-toast-action">
+              {toast.result && (
+                <button
+                  className="c-btn c-btn--primary c-btn--sm"
+                  style={{ marginRight: 8 }}
+                  onClick={() => {
+                    setCurrentResult(toast.result!);
+                    setViewMode('result');
+                    setToast(null);
+                  }}
+                >
+                  Xem kết quả
+                </button>
+              )}
+              <button className="c-toast-close" onClick={() => setToast(null)} title="Đóng">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

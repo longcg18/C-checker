@@ -921,6 +921,202 @@ body {
   box-shadow: var(--c-shadow), var(--c-glow);
 }
 
+.c-job-progress-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--c-border);
+}
+
+/* Floating Mini Progress Banner */
+.c-mini-progress-banner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(243, 245, 251, 0.95));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: var(--c-radius);
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 50;
+}
+
+.c-mini-progress-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.c-mini-progress-spinner {
+  width: 26px;
+  height: 26px;
+  border: 2.5px solid var(--c-border2);
+  border-top-color: var(--c-accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+.c-mini-progress-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.c-mini-progress-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.c-mini-progress-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-accent);
+  background: var(--c-accent-dim);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.c-mini-progress-sub {
+  font-size: 12px;
+  color: var(--c-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.c-mini-progress-track {
+  width: 120px;
+  height: 6px;
+  background: var(--c-surface3);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.c-mini-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-accent), #4f46e5);
+  transition: width 0.3s ease;
+}
+
+.c-mini-progress-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Toast Notifications */
+.c-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+  width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.c-toast-notification {
+  pointer-events: auto;
+  background: #ffffff;
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  border-left: 4px solid var(--c-green);
+  border-radius: var(--c-radius);
+  padding: 14px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.c-toast-notification--error {
+  border-color: rgba(220, 38, 38, 0.3);
+  border-left-color: var(--c-red);
+}
+
+.c-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.c-toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.c-toast-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.c-toast-desc {
+  font-size: 12px;
+  color: var(--c-text-dim);
+}
+
+.c-toast-action {
+  flex-shrink: 0;
+}
+
+.c-toast-close {
+  background: transparent;
+  border: none;
+  color: var(--c-text-faint);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+.c-toast-close:hover {
+  color: var(--c-text);
+  background: var(--c-surface2);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .c-progress-header {
   display: flex;
   align-items: flex-start;

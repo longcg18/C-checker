@@ -5,9 +5,10 @@ interface JobProgressProps {
   currentSentence: string | null;
   status: 'queued' | 'running';
   startTime: number;
+  onMinimize?: () => void;
 }
 
-export function JobProgress({ progress, status, startTime, currentSentence }: JobProgressProps) {
+export function JobProgress({ progress, status, startTime, currentSentence, onMinimize }: JobProgressProps) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -28,6 +29,18 @@ export function JobProgress({ progress, status, startTime, currentSentence }: Jo
 
   return (
     <div className="c-job-progress">
+      {/* Top action bar if onMinimize is present */}
+      {onMinimize && (
+        <div className="c-job-progress-actions">
+          <button className="c-btn c-btn--outline c-btn--sm" onClick={onMinimize}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{ marginRight: 6 }}>
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Quay lại trang chủ & xem Lịch sử
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="c-progress-header">
         <div className="c-progress-spinner">
