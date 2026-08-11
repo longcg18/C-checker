@@ -280,12 +280,6 @@ export default function App() {
               <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
             </div>
           </div>
-          <div className="c-header-badges">
-            <span className="c-badge c-badge--blue">MiniLM Semantic</span>
-            <span className="c-badge c-badge--purple">LCS · N-gram</span>
-            <span className="c-badge c-badge--green">DDGS Search</span>
-          </div>
-
           <nav className="c-header-nav">
             <button className="c-nav-link" onClick={() => setViewMode('workspace')}>Trang chủ</button>
             <button className="c-nav-link" onClick={() => setModalType('guide')}>📖 Hướng dẫn sử dụng</button>
