@@ -6,6 +6,8 @@ import { AnalysisResults } from './components/AnalysisResults';
 import { JobProgress } from './components/JobProgress';
 import { Login } from './components/Login';
 import { DashboardTable } from './components/DashboardTable';
+import { InfoModal, ModalType } from './components/InfoModal';
+import { Footer } from './components/Footer';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +52,7 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [modalType, setModalType] = useState<ModalType>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [user, setUser] = useState<any>(null);
 
@@ -282,6 +285,13 @@ export default function App() {
             <span className="c-badge c-badge--purple">LCS · N-gram</span>
             <span className="c-badge c-badge--green">DDGS Search</span>
           </div>
+
+          <nav className="c-header-nav">
+            <button className="c-nav-link" onClick={() => setViewMode('workspace')}>Trang chủ</button>
+            <button className="c-nav-link" onClick={() => setModalType('guide')}>📖 Hướng dẫn sử dụng</button>
+            <button className="c-nav-link" onClick={() => setModalType('about')}>ℹ️ Giới thiệu</button>
+          </nav>
+
           <div className="c-header-auth">
             <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
           </div>
@@ -488,6 +498,12 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <Footer onOpenModal={(type) => setModalType(type)} onGoHome={() => setViewMode('workspace')} />
+
+      {/* Info Modal Popup */}
+      <InfoModal type={modalType} onClose={() => setModalType(null)} />
 
       {/* Toast Notification Container */}
       {toast && (
