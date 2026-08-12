@@ -8,6 +8,8 @@ import { Login } from './components/Login';
 import { DashboardTable } from './components/DashboardTable';
 import { InfoModal, ModalType } from './components/InfoModal';
 import { Footer } from './components/Footer';
+import { GuidePage } from './components/GuidePage';
+import { AboutPage } from './components/AboutPage';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -26,7 +28,7 @@ export interface HistoryEntry {
   result?: JobResult;
 }
 
-type ViewMode = 'workspace' | 'progress' | 'result' | 'error';
+type ViewMode = 'workspace' | 'progress' | 'result' | 'error' | 'guide' | 'about';
 
 interface ActiveJob {
   job_id: string;
@@ -282,8 +284,8 @@ export default function App() {
           </div>
           <nav className="c-header-nav">
             <button className="c-nav-link" onClick={() => setViewMode('workspace')}>Trang chủ</button>
-            <button className="c-nav-link" onClick={() => setModalType('guide')}>📖 Hướng dẫn sử dụng</button>
-            <button className="c-nav-link" onClick={() => setModalType('about')}>ℹ️ Giới thiệu</button>
+            <button className="c-nav-link" onClick={() => setViewMode('guide')}>Hướng dẫn sử dụng</button>
+            <button className="c-nav-link" onClick={() => setViewMode('about')}>Giới thiệu</button>
           </nav>
 
           <div className="c-header-auth">
@@ -343,7 +345,7 @@ export default function App() {
                 currentPhase={activeJob ? 'polling' : isSubmitting ? 'submitting' : 'idle'}
                 isLoggedIn={isLoggedIn}
               />
-              
+
               {isLoggedIn ? (
                 <div className="c-workspace-dashboard">
                   <DashboardTable
@@ -363,7 +365,7 @@ export default function App() {
                       Hệ thống <strong>C-checker</strong> là giải pháp tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng AI (MiniLM) và các thuật toán chuyên sâu.
                     </p>
                   </div>
-                  
+
                   <div className="c-intro-grid">
                     <div className="c-intro-card">
                       <h3 className="c-intro-card-title c-text-blue">
@@ -398,7 +400,7 @@ export default function App() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="c-intro-faq">
                     <h2 className="c-faq-heading">
                       Các câu hỏi thường gặp (FAQs)
@@ -490,6 +492,14 @@ export default function App() {
               </button>
             </div>
           </div>
+        )}
+
+        {viewMode === 'guide' && (
+          <GuidePage onBack={() => setViewMode('workspace')} />
+        )}
+
+        {viewMode === 'about' && (
+          <AboutPage onBack={() => setViewMode('workspace')} />
         )}
       </main>
 
