@@ -1050,13 +1050,18 @@ def get_history(current_user: User = Depends(get_current_user)):
                     }
                 
                 if res:
-                    # Lịch sử chỉ trả tóm tắt — bỏ report_items (tránh N+1 query).
-                    # Chi tiết đầy đủ lấy qua GET /result/{job_id} khi người dùng bấm vào.
+                    res["job_id"] = j.job_id
+                    if "report_items" not in res:
+                        # Load from database report_items table
+                        items = get_report_items(j.id)
+                        res["report_items"] = items
+                    
                     job_data.update({
                         "verdict": res.get("verdict", "LOW"),
                         "verdict_text": res.get("verdict_text", ""),
                         "max_score": res.get("max_score", 0.0),
                         "matches_found": res.get("matches_found", 0),
+                        "result": res
                     })
                 else:
                     job_data.update({
@@ -1064,6 +1069,7 @@ def get_history(current_user: User = Depends(get_current_user)):
                         "verdict_text": "Không có kết quả",
                         "max_score": 0.0,
                         "matches_found": 0,
+                        "result": None
                     })
             except Exception as e:
                 print(f"Error loading history job {j.job_id}: {e}")
@@ -1072,6 +1078,7 @@ def get_history(current_user: User = Depends(get_current_user)):
                     "verdict_text": "Lỗi tải dữ liệu",
                     "max_score": 0.0,
                     "matches_found": 0,
+                    "result": None
                 })
         elif status == "failed":
             error_msg = "Xử lý thất bại"
@@ -1089,6 +1096,7 @@ def get_history(current_user: User = Depends(get_current_user)):
                 "max_score": 0.0,
                 "matches_found": 0,
                 "error": error_msg,
+                "result": {"status": "failed", "error": error_msg}
             })
         else: # queued, running
             progress = "0/0"
@@ -1104,6 +1112,7 @@ def get_history(current_user: User = Depends(get_current_user)):
                 "matches_found": 0,
                 "progress": progress,
                 "current_sentence": current_sentence,
+                "result": {"status": status, "progress": progress, "current_sentence": current_sentence}
             })
         history.append(job_data)
     return history

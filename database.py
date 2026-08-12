@@ -147,9 +147,9 @@ def get_job_by_job_id(job_id: str) -> Optional[Job]:
         print(f"Error getting job by job_id: {e}")
     return None
 
-def get_jobs_by_user_id(user_id: str, limit: int = 50) -> List[Job]:
+def get_jobs_by_user_id(user_id: str) -> List[Job]:
     try:
-        url = f"{SUPABASE_URL}/rest/v1/jobs?user_id=eq.{user_id}&order=created_at.desc&limit={limit}"
+        url = f"{SUPABASE_URL}/rest/v1/jobs?user_id=eq.{user_id}&order=created_at.desc"
         res = requests.get(url, headers=HEADERS)
         if res.status_code == 200:
             data = res.json()
