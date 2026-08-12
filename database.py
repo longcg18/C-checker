@@ -1,11 +1,12 @@
 import requests
 import datetime
 import uuid
+import os
 import json
 from typing import Optional, List, Dict, Any
 
 SUPABASE_URL = "https://qsyydjpuzjirxkqyjvqw.supabase.co"
-SUPABASE_KEY = "sb_publishable_dccy2bN7gpHHT41CHqaKQQ_LHDR6g2U"
+SUPABASE_KEY = os.environ.get("SUPABASE_SECRET_KEY")
 
 HEADERS = {
     "apikey": SUPABASE_KEY,

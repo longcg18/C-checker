@@ -213,13 +213,15 @@ export default function App() {
     }
   }, [user]);
 
-  const handleSelectHistory = useCallback((entry: HistoryEntry) => {
-    if (!entry.result) return;
-    setCurrentResult({
-      ...entry.result,
-      job_id: entry.job_id
-    });
-    setViewMode('result');
+  const handleSelectHistory = useCallback(async (entry: HistoryEntry) => {
+    try {
+      const result = await api.getResult(entry.job_id);
+      setCurrentResult({ ...result, job_id: entry.job_id });
+      setViewMode('result');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setToast({ id: String(Date.now()), type: 'error', title: 'Lỗi lấy kết quả', desc: msg });
+    }
   }, []);
 
   const handleSelectProgress = useCallback((job_id: string, fileName: string, startTimeMs: number) => {
