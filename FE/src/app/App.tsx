@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Routes, Route, Link, NavLink, useNavigate, Navigate } from 'react-router';
 import { api, JobStatus, JobResult, getToken } from './lib/api';
 import { useJobStream } from './lib/useJobStream';
 import { UploadSection } from './components/UploadSection';
@@ -10,6 +11,9 @@ import { InfoModal, ModalType } from './components/InfoModal';
 import { Footer } from './components/Footer';
 import { GuidePage } from './components/GuidePage';
 import { AboutPage } from './components/AboutPage';
+import { PrivacyPage } from './components/PrivacyPage';
+import { TermsPage } from './components/TermsPage';
+import { ContactPage } from './components/ContactPage';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -28,7 +32,7 @@ export interface HistoryEntry {
   result?: JobResult;
 }
 
-type ViewMode = 'workspace' | 'progress' | 'result' | 'error' | 'guide' | 'about';
+type ViewMode = 'workspace' | 'progress' | 'result' | 'error';
 
 interface ActiveJob {
   job_id: string;
@@ -48,6 +52,7 @@ interface ToastState {
 // ── App ────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('workspace');
   const [activeJob, setActiveJob] = useState<ActiveJob | null>(null);
   const [currentResult, setCurrentResult] = useState<JobResult | null>(null);
@@ -81,7 +86,7 @@ export default function App() {
     }
   }, [loadHistory]);
 
-  // Stream active job via SSE in background regardless of current viewMode
+  // Stream active job via SSE in background regardless of current route/viewMode
   useJobStream({
     jobId: activeJob ? activeJob.job_id : null,
     onStatus: (jobId, data) => {
@@ -184,6 +189,7 @@ export default function App() {
 
     setIsSubmitting(true);
     setViewMode('progress');
+    navigate('/');
 
     try {
       const submitRes = await api.submitCheck(text, fileName);
@@ -211,18 +217,19 @@ export default function App() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const handleSelectHistory = useCallback(async (entry: HistoryEntry) => {
     try {
       const result = await api.getResult(entry.job_id);
       setCurrentResult({ ...result, job_id: entry.job_id });
       setViewMode('result');
+      navigate('/');
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setToast({ id: String(Date.now()), type: 'error', title: 'Lỗi lấy kết quả', desc: msg });
     }
-  }, []);
+  }, [navigate]);
 
   const handleSelectProgress = useCallback((job_id: string, fileName: string, startTimeMs: number) => {
     setActiveJob({
@@ -240,7 +247,8 @@ export default function App() {
       }
     });
     setViewMode('progress');
-  }, []);
+    navigate('/');
+  }, [navigate]);
 
   // Auto-poll history if there are pending jobs
   useEffect(() => {
@@ -267,79 +275,52 @@ export default function App() {
   const isAnalyzing = isSubmitting || activeJob !== null;
   const isLoggedIn = !!user || !!getToken();
 
-  return (
-    <div className="c-app">
-      {/* ── Header ── */}
-      <header className="c-header">
-        <div className="c-header-inner">
-          <div className="c-logo" style={{ cursor: 'pointer' }} onClick={() => setViewMode('workspace')}>
-            <div className="c-logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-            </div>
-            <div>
-              <div className="c-logo-title">C-checker</div>
-              <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
-            </div>
-          </div>
-          <nav className="c-header-nav">
-            <button className="c-nav-link" onClick={() => setViewMode('workspace')}>Trang chủ</button>
-            <button className="c-nav-link" onClick={() => setViewMode('guide')}>Hướng dẫn sử dụng</button>
-            <button className="c-nav-link" onClick={() => setViewMode('about')}>Giới thiệu</button>
-          </nav>
-
-          <div className="c-header-auth">
-            <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Layout ── */}
-      <main className="c-main">
-        {viewMode === 'workspace' && (
-          <div className="c-workspace-layout">
-            <div className="c-workspace-content">
-              {/* Floating Mini Progress Banner if background job is running */}
-              {activeJob && (
-                <div className="c-mini-progress-banner">
-                  <div className="c-mini-progress-main">
-                    <div className="c-mini-progress-spinner" />
-                    <div className="c-mini-progress-info">
-                      <div className="c-mini-progress-title">
-                        <span>⚙️ Đang kiểm tra: <strong>{activeJob.fileName}</strong></span>
-                        <span className="c-mini-progress-badge">
-                          {activeJob.status.status === 'queued' ? 'Đang xếp hàng' : `Quét ${activeJob.status.progress || '0/0'}`}
-                        </span>
-                      </div>
-                      {activeJob.status.current_sentence && (
-                        <div className="c-mini-progress-sub">
-                          Đang quét: {activeJob.status.current_sentence}
-                        </div>
-                      )}
+  // Workspace / Main Checker View
+  const renderWorkspaceView = () => {
+    return (
+      <div className="c-workspace-layout">
+        <div className="c-workspace-content">
+          {/* Floating Mini Progress Banner if background job is running */}
+          {activeJob && (
+            <div className="c-mini-progress-banner">
+              <div className="c-mini-progress-main">
+                <div className="c-mini-progress-spinner" />
+                <div className="c-mini-progress-info">
+                  <div className="c-mini-progress-title">
+                    <span>⚙️ Đang kiểm tra: <strong>{activeJob.fileName}</strong></span>
+                    <span className="c-mini-progress-badge">
+                      {activeJob.status.status === 'queued' ? 'Đang xếp hàng' : `Quét ${activeJob.status.progress || '0/0'}`}
+                    </span>
+                  </div>
+                  {activeJob.status.current_sentence && (
+                    <div className="c-mini-progress-sub">
+                      Đang quét: {activeJob.status.current_sentence}
                     </div>
-                    {activeJob.status.progress && activeJob.status.progress !== '0/0' && (() => {
-                      const [cur, tot] = activeJob.status.progress.split('/').map(Number);
-                      const p = tot > 0 ? Math.round((cur / tot) * 100) : 0;
-                      return (
-                        <div className="c-mini-progress-track" title={`${p}%`}>
-                          <div className="c-mini-progress-fill" style={{ width: `${p}%` }} />
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  <div className="c-mini-progress-actions">
-                    <button
-                      className="c-btn c-btn--primary c-btn--sm"
-                      onClick={() => setViewMode('progress')}
-                    >
-                      Xem chi tiết
-                    </button>
-                  </div>
+                  )}
                 </div>
-              )}
+                {activeJob.status.progress && activeJob.status.progress !== '0/0' && (() => {
+                  const [cur, tot] = activeJob.status.progress.split('/').map(Number);
+                  const p = tot > 0 ? Math.round((cur / tot) * 100) : 0;
+                  return (
+                    <div className="c-mini-progress-track" title={`${p}%`}>
+                      <div className="c-mini-progress-fill" style={{ width: `${p}%` }} />
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="c-mini-progress-actions">
+                <button
+                  className="c-btn c-btn--primary c-btn--sm"
+                  onClick={() => setViewMode('progress')}
+                >
+                  Xem chi tiết
+                </button>
+              </div>
+            </div>
+          )}
 
+          {viewMode === 'workspace' && (
+            <>
               <UploadSection
                 onAnalyze={handleAnalyze}
                 isAnalyzing={isAnalyzing}
@@ -436,79 +417,146 @@ export default function App() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
+            </>
+          )}
 
-        {viewMode === 'progress' && (
-          <div className="c-workspace-layout c-workspace-layout--center">
-            <div className="c-workspace-content c-workspace-content--state">
-              {isSubmitting ? (
-                <div className="c-empty-state">
-                  <div className="c-submitting-spinner" />
-                  <h2 className="c-empty-title">Đang gửi văn bản...</h2>
-                  <p className="c-empty-desc">Kết nối với server phân tích</p>
-                </div>
-              ) : activeJob ? (
-                <JobProgress
-                  progress={activeJob.status.progress}
-                  currentSentence={activeJob.status.current_sentence}
-                  status={(activeJob.status.status as 'queued' | 'running') || 'running'}
-                  startTime={activeJob.startTime}
-                  onMinimize={() => setViewMode('workspace')}
+          {viewMode === 'progress' && (
+            <div className="c-workspace-layout c-workspace-layout--center" style={{ marginTop: 24 }}>
+              <div className="c-workspace-content c-workspace-content--state">
+                {isSubmitting ? (
+                  <div className="c-empty-state">
+                    <div className="c-submitting-spinner" />
+                    <h2 className="c-empty-title">Đang gửi văn bản...</h2>
+                    <p className="c-empty-desc">Kết nối với server phân tích</p>
+                  </div>
+                ) : activeJob ? (
+                  <JobProgress
+                    progress={activeJob.status.progress}
+                    currentSentence={activeJob.status.current_sentence}
+                    status={(activeJob.status.status as 'queued' | 'running') || 'running'}
+                    startTime={activeJob.startTime}
+                    onMinimize={() => setViewMode('workspace')}
+                  />
+                ) : (
+                  <div className="c-empty-state">
+                    <h2 className="c-empty-title">Không có công việc đang chạy</h2>
+                    <button className="c-btn c-btn--primary" onClick={() => setViewMode('workspace')}>
+                      Quay lại trang chủ
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {viewMode === 'result' && currentResult && (
+            <div className="c-results-layout" style={{ marginTop: 24 }}>
+              <div className="c-results-container">
+                <AnalysisResults
+                  result={currentResult}
+                  onReset={handleReset}
                 />
-              ) : (
-                <div className="c-empty-state">
-                  <h2 className="c-empty-title">Không có công việc đang chạy</h2>
-                  <button className="c-btn c-btn--primary" onClick={() => setViewMode('workspace')}>
-                    Quay lại trang chủ
-                  </button>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {viewMode === 'result' && currentResult && (
-          <div className="c-results-layout">
-            <div className="c-results-container">
-              <AnalysisResults
-                result={currentResult}
-                onReset={handleReset}
-              />
+          {viewMode === 'error' && (
+            <div className="c-workspace-layout c-workspace-layout--center" style={{ marginTop: 24 }}>
+              <div className="c-error-state">
+                <div className="c-error-icon">❌</div>
+                <h2 className="c-error-title">Đã xảy ra lỗi</h2>
+                <p className="c-error-msg">{errorMessage || 'Đã xảy ra lỗi không xác định'}</p>
+                <p className="c-error-hint">
+                  Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
+                </p>
+                <button className="c-btn c-btn--primary" onClick={handleReset}>
+                  Thử lại
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      </div>
+    );
+  };
 
-        {viewMode === 'error' && (
-          <div className="c-workspace-layout c-workspace-layout--center">
-            <div className="c-error-state">
-              <div className="c-error-icon">❌</div>
-              <h2 className="c-error-title">Đã xảy ra lỗi</h2>
-              <p className="c-error-msg">{errorMessage || 'Đã xảy ra lỗi không xác định'}</p>
-              <p className="c-error-hint">
-                Hãy đảm bảo backend đang chạy và bạn đã đăng nhập.
-              </p>
-              <button className="c-btn c-btn--primary" onClick={handleReset}>
-                Thử lại
-              </button>
+  return (
+    <div className="c-app">
+      {/* ── Header ── */}
+      <header className="c-header">
+        <div className="c-header-inner">
+          <Link to="/" className="c-logo" onClick={() => setViewMode('workspace')}>
+            <div className="c-logo-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
             </div>
+            <div>
+              <div className="c-logo-title">C-checker</div>
+              <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
+            </div>
+          </Link>
+
+          <nav className="c-header-nav">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
+              onClick={() => setViewMode('workspace')}
+            >
+              Trang chủ
+            </NavLink>
+            <NavLink
+              to="/guide"
+              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
+            >
+              Hướng dẫn sử dụng
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
+            >
+              Giới thiệu
+            </NavLink>
+            <NavLink
+              to="/privacy"
+              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
+            >
+              Bảo mật
+            </NavLink>
+            <NavLink
+              to="/terms"
+              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
+            >
+              Điều khoản
+            </NavLink>
+          </nav>
+
+          <div className="c-header-auth">
+            <Login onLogin={handleLogin} onLogout={handleLogout} currentUser={user} />
           </div>
-        )}
+        </div>
+      </header>
 
-        {viewMode === 'guide' && (
-          <GuidePage onBack={() => setViewMode('workspace')} />
-        )}
-
-        {viewMode === 'about' && (
-          <AboutPage onBack={() => setViewMode('workspace')} />
-        )}
+      {/* ── Main Routing Layout ── */}
+      <main className="c-main">
+        <Routes>
+          <Route path="/" element={renderWorkspaceView()} />
+          <Route path="/home" element={renderWorkspaceView()} />
+          <Route path="/guide" element={<GuidePage onBack={() => { setViewMode('workspace'); navigate('/'); }} />} />
+          <Route path="/about" element={<AboutPage onBack={() => { setViewMode('workspace'); navigate('/'); }} />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       {/* Footer */}
-      <Footer onOpenModal={(type) => setModalType(type)} onGoHome={() => setViewMode('workspace')} />
+      <Footer onOpenModal={(type) => setModalType(type)} onGoHome={() => { setViewMode('workspace'); navigate('/'); }} />
 
-      {/* Info Modal Popup */}
+      {/* Info Modal Popup (if triggered) */}
       <InfoModal type={modalType} onClose={() => setModalType(null)} />
 
       {/* Toast Notification Container */}
@@ -531,6 +579,7 @@ export default function App() {
                     setCurrentResult(toast.result!);
                     setViewMode('result');
                     setToast(null);
+                    navigate('/');
                   }}
                 >
                   Xem kết quả

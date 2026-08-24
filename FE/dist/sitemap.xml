@@ -2,32 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://c-checker.io.vn/</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://c-checker.io.vn/?page=guide</loc>
-    <lastmod>2026-08-12</lastmod>
+    <loc>https://c-checker.io.vn/guide</loc>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://c-checker.io.vn/?page=privacy</loc>
-    <lastmod>2026-08-12</lastmod>
+    <loc>https://c-checker.io.vn/about</loc>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://c-checker.io.vn/?page=terms</loc>
-    <lastmod>2026-08-12</lastmod>
+    <loc>https://c-checker.io.vn/privacy</loc>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://c-checker.io.vn/?page=about</loc>
-    <lastmod>2026-08-12</lastmod>
+    <loc>https://c-checker.io.vn/terms</loc>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://c-checker.io.vn/contact</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

@@ -569,11 +569,11 @@ def run_check(job_id: str, text: str):
     # Tính avg_score dựa trên điểm thực tế của từng câu
     avg_score = sum(sentence_scores) / total if total > 0 else 0.0
  
-    # Logic kết luận mới kết hợp cả avg_score và max_score
-    if avg_score > 0.25 or max_score > 0.80:
+    # Logic kết luận nguy cơ đạo văn chuẩn hóa theo % trùng lặp toàn bài (avg_score)
+    if avg_score >= 0.20 or (avg_score >= 0.15 and max_score > 0.70):
         verdict = "HIGH"
         verdict_text = "HIGH — Nguy cơ đạo văn cao"
-    elif avg_score >= 0.15 or max_score >= 0.50:
+    elif avg_score >= 0.10 or max_score >= 0.50:
         verdict = "MEDIUM"
         verdict_text = "MEDIUM — Có dấu hiệu nghi ngờ"
     else:

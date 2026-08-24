@@ -153,7 +153,7 @@ export function InfoModal({ type, onClose }: InfoModalProps) {
                 <div className="c-contact-icon">✉️</div>
                 <div className="c-contact-detail">
                   <strong>Email hỗ trợ chính:</strong>
-                  <a href="mailto:support@c-checker.io.vn">support@c-checker.io.vn</a>
+                  <a href="mailto:nguyenphuclong.work@gmail.com">nguyenphuclong.work@gmail.com</a>
                 </div>
               </div>
               <div className="c-contact-card">

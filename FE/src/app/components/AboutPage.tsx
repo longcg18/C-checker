@@ -1,21 +1,24 @@
+import { useNavigate } from 'react-router';
+
 interface AboutPageProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function AboutPage({ onBack }: AboutPageProps) {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate('/'));
+
   return (
     <div className="c-page-layout">
       <div className="c-page-container">
-        <button className="c-page-back-btn" onClick={onBack}>
+        <button className="c-page-back-btn" onClick={handleBack}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Quay lại
+          Quay lại trang chủ
         </button>
 
         <header className="c-page-hero">
-          <span className="c-page-hero-badge">Giới thiệu dự án</span>
-          <div className="c-page-hero-icon">🛡️</div>
           <h1 className="c-page-title">Giới thiệu C-checker</h1>
           <p className="c-page-subtitle">
             Giải pháp kiểm tra đạo văn tiếng Trung thông minh, tiên phong tại Việt Nam
@@ -95,9 +98,9 @@ export function AboutPage({ onBack }: AboutPageProps) {
               Chúng tôi luôn lắng nghe phản hồi từ cộng đồng người dùng để liên tục cải thiện C-checker.
             </p>
             <div className="c-about-contact-info">
-              <a href="mailto:support@c-checker.io.vn" className="c-about-contact-link">
+              <a href="mailto:nguyenphuclong.work@gmail.com" className="c-about-contact-link">
                 <span className="c-about-contact-icon">✉️</span>
-                support@c-checker.io.vn
+                nguyenphuclong.work@gmail.com
               </a>
               <a href="https://c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>

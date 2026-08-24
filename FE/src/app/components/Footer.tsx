@@ -1,8 +1,8 @@
-import React from 'react';
+import { Link } from 'react-router';
 import { ModalType } from './InfoModal';
 
 interface FooterProps {
-  onOpenModal: (type: ModalType) => void;
+  onOpenModal?: (type: ModalType) => void;
   onGoHome?: () => void;
 }
 
@@ -13,9 +13,15 @@ export function Footer({ onOpenModal }: FooterProps) {
         <div className="c-footer-bottom">
           <p>© 2026 C-checker. All rights reserved.</p>
           <div className="c-footer-legal-inline">
-            <button onClick={() => onOpenModal('privacy')}>Chính sách bảo mật</button>
+            <Link to="/about">Giới thiệu</Link>
             <span className="c-footer-dot">•</span>
-            <button onClick={() => onOpenModal('terms')}>Điều khoản dịch vụ</button>
+            <Link to="/guide">Hướng dẫn</Link>
+            <span className="c-footer-dot">•</span>
+            <Link to="/privacy">Chính sách bảo mật</Link>
+            <span className="c-footer-dot">•</span>
+            <Link to="/terms">Điều khoản dịch vụ</Link>
+            <span className="c-footer-dot">•</span>
+            <Link to="/contact">Liên hệ</Link>
           </div>
         </div>
       </div>

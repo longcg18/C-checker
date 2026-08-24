@@ -1,21 +1,24 @@
+import { useNavigate } from 'react-router';
+
 interface GuidePageProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function GuidePage({ onBack }: GuidePageProps) {
+  const navigate = useNavigate();
+  const handleBack = onBack || (() => navigate('/'));
+
   return (
     <div className="c-page-layout">
       <div className="c-page-container">
-        <button className="c-page-back-btn" onClick={onBack}>
+        <button className="c-page-back-btn" onClick={handleBack}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Quay lại
+          Quay lại trang chủ
         </button>
 
         <header className="c-page-hero">
-          <span className="c-page-hero-badge">C-Checker Guide</span>
-          <div className="c-page-hero-icon">📖</div>
           <h1 className="c-page-title">Hướng dẫn sử dụng</h1>
           <p className="c-page-subtitle">
             Từ dùng thử miễn phí đến báo cáo chi tiết — bốn bước đơn giản giúp bạn kiểm tra đạo văn tiếng Trung hiệu quả.
