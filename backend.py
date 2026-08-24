@@ -41,6 +41,7 @@ from database import (
     create_job,
     get_job_by_job_id,
     get_jobs_by_user_id,
+    delete_job,
     complete_job,
     fail_job,
     get_report_items
@@ -1134,6 +1135,29 @@ def get_history(current_user: User = Depends(get_current_user)):
             })
         history.append(job_data)
     return history
+
+@app.delete("/history/{job_id}")
+def delete_history_job(job_id: str, current_user: User = Depends(get_current_user)):
+    """Delete one finished history entry and all of its persisted report data."""
+    job = get_job_by_job_id(job_id)
+    if not job or job.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    current_status = JOBS.get(job_id, {}).get("status", job.status)
+    if current_status in ("queued", "running"):
+        raise HTTPException(status_code=409, detail="Không thể xóa tài liệu đang được xử lý")
+
+    try:
+        if not delete_job(job_id, current_user.id):
+            raise HTTPException(status_code=404, detail="Job not found")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print(f"Error deleting job {job_id}: {exc}")
+        raise HTTPException(status_code=500, detail="Không thể xóa lịch sử lúc này")
+
+    JOBS.pop(job_id, None)
+    return {"deleted": True, "job_id": job_id}
 
 @app.post("/check", response_model=dict, status_code=202)
 def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: Optional[User] = Depends(get_current_user_optional)):

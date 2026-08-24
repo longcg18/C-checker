@@ -250,6 +250,21 @@ export default function App() {
     navigate('/');
   }, [navigate]);
 
+  const handleDeleteHistory = useCallback(async (entry: HistoryEntry) => {
+    await api.deleteHistory(entry.job_id);
+    setHistory((items) => items.filter((item) => item.job_id !== entry.job_id));
+    if (currentResult?.job_id === entry.job_id) {
+      setCurrentResult(null);
+      setViewMode('workspace');
+    }
+    setToast({
+      id: String(Date.now()),
+      type: 'success',
+      title: 'Đã xóa tài liệu',
+      desc: `Lịch sử và kết quả của "${entry.fileName}" đã được xóa.`,
+    });
+  }, [currentResult]);
+
   // Auto-poll history if there are pending jobs
   useEffect(() => {
     if (!user) return;
@@ -335,6 +350,7 @@ export default function App() {
                     history={history}
                     onSelectEntry={handleSelectHistory}
                     onSelectProgress={handleSelectProgress}
+                    onDelete={handleDeleteHistory}
                     onRefresh={loadHistory}
                   />
                 </div>

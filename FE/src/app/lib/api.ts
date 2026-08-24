@@ -137,6 +137,10 @@ export const api = {
     return apiFetch('/history');
   },
 
+  deleteHistory(job_id: string): Promise<{ deleted: boolean; job_id: string }> {
+    return apiFetch(`/history/${job_id}`, { method: 'DELETE' });
+  },
+
   submitCheck(text: string, fileName?: string): Promise<SubmitResponse> {
     return apiFetch('/check', {
       method: 'POST',

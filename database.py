@@ -159,6 +159,21 @@ def get_jobs_by_user_id(user_id: str) -> List[Job]:
         print(f"Error getting jobs by user_id: {e}")
     return []
 
+def delete_job(job_id: str, user_id: str) -> bool:
+    """Delete a user's completed/failed job and its report items."""
+    job = get_job_by_job_id(job_id)
+    if not job or job.user_id != user_id:
+        return False
+
+    items_url = f"{SUPABASE_URL}/rest/v1/report_items?job_id=eq.{job.id}"
+    items_res = requests.delete(items_url, headers=HEADERS)
+    items_res.raise_for_status()
+
+    job_url = f"{SUPABASE_URL}/rest/v1/jobs?id=eq.{job.id}&user_id=eq.{user_id}"
+    job_res = requests.delete(job_url, headers=HEADERS)
+    job_res.raise_for_status()
+    return True
+
 def complete_job(job_id: str, status: str, verdict: str = None, max_score: float = None, runtime: float = None, result_json: dict = None, report_items: list = None):
     try:
         job = get_job_by_job_id(job_id)

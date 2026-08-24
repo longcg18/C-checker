@@ -5,6 +5,7 @@ interface DashboardTableProps {
   history: HistoryEntry[];
   onSelectEntry: (entry: HistoryEntry) => void;
   onSelectProgress: (jobId: string, fileName: string, startTime: number) => void;
+  onDelete: (entry: HistoryEntry) => Promise<void>;
   onRefresh: () => Promise<void>;
   isLoading?: boolean;
 }
@@ -42,8 +43,23 @@ const VERDICT_STYLE = {
   LOW: { color: 'var(--c-green)', bg: 'rgba(22, 163, 74, 0.1)', label: 'Thấp' },
 };
 
-export function DashboardTable({ history, onSelectEntry, onSelectProgress, onRefresh, isLoading }: DashboardTableProps) {
+export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDelete, onRefresh, isLoading }: DashboardTableProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
+
+  const handleDelete = async (event: React.MouseEvent, entry: HistoryEntry) => {
+    event.stopPropagation();
+    if (!window.confirm(`Xóa "${entry.fileName}" và toàn bộ kết quả phân tích?`)) return;
+    setDeletingJobId(entry.job_id);
+    try {
+      await onDelete(entry);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể xóa tài liệu';
+      window.alert(message);
+    } finally {
+      setDeletingJobId(null);
+    }
+  };
 
   const handleRefreshClick = async () => {
     setIsRefreshing(true);
@@ -151,10 +167,11 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onRef
           <table className="c-dashboard-table">
             <thead>
               <tr>
-                <th style={{ width: '45%' }}>Tên tài liệu</th>
-                <th style={{ width: '22%' }}>Thời gian kiểm tra</th>
+                <th style={{ width: '39%' }}>Tên tài liệu</th>
+                <th style={{ width: '20%' }}>Thời gian kiểm tra</th>
                 <th style={{ width: '15%' }}>Trạng thái</th>
-                <th style={{ width: '18%' }}>Độ trùng lặp</th>
+                <th style={{ width: '16%' }}>Độ trùng lặp</th>
+                <th style={{ width: '10%' }} aria-label="Thao tác" />
               </tr>
             </thead>
             <tbody>
@@ -232,6 +249,18 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onRef
                       ) : (
                         <span className="c-score-pending">—</span>
                       )}
+                    </td>
+
+                    <td>
+                      <button
+                        className="c-delete-history-btn"
+                        onClick={(event) => handleDelete(event, entry)}
+                        disabled={isRunning || deletingJobId === entry.job_id}
+                        title={isRunning ? 'Không thể xóa khi đang xử lý' : 'Xóa tài liệu'}
+                        aria-label={`Xóa ${entry.fileName}`}
+                      >
+                        {deletingJobId === entry.job_id ? '…' : 'Xóa'}
+                      </button>
                     </td>
                   </tr>
                 );
