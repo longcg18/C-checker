@@ -149,7 +149,8 @@ export const api = {
   },
 
   reportUrl(job_id: string): string {
-    return `${API_BASE}/report/${job_id}`;
+    const token = getToken();
+    return `${API_BASE}/report/${job_id}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
   },
 
   streamUrl(job_id: string): string {

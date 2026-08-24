@@ -131,7 +131,7 @@ STOPWORDS_ZH = {
 def _init_jieba():
     """Force Jiebar build cache when it startup."""
     list(jieba.cut("初始化"))  # trigger cache build ngay
-    print("[✓] Jieba cache initialized.")
+    print("[OK] Jieba cache initialized.")
 
 _init_jieba()
 
@@ -148,7 +148,7 @@ def get_model() -> SentenceTransformer:
     if _semantic_model is None:
         print(f"[*] Loading model {CONFIG['model_name']}...")
         _semantic_model = SentenceTransformer(CONFIG["model_name"])
-        print("[✓] Model ready.")
+        print("[OK] Model ready.")
     return _semantic_model
 
 
@@ -944,6 +944,33 @@ def get_current_user_optional(request: Request, credentials: HTTPAuthorizationCr
     except Exception:
         return None
 
+def authorize_job_access(job_id: str, current_user: Optional[User]):
+    """Verify that the caller may access a job and return its DB record."""
+    memory_job = JOBS.get(job_id)
+    db_job = get_job_by_job_id(job_id)
+
+    if not memory_job and not db_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    owner_id = memory_job.get("user_id") if memory_job else None
+    if not owner_id and db_job:
+        owner_id = db_job.user_id
+
+    if current_user:
+        if current_user.id != owner_id:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return db_job
+
+    # Keep the anonymous trial flow working: its UUID acts as the capability.
+    is_guest = bool(memory_job and memory_job.get("is_guest"))
+    if not is_guest and owner_id:
+        owner = get_user_by_id(owner_id)
+        is_guest = bool(owner and owner.username == "guest")
+
+    if not is_guest:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return db_job
+
 @app.post("/login")
 def login(req: LoginRequest):
     try:
@@ -1110,6 +1137,7 @@ def get_history(current_user: User = Depends(get_current_user)):
 
 @app.post("/check", response_model=dict, status_code=202)
 def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_user: Optional[User] = Depends(get_current_user_optional)):
+    is_guest = current_user is None
     if not current_user:
         # Khách dùng thử giới hạn 300 ký tự
         if len(req.text) > 300:
@@ -1136,6 +1164,8 @@ def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_u
         "progress": "0/0",
         "current_sentence": None,
         "created_at": datetime.now().isoformat(),
+        "user_id": current_user.id,
+        "is_guest": is_guest,
     }
 
     create_job(job_id=job_id, user_id=current_user.id, file_name=req.file_name)
@@ -1151,7 +1181,8 @@ def submit_check(req: CheckRequest, background_tasks: BackgroundTasks, current_u
 
 
 @app.get("/status/{job_id}", response_model=JobStatus)
-def get_status(job_id: str):
+def get_status(job_id: str, current_user: Optional[User] = Depends(get_current_user_optional)):
+    authorize_job_access(job_id, current_user)
     job = JOBS.get(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -1167,7 +1198,8 @@ def get_status(job_id: str):
 
 
 @app.get("/result/{job_id}")
-def get_result(job_id: str):
+def get_result(job_id: str, current_user: Optional[User] = Depends(get_current_user_optional)):
+    authorize_job_access(job_id, current_user)
     job = JOBS.get(job_id)
     if not job:
         db_job = get_job_by_job_id(job_id)
@@ -1198,6 +1230,7 @@ def get_result(job_id: str):
 
 @app.get("/stream/{job_id}")
 async def stream_status(job_id: str, current_user: Optional[User] = Depends(get_current_user_optional)):
+    authorize_job_access(job_id, current_user)
     async def event_generator():
         last_sent = None
         idle_count = 0
@@ -1248,7 +1281,8 @@ async def stream_status(job_id: str, current_user: Optional[User] = Depends(get_
 
 
 @app.get("/report/{job_id}", response_class=HTMLResponse)
-def get_report(job_id: str):
+def get_report(job_id: str, current_user: Optional[User] = Depends(get_current_user_optional)):
+    authorize_job_access(job_id, current_user)
     job = JOBS.get(job_id)
 
     if not job:
