@@ -21,3 +21,13 @@ typing_extensions==4.15.0
 Unidecode==1.4.0
 
 bcrypt
+beautifulsoup4
+fastapi
+google-auth
+PyJWT
+pydantic
+requests
+scikit-learn
+sentence-transformers
+torch
+uvicorn
