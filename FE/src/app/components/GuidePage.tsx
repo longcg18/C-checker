@@ -62,8 +62,8 @@ export function GuidePage({ onBack }: GuidePageProps) {
                 </p>
                 <ul className="c-guide-list">
                   <li>Nhấp nút <strong>"Đăng nhập Google"</strong> ở góc trên bên phải.</li>
-                  <li>Tải lên tệp tài liệu: <code>.docx</code>, <code>.pdf</code>, <code>.txt</code> không giới hạn dung lượng.</li>
-                  <li>Kiểm tra văn bản không giới hạn số lượng ký tự.</li>
+                  <li>Tải lên tệp tài liệu hỗ trợ: <code>.docx</code>, <code>.pdf</code>, <code>.txt</code>.</li>
+                  <li>Kiểm tra văn bản dài hơn giới hạn 300 ký tự của chế độ khách, trong phạm vi tài nguyên hệ thống.</li>
                   <li>Toàn bộ kết quả được lưu tự động vào <strong>Bảng Lịch sử kiểm tra</strong> cá nhân.</li>
                 </ul>
               </div>
@@ -133,7 +133,7 @@ export function GuidePage({ onBack }: GuidePageProps) {
             <div className="c-faq-list">
               <div className="c-faq-item">
                 <h4 className="c-faq-q">Q: Tôi có cần trả phí để sử dụng C-checker không?</h4>
-                <p className="c-faq-a">A: Không. C-checker hoàn toàn miễn phí. Dùng thử không cần tài khoản (tối đa 300 ký tự), đăng nhập Google để dùng đầy đủ không giới hạn.</p>
+                <p className="c-faq-a">A: Không. Chế độ khách hỗ trợ tối đa 300 ký tự; tài khoản đăng nhập có thể kiểm tra tài liệu dài hơn trong phạm vi tài nguyên hệ thống.</p>
               </div>
               <div className="c-faq-item">
                 <h4 className="c-faq-q">Q: Kết quả kiểm tra có chính xác 100% không?</h4>

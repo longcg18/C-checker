@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://c-checker.io.vn/sitemap.xml
+Sitemap: https://www.c-checker.io.vn/sitemap.xml

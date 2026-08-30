@@ -56,7 +56,7 @@ export function InfoModal({ type, onClose }: InfoModalProps) {
             <p className="c-modal-subtext">Cập nhật lần cuối: Tháng 8, 2026</p>
 
             <p>
-              Chào mừng bạn đến với <strong>C-checker</strong> (`https://c-checker.io.vn`). Chúng tôi cam kết bảo vệ thông tin cá nhân và dữ liệu tài liệu của người dùng tuân thủ theo các quy định bảo mật quốc tế và chính sách của Google.
+              Chào mừng bạn đến với <strong>C-checker</strong> (`https://www.c-checker.io.vn`). Chính sách này mô tả cách dịch vụ xử lý thông tin tài khoản và tài liệu của người dùng.
             </p>
 
             <h3>1. Thu thập dữ liệu và Văn bản kiểm tra</h3>
@@ -123,7 +123,7 @@ export function InfoModal({ type, onClose }: InfoModalProps) {
             <h2>ℹ️ Giới thiệu dự án C-checker</h2>
             
             <p className="c-modal-lead">
-              <strong>C-checker</strong> là giải pháp tiên phong tại Việt Nam chuyên hỗ trợ phát hiện đạo văn và rà soát trùng lặp văn bản tiếng Trung dành cho sinh viên, giảng viên và các nhà nghiên cứu.
+              <strong>C-checker</strong> là một trong những công cụ tiên phong tại Việt Nam hỗ trợ phát hiện trùng lặp và tìm nguồn tham khảo trong văn bản tiếng Trung dành cho sinh viên, giảng viên và nhà nghiên cứu.
             </p>
 
             <h3>Sứ mệnh của chúng tôi</h3>
@@ -160,7 +160,7 @@ export function InfoModal({ type, onClose }: InfoModalProps) {
                 <div className="c-contact-icon">🌐</div>
                 <div className="c-contact-detail">
                   <strong>Website chính thức:</strong>
-                  <a href="https://c-checker.io.vn" target="_blank" rel="noopener noreferrer">https://c-checker.io.vn</a>
+                  <a href="https://www.c-checker.io.vn" target="_blank" rel="noopener noreferrer">https://www.c-checker.io.vn</a>
                 </div>
               </div>
             </div>

@@ -16,7 +16,7 @@ export function TermsPage() {
         <header className="c-page-hero">
           <h1 className="c-page-title">Điều khoản dịch vụ</h1>
           <p className="c-page-subtitle">
-            Quy định sử dụng và điều kiện dịch vụ hệ thống kiểm tra đạo văn C-checker (c-checker.io.vn).
+            Quy định sử dụng và điều kiện dịch vụ hệ thống kiểm tra đạo văn C-checker (www.c-checker.io.vn).
           </p>
         </header>
 
@@ -106,9 +106,9 @@ export function TermsPage() {
                 <span className="c-about-contact-icon">✉️</span>
                 nguyenphuclong.work@gmail.com
               </a>
-              <a href="https://c-checker.io.vn" className="c-about-contact-link">
+              <a href="https://www.c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>
-                https://c-checker.io.vn
+                https://www.c-checker.io.vn
               </a>
             </div>
           </section>

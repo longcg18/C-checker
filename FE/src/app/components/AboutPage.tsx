@@ -21,7 +21,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
         <header className="c-page-hero">
           <h1 className="c-page-title">Giới thiệu C-checker</h1>
           <p className="c-page-subtitle">
-            Giải pháp kiểm tra đạo văn tiếng Trung thông minh, tiên phong tại Việt Nam
+            Một trong những công cụ tiên phong tại Việt Nam hỗ trợ đối chiếu và phát hiện trùng lặp trong văn bản tiếng Trung
           </p>
         </header>
 
@@ -34,7 +34,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
                 Trong bối cảnh học thuật tiếng Trung ngày càng phát triển tại Việt Nam, việc kiểm tra tính nguyên bản của các tài liệu, luận văn và bài nghiên cứu là một thách thức lớn do đặc thù ngôn ngữ tượng hình phức tạp.
               </p>
               <p className="c-about-text">
-                <strong>C-checker</strong> ra đời với sứ mệnh cung cấp một công cụ kiểm tra đạo văn tiếng Trung <strong>hoàn toàn miễn phí</strong>, chính xác cao, giúp nâng cao chất lượng học thuật và bảo vệ tính trung thực trong nghiên cứu của sinh viên, giảng viên và các nhà nghiên cứu Việt Nam.
+                <strong>C-checker</strong> ra đời với mục tiêu cung cấp một công cụ hỗ trợ kiểm tra trùng lặp tiếng Trung dễ tiếp cận. Kết quả là tín hiệu tham khảo để người dùng xem xét nguồn và cách trích dẫn, không thay thế kết luận chuyên môn của giảng viên hoặc cơ sở đào tạo.
               </p>
             </div>
           </section>
@@ -60,7 +60,7 @@ export function AboutPage({ onBack }: AboutPageProps) {
               <article className="c-about-tech-card c-about-tech-card--amber">
                 <div className="c-about-tech-icon">🌐</div>
                 <h3>DDGS Web Search</h3>
-                <p>Tìm kiếm và truy vấn các nguồn đối chiếu theo thời gian thực trên kho dữ liệu Internet thông qua DuckDuckGo Search API, không có giới hạn địa lý.</p>
+                <p>Tìm kiếm các trang web công khai có thể chứa cụm từ tương đồng để tạo danh sách nguồn tham khảo. Phạm vi kết quả phụ thuộc vào khả năng lập chỉ mục và phản hồi của dịch vụ tìm kiếm.</p>
               </article>
             </div>
           </section>
@@ -102,9 +102,9 @@ export function AboutPage({ onBack }: AboutPageProps) {
                 <span className="c-about-contact-icon">✉️</span>
                 nguyenphuclong.work@gmail.com
               </a>
-              <a href="https://c-checker.io.vn" className="c-about-contact-link">
+              <a href="https://www.c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>
-                https://c-checker.io.vn
+                https://www.c-checker.io.vn
               </a>
             </div>
           </section>

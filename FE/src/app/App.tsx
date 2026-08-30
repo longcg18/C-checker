@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Routes, Route, Link, NavLink, useNavigate, Navigate } from 'react-router';
+import { Routes, Route, Link, NavLink, useNavigate, useLocation, Navigate } from 'react-router';
 import { api, JobStatus, JobResult, getToken } from './lib/api';
 import { useJobStream } from './lib/useJobStream';
 import { UploadSection } from './components/UploadSection';
@@ -34,6 +34,35 @@ export interface HistoryEntry {
 
 type ViewMode = 'workspace' | 'progress' | 'result' | 'error';
 
+const SITE_URL = 'https://www.c-checker.io.vn';
+
+const PAGE_META: Record<string, { title: string; description: string }> = {
+  '/': {
+    title: 'C-checker — Kiểm tra đạo văn tiếng Trung',
+    description: 'C-checker giúp phát hiện trùng lặp và nguồn tham khảo trong văn bản tiếng Trung bằng so khớp ngữ nghĩa, LCS và N-gram.',
+  },
+  '/guide': {
+    title: 'Hướng dẫn sử dụng C-checker',
+    description: 'Hướng dẫn nhập văn bản, tải tài liệu, theo dõi tiến trình và đọc báo cáo kiểm tra trùng lặp tiếng Trung trên C-checker.',
+  },
+  '/about': {
+    title: 'Giới thiệu C-checker',
+    description: 'Tìm hiểu mục tiêu, phạm vi và các phương pháp MiniLM, LCS, N-gram được C-checker sử dụng để đối chiếu văn bản tiếng Trung.',
+  },
+  '/privacy': {
+    title: 'Chính sách bảo mật — C-checker',
+    description: 'Thông tin về dữ liệu tài khoản, tài liệu tải lên, cookie, quảng cáo và quyền yêu cầu xóa dữ liệu tại C-checker.',
+  },
+  '/terms': {
+    title: 'Điều khoản dịch vụ — C-checker',
+    description: 'Điều kiện sử dụng, giới hạn trách nhiệm và quyền của người dùng khi sử dụng dịch vụ C-checker.',
+  },
+  '/contact': {
+    title: 'Liên hệ C-checker',
+    description: 'Kênh liên hệ hỗ trợ kỹ thuật, góp ý và gửi yêu cầu liên quan đến quyền riêng tư tại C-checker.',
+  },
+};
+
 interface ActiveJob {
   job_id: string;
   fileName: string;
@@ -53,6 +82,7 @@ interface ToastState {
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [viewMode, setViewMode] = useState<ViewMode>('workspace');
   const [activeJob, setActiveJob] = useState<ActiveJob | null>(null);
   const [currentResult, setCurrentResult] = useState<JobResult | null>(null);
@@ -290,13 +320,28 @@ export default function App() {
   const isAnalyzing = isSubmitting || activeJob !== null;
   const isLoggedIn = !!user || !!getToken();
 
+  useEffect(() => {
+    const pathname = location.pathname === '/home' ? '/' : location.pathname;
+    const meta = PAGE_META[pathname] || PAGE_META['/'];
+    const canonicalUrl = `${SITE_URL}${pathname === '/' ? '/' : pathname}`;
+
+    document.title = meta.title;
+    document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', meta.description);
+    document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+    document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', meta.title);
+    document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', meta.description);
+    document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
+    document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.setAttribute('content', meta.title);
+    document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.setAttribute('content', meta.description);
+  }, [location.pathname]);
+
   // Workspace / Main Checker View
   const renderWorkspaceView = () => {
     return (
       <div className="c-workspace-layout">
         <div className="c-workspace-content">
           {/* Floating Mini Progress Banner if background job is running */}
-          {activeJob && (
+          {activeJob && viewMode !== 'progress' && (
             <div className="c-mini-progress-banner">
               <div className="c-mini-progress-main">
                 <div className="c-mini-progress-spinner" />
@@ -361,7 +406,7 @@ export default function App() {
                       Phát hiện đạo văn tiếng Trung thông minh
                     </h1>
                     <p className="c-intro-subtitle">
-                      Hệ thống <strong>C-checker</strong> là giải pháp tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng AI (MiniLM) và các thuật toán chuyên sâu.
+                      Hệ thống <strong>C-checker</strong> là một trong những công cụ tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng MiniLM và các thuật toán so khớp.
                     </p>
                   </div>
 

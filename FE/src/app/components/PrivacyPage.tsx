@@ -25,7 +25,7 @@ export function PrivacyPage() {
             <h2 className="c-page-section-title">1. Giới thiệu chung</h2>
             <div className="c-about-mission">
               <p className="c-about-text">
-                Chào mừng bạn đến với <strong>C-checker</strong> (<code>https://c-checker.io.vn</code>). Chúng tôi cam kết bảo vệ thông tin cá nhân và dữ liệu tài liệu của người dùng tuân thủ theo các quy định bảo mật quốc tế và chính sách của Google.
+                Chào mừng bạn đến với <strong>C-checker</strong> (<code>https://www.c-checker.io.vn</code>). Chính sách này mô tả loại dữ liệu chúng tôi xử lý, mục đích sử dụng và các lựa chọn của người dùng.
               </p>
               <p className="c-about-text">
                 Bằng việc truy cập hoặc sử dụng dịch vụ C-checker, bạn đồng ý với các điều khoản thu thập và xử lý dữ liệu được nêu trong chính sách này.
@@ -40,7 +40,7 @@ export function PrivacyPage() {
                 <div className="c-about-tech-icon">📝</div>
                 <h3>Văn bản & Tài liệu tải lên</h3>
                 <p>
-                  Dữ liệu văn bản tiếng Trung của bạn chỉ được sử dụng cho mục đích phân tích tính nguyên bản và đối chiếu trùng lặp. Chúng tôi <strong>không bán, không công khai, và không chia sẻ</strong> văn bản của bạn cho bất kỳ bên thứ ba nào.
+                  Dữ liệu văn bản tiếng Trung được sử dụng để phân tích trùng lặp và tạo báo cáo. Để tìm nguồn công khai, hệ thống có thể gửi các cụm từ tìm kiếm được trích từ văn bản tới dịch vụ tìm kiếm trên Internet. Chúng tôi không bán hoặc công khai tài liệu do người dùng tải lên.
                 </p>
               </article>
               <article className="c-about-tech-card c-about-tech-card--purple">
@@ -54,7 +54,16 @@ export function PrivacyPage() {
           </section>
 
           <section className="c-about-section">
-            <h2 className="c-page-section-title">3. Quảng cáo Google AdSense & Cookies bên thứ ba</h2>
+            <h2 className="c-page-section-title">3. Dịch vụ hỗ trợ xử lý</h2>
+            <div className="c-about-mission">
+              <p className="c-about-text">
+                C-checker sử dụng nhà cung cấp hạ tầng lưu trữ, đăng nhập Google OAuth và dịch vụ tìm kiếm web để vận hành các chức năng được mô tả. Các bên này có thể xử lý dữ liệu kỹ thuật cần thiết, như địa chỉ IP, thông tin trình duyệt, thông tin xác thực hoặc cụm từ truy vấn, theo chính sách riêng của họ.
+              </p>
+            </div>
+          </section>
+
+          <section className="c-about-section">
+            <h2 className="c-page-section-title">4. Quảng cáo Google AdSense & Cookies bên thứ ba</h2>
             <div className="c-about-mission">
               <p className="c-about-text">
                 Website có thể tích hợp dịch vụ quảng cáo từ <strong>Google AdSense</strong> và các mạng quảng cáo đối tác nhằm duy trì chi phí máy chủ phân tích miễn phí cho cộng đồng:
@@ -80,11 +89,11 @@ export function PrivacyPage() {
           </section>
 
           <section className="c-about-section">
-            <h2 className="c-page-section-title">4. Bảo mật truyền tải & Lưu trữ dữ liệu</h2>
+            <h2 className="c-page-section-title">5. Bảo mật truyền tải & Lưu trữ dữ liệu</h2>
             <div className="c-about-tech-grid">
               <article className="c-about-tech-card c-about-tech-card--green">
                 <div className="c-about-tech-icon">🛡️</div>
-                <h3>Mã hóa SSL/HTTPS 256-bit</h3>
+                <h3>Kết nối HTTPS</h3>
                 <p>
                   Toàn bộ luồng kết nối giữa trình duyệt của bạn và hệ thống máy chủ C-checker đều được mã hóa bằng chuẩn an toàn HTTPS (SSL). Dữ liệu gửi đi được bảo vệ chống nghe lén và giả mạo.
                 </p>
@@ -100,9 +109,9 @@ export function PrivacyPage() {
           </section>
 
           <section className="c-about-section">
-            <h2 className="c-page-section-title">5. Quyền của người dùng & Thay đổi chính sách</h2>
+            <h2 className="c-page-section-title">6. Quyền của người dùng & Thay đổi chính sách</h2>
             <p className="c-about-text">
-              Bạn có quyền yêu cầu xóa toàn bộ lịch sử kiểm tra và thông tin tài khoản cá nhân khỏi hệ thống bất kỳ lúc nào bằng cách liên hệ với chúng tôi.
+              Bạn có quyền yêu cầu xóa lịch sử kiểm tra và thông tin tài khoản cá nhân bằng cách liên hệ với chúng tôi. Chúng tôi sẽ xác minh người yêu cầu và phản hồi trong thời gian hợp lý; một số bản ghi kỹ thuật có thể được giữ lại khi pháp luật hoặc yêu cầu bảo mật hệ thống bắt buộc.
             </p>
             <p className="c-about-text">
               Chúng tôi có thể cập nhật chính sách bảo mật này theo thời gian để phù hợp với quy định mới. Mọi cập nhật sẽ được công bố trực tiếp tại trang này.
@@ -119,9 +128,9 @@ export function PrivacyPage() {
                 <span className="c-about-contact-icon">✉️</span>
                 nguyenphuclong.work@gmail.com
               </a>
-              <a href="https://c-checker.io.vn" className="c-about-contact-link">
+              <a href="https://www.c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>
-                https://c-checker.io.vn
+                https://www.c-checker.io.vn
               </a>
             </div>
           </section>
