@@ -14,6 +14,12 @@ import { AboutPage } from './components/AboutPage';
 import { PrivacyPage } from './components/PrivacyPage';
 import { TermsPage } from './components/TermsPage';
 import { ContactPage } from './components/ContactPage';
+import { KnowledgePage } from './components/KnowledgePage';
+import { ReportReadingArticle } from './components/ReportReadingArticle';
+import { LimitationsArticle } from './components/LimitationsArticle';
+import { AlgorithmsArticle } from './components/AlgorithmsArticle';
+import { ChinesePlagiarismChallengesArticle } from './components/ChinesePlagiarismChallengesArticle';
+import { RecognizeChinesePlagiarismArticle } from './components/RecognizeChinesePlagiarismArticle';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -60,6 +66,30 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
   '/contact': {
     title: 'Liên hệ C-checker',
     description: 'Kênh liên hệ hỗ trợ kỹ thuật, góp ý và gửi yêu cầu liên quan đến quyền riêng tư tại C-checker.',
+  },
+  '/kien-thuc': {
+    title: 'Kiến thức kiểm tra trùng lặp tiếng Trung — C-checker',
+    description: 'Tài liệu chuyên sâu về cách đọc báo cáo, phương pháp, hạn chế và sai số khi kiểm tra trùng lặp tiếng Trung bằng C-checker.',
+  },
+  '/kien-thuc/huong-dan-doc-bao-cao': {
+    title: 'Hướng dẫn đọc báo cáo C-checker',
+    description: 'Hiểu điểm trùng lặp toàn bài, điểm câu, LCS, N-gram, Semantic, Contiguous và cách kiểm chứng nguồn trong báo cáo C-checker.',
+  },
+  '/kien-thuc/han-che-va-sai-so': {
+    title: 'Hạn chế và sai số của C-checker',
+    description: 'Tìm hiểu dương tính giả, âm tính giả, giới hạn nguồn và cách diễn giải có trách nhiệm kết quả kiểm tra của C-checker.',
+  },
+  '/kien-thuc/cach-nhan-biet-dao-van-tieng-trung': {
+    title: 'Cách nhận biết đạo văn tiếng Trung — C-checker',
+    description: 'Nhận biết sao chép nguyên văn, diễn đạt lại hời hợt, sử dụng ý tưởng thiếu nguồn và cách kiểm tra văn bản tiếng Trung.',
+  },
+  '/kien-thuc/lcs-ngram-semantic-similarity': {
+    title: 'LCS, N-gram và Semantic Similarity trong C-checker',
+    description: 'Giải thích cách C-checker kết hợp LCS, N-gram, MiniLM Semantic và Contiguous để tìm nguồn tương đồng tiếng Trung.',
+  },
+  '/kien-thuc/kho-khan-kiem-tra-dao-van-tieng-trung': {
+    title: 'Vì sao kiểm tra tài liệu tiếng Trung khó? — C-checker',
+    description: 'Những trở ngại về kho dữ liệu, quyền truy cập, token hóa và cách đánh giá tỷ lệ tương đồng trong tài liệu tiếng Trung.',
   },
 };
 
@@ -569,28 +599,22 @@ export default function App() {
               Trang chủ
             </NavLink>
             <NavLink
-              to="/guide"
-              className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
-            >
-              Hướng dẫn sử dụng
-            </NavLink>
-            <NavLink
               to="/about"
               className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
             >
               Giới thiệu
             </NavLink>
             <NavLink
-              to="/privacy"
+              to="/kien-thuc"
               className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
             >
-              Bảo mật
+              Kiến thức
             </NavLink>
             <NavLink
-              to="/terms"
+              to="/guide"
               className={({ isActive }) => `c-nav-link ${isActive ? 'c-nav-link--active' : ''}`}
             >
-              Điều khoản
+              Hướng dẫn sử dụng
             </NavLink>
           </nav>
 
@@ -610,6 +634,12 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/kien-thuc" element={<KnowledgePage />} />
+          <Route path="/kien-thuc/huong-dan-doc-bao-cao" element={<ReportReadingArticle />} />
+          <Route path="/kien-thuc/han-che-va-sai-so" element={<LimitationsArticle />} />
+          <Route path="/kien-thuc/cach-nhan-biet-dao-van-tieng-trung" element={<RecognizeChinesePlagiarismArticle />} />
+          <Route path="/kien-thuc/lcs-ngram-semantic-similarity" element={<AlgorithmsArticle />} />
+          <Route path="/kien-thuc/kho-khan-kiem-tra-dao-van-tieng-trung" element={<ChinesePlagiarismChallengesArticle />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

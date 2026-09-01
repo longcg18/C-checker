@@ -17,6 +17,8 @@ export function Footer({ onOpenModal }: FooterProps) {
             <span className="c-footer-dot">•</span>
             <Link to="/guide">Hướng dẫn</Link>
             <span className="c-footer-dot">•</span>
+            <Link to="/kien-thuc">Kiến thức</Link>
+            <span className="c-footer-dot">•</span>
             <Link to="/privacy">Chính sách bảo mật</Link>
             <span className="c-footer-dot">•</span>
             <Link to="/terms">Điều khoản dịch vụ</Link>

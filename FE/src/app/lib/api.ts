@@ -71,7 +71,7 @@ export function setToken(token: string) {
   localStorage.setItem('c_checker_token', token);
 }
 export function getToken() {
-  return localStorage.getItem('c_checker_token');
+  return typeof window === 'undefined' ? null : localStorage.getItem('c_checker_token');
 }
 export function removeToken() {
   localStorage.removeItem('c_checker_token');
