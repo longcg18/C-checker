@@ -195,6 +195,62 @@ def split_sentences(text: str) -> List[str]:
     return sentences
 
 
+def split_sentence_spans(text: str) -> List[Dict]:
+    """Tách câu/khối nhưng giữ offset tuyệt đối trong văn bản gốc."""
+    spans: List[Dict] = []
+    segment_start = 0
+    for match in re.finditer(r'[。！？；;？！\n]+|$', text):
+        segment_end = match.start()
+        raw_segment = text[segment_start:segment_end]
+        leading = len(raw_segment) - len(raw_segment.lstrip())
+        trailing_end = len(raw_segment.rstrip())
+        content_start = segment_start + leading
+        content = raw_segment[leading:trailing_end]
+
+        for offset in range(0, len(content), CONFIG["max_sentence_len"]):
+            raw_chunk = content[offset:offset + CONFIG["max_sentence_len"]]
+            left_trim = len(raw_chunk) - len(raw_chunk.lstrip())
+            chunk = raw_chunk.strip()
+            normalized = normalize_text(chunk)
+            if len(normalized) >= 8:
+                start = content_start + offset + left_trim
+                spans.append({
+                    "text": normalized,
+                    "display_text": chunk,
+                    "start": start,
+                    "end": start + len(chunk),
+                })
+        segment_start = match.end()
+        if match.start() == len(text):
+            break
+    return spans
+
+
+def matched_token_ranges(display_text: str, matched_tokens: List[str], base_offset: int) -> List[Dict]:
+    """Trả các vùng token khớp trong văn bản gốc, gộp những vùng chồng/lền nhau."""
+    ranges = []
+    normalized_display = unicodedata.normalize("NFKC", display_text).lower()
+    for token in sorted(set(matched_tokens), key=len, reverse=True):
+        token = unicodedata.normalize("NFKC", token).lower().strip()
+        if len(token) <= 1:
+            continue
+        cursor = 0
+        while True:
+            index = normalized_display.find(token, cursor)
+            if index < 0:
+                break
+            ranges.append({"start": base_offset + index, "end": base_offset + index + len(token)})
+            cursor = index + len(token)
+
+    merged = []
+    for current in sorted(ranges, key=lambda item: (item["start"], item["end"])):
+        if merged and current["start"] <= merged[-1]["end"]:
+            merged[-1]["end"] = max(merged[-1]["end"], current["end"])
+        else:
+            merged.append(dict(current))
+    return merged
+
+
 def normalize_url(url: str) -> str:
     return re.sub(r"[?#].*", "", url or "").rstrip("/")
 
@@ -535,16 +591,17 @@ def run_check(job_id: str, text: str):
     start = time.time()
     JOBS[job_id]["status"] = "running"
 
-    text = normalize_text(text)
-    sentences = split_sentences(text)
+    original_text = unicodedata.normalize("NFKC", text).strip()
+    sentence_spans = split_sentence_spans(original_text)
 
     report_items: List[Dict] = []
     sentence_scores: List[float] = []
-    total = len(sentences)
+    total = len(sentence_spans)
  
     try:
         with DDGS() as ddgs:
-            for idx, sentence in enumerate(sentences, 1):
+            for idx, sentence_span in enumerate(sentence_spans, 1):
+                sentence = sentence_span["text"]
                 JOBS[job_id]["progress"] = f"{idx}/{total}"
                 JOBS[job_id]["current_sentence"] = sentence[:80]
                 try:
@@ -552,6 +609,15 @@ def run_check(job_id: str, text: str):
                 except UnicodeEncodeError:
                     print(f"[job {job_id[:8]}] ({idx}/{total}) [Chinese Text]")
                 results, max_lcs = analyze_sentence(sentence, ddgs)
+                for result in results:
+                    result["sentence_index"] = idx - 1
+                    result["sentence_start"] = sentence_span["start"]
+                    result["sentence_end"] = sentence_span["end"]
+                    result["matched_ranges"] = matched_token_ranges(
+                        sentence_span["display_text"],
+                        result.get("matched_tokens", []),
+                        sentence_span["start"],
+                    )
                 report_items.extend(results)
                 
                 # Điểm của câu này là final_score lớn nhất nếu có trùng, hoặc lcs lớn nhất tìm được làm điểm tối thiểu
@@ -590,9 +656,10 @@ def run_check(job_id: str, text: str):
         "avg_score": round(avg_score, 4),
         "verdict": verdict,
         "verdict_text": verdict_text,
-        "text_length": len(text),
+        "text_length": len(original_text),
+        "original_text": original_text,
         "report_items": report_items,
-        "html_report": build_html_report(report_items, len(text), runtime, verdict_text, total, avg_score),
+        "html_report": build_html_report(report_items, len(original_text), runtime, verdict_text, total, avg_score),
         "finished_at": datetime.now().isoformat(),
     })
  
@@ -604,6 +671,23 @@ def run_check(job_id: str, text: str):
             k: v for k, v in JOBS[job_id].items()
             if k not in ("html_report", "report_items")
         }
+        if JOBS[job_id].get("is_guest"):
+            # Không lưu toàn văn của lượt dùng thử khách vào result_json.
+            res_json.pop("original_text", None)
+        else:
+            # Chỉ lưu metadata vị trí; nội dung nguồn đầy đủ đã nằm trong bảng
+            # report_items. Cách này tránh nhân đôi snippet của tài liệu dài.
+            res_json["document_match_ranges"] = [
+                {
+                    "sentence": item.get("sentence"),
+                    "url": item.get("url"),
+                    "sentence_index": item.get("sentence_index"),
+                    "sentence_start": item.get("sentence_start"),
+                    "sentence_end": item.get("sentence_end"),
+                    "matched_ranges": item.get("matched_ranges", []),
+                }
+                for item in report_items
+            ]
         complete_job(
             job_id=job_id,
             status="done",
@@ -1230,7 +1314,18 @@ def get_result(job_id: str, current_user: Optional[User] = Depends(get_current_u
         if db_job and db_job.status == "done" and db_job.result_json:
             data = dict(db_job.result_json) if isinstance(db_job.result_json, dict) else json.loads(db_job.result_json)
             data["job_id"] = job_id
-            data["report_items"] = get_report_items(db_job.id)
+            items = get_report_items(db_job.id)
+            range_records = data.pop("document_match_ranges", [])
+            ranges_by_key: Dict[Tuple[str, str], List[Dict]] = {}
+            for record in range_records:
+                key = (record.get("sentence") or "", record.get("url") or "")
+                ranges_by_key.setdefault(key, []).append(record)
+            for item in items:
+                key = (item.get("sentence") or "", item.get("url") or "")
+                records = ranges_by_key.get(key, [])
+                if records:
+                    item.update(records.pop(0))
+            data["report_items"] = items
             return data
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] != "done":
@@ -1248,6 +1343,8 @@ def get_result(job_id: str, current_user: Optional[User] = Depends(get_current_u
         "runtime": job["runtime"],
         "sentences_checked": job["sentences_checked"],
         "matches_found": job["matches_found"],
+        "text_length": job.get("text_length", 0),
+        "original_text": job.get("original_text", ""),
         "finished_at": job["finished_at"],
         "report_items": job["report_items"],
     }

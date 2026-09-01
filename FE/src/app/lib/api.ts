@@ -36,6 +36,10 @@ export interface ReportItem {
   semantic_score: number;
   contiguous_score: number;
   final_score: number;
+  sentence_index?: number;
+  sentence_start?: number;
+  sentence_end?: number;
+  matched_ranges?: Array<{ start: number; end: number }>;
 }
 
 export interface JobResult {
@@ -50,6 +54,8 @@ export interface JobResult {
   matches_found: number;
   finished_at: string;
   report_items: ReportItem[];
+  text_length?: number;
+  original_text?: string;
 }
 
 export interface HistoryItemRaw {

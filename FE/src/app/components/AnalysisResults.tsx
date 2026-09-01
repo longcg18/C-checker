@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { JobResult } from '../lib/api';
 import { api } from '../lib/api';
+import { DocumentMatchView } from './DocumentMatchView';
 
 interface AnalysisResultsProps {
   result: JobResult;
@@ -83,6 +85,8 @@ function ScorePill({ label, value, highlight }: { label: string; value: number; 
 }
 
 export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
+  const hasDocumentView = Boolean(result.original_text && result.report_items.some((item) => item.matched_ranges?.length));
+  const [resultView, setResultView] = useState<'document' | 'sources'>(hasDocumentView ? 'document' : 'sources');
   const avgScore = result.avg_score !== undefined
     ? result.avg_score
     : (() => {
@@ -196,8 +200,17 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
         </button>
       </div>
 
+      {result.report_items.length > 0 && (
+        <div className="c-result-view-tabs" role="tablist" aria-label="Chế độ xem kết quả">
+          <button type="button" role="tab" aria-selected={resultView === 'document'} disabled={!hasDocumentView} className={resultView === 'document' ? 'is-active' : ''} onClick={() => setResultView('document')}>Toàn văn đã đánh dấu</button>
+          <button type="button" role="tab" aria-selected={resultView === 'sources'} className={resultView === 'sources' ? 'is-active' : ''} onClick={() => setResultView('sources')}>Nguồn chi tiết</button>
+        </div>
+      )}
+
+      {resultView === 'document' && hasDocumentView ? <DocumentMatchView result={result} /> : null}
+
       {/* ── Match Cards ── */}
-      {result.report_items.length === 0 ? (
+      {resultView === 'sources' && (result.report_items.length === 0 ? (
         <div className="c-no-matches">
           <div className="c-no-matches-icon">✅</div>
           <h3>Không phát hiện đạo văn</h3>
@@ -292,7 +305,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
             </div>
           ))}
         </div>
-      )}
+      ))}
     </div>
   );
 }

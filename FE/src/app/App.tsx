@@ -544,6 +544,7 @@ export default function App() {
             <div className="c-results-layout" style={{ marginTop: 24 }}>
               <div className="c-results-container">
                 <AnalysisResults
+                  key={currentResult.job_id}
                   result={currentResult}
                   onReset={handleReset}
                 />
