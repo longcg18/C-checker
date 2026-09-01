@@ -48,9 +48,9 @@ export function ReportReadingArticle() {
               Cho biết số đơn vị văn bản được hệ thống tách và phân tích. Các đoạn dài có thể được chia thành khối tối đa khoảng 120 ký tự, nên “câu” trong báo cáo đôi khi là một phần câu hoặc một khối văn bản chứ không hoàn toàn trùng với dấu câu trong bản gốc.
             </p>
 
-            <h3>Đoạn nghi ngờ và điểm câu cao nhất</h3>
+            <h3>Đoạn nghi ngờ và đoạn trùng lặp cao nhất</h3>
             <p>
-              “Đoạn nghi ngờ” là tổng số kết quả nguồn đạt ngưỡng hiển thị, không nhất thiết bằng số câu bị nghi ngờ vì một câu có thể dẫn tới nhiều nguồn. “Điểm câu cao nhất” là điểm Final lớn nhất trong các kết quả được giữ lại. Một điểm cao đơn lẻ cần được kiểm tra kỹ, nhưng không nên dùng nó thay cho đánh giá toàn văn bản.
+              “Đoạn nghi ngờ” là tổng số kết quả nguồn đạt ngưỡng hiển thị, không nhất thiết bằng số câu bị nghi ngờ vì một câu có thể dẫn tới nhiều nguồn. “Đoạn trùng lặp cao nhất” là mức Final lớn nhất trong các kết quả được giữ lại. Một đoạn có mức trùng lặp cao cần được kiểm tra kỹ, nhưng không nên dùng nó thay cho đánh giá toàn văn bản.
             </p>
           </section>
 

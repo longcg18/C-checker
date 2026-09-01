@@ -1155,9 +1155,11 @@ def get_history(current_user: User = Depends(get_current_user)):
                         "verdict": mem_job.get("verdict", "LOW"),
                         "verdict_text": mem_job.get("verdict_text", ""),
                         "max_score": mem_job.get("max_score", 0.0),
+                        "avg_score": mem_job.get("avg_score", 0.0),
                         "runtime": mem_job.get("runtime", 0.0),
                         "sentences_checked": mem_job.get("sentences_checked", 0),
                         "matches_found": mem_job.get("matches_found", 0),
+                        "text_length": mem_job.get("text_length", 0),
                         "finished_at": mem_job.get("finished_at"),
                     }
                 
@@ -1168,7 +1170,11 @@ def get_history(current_user: User = Depends(get_current_user)):
                         "verdict": res.get("verdict", "LOW"),
                         "verdict_text": res.get("verdict_text", ""),
                         "max_score": res.get("max_score", 0.0),
+                        "avg_score": res.get("avg_score", 0.0),
+                        "runtime": res.get("runtime", 0.0),
+                        "sentences_checked": res.get("sentences_checked", 0),
                         "matches_found": res.get("matches_found", 0),
+                        "text_length": res.get("text_length", 0),
                     })
                 else:
                     job_data.update({

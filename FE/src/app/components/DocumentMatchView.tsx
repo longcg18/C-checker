@@ -68,7 +68,7 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
                 key={`${segment.start}-${segment.end}`}
                 data-match-indexes={segment.matchIndexes.join(' ')}
                 className={`c-document-highlight c-document-highlight--${scoreTone(score)} ${selected === primaryIndex ? 'is-selected' : ''}`}
-                title={`${segment.matchIndexes.length} nguồn · Điểm cao nhất ${Math.round(score * 100)}%`}
+                title={`${segment.matchIndexes.length} nguồn · Mức trùng lặp cao nhất ${Math.round(score * 100)}%`}
                 onClick={() => selectMatch(primaryIndex)}
               >{content}<sup>#{primaryIndex + 1}</sup></mark>
             );

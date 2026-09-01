@@ -81,6 +81,12 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
     });
   };
 
+  const formatRuntime = (seconds = 0) => {
+    const minutes = Math.floor(seconds / 60);
+    const rest = (seconds % 60).toFixed(1);
+    return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
+  };
+
   // Helper to get file icon
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
@@ -167,10 +173,10 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
           <table className="c-dashboard-table">
             <thead>
               <tr>
-                <th style={{ width: '39%' }}>Tên tài liệu</th>
-                <th style={{ width: '20%' }}>Thời gian kiểm tra</th>
-                <th style={{ width: '15%' }}>Trạng thái</th>
-                <th style={{ width: '16%' }}>Độ trùng lặp</th>
+                <th style={{ width: '42%' }}>Tên tài liệu</th>
+                <th style={{ width: '17%' }}>Thời gian kiểm tra</th>
+                <th style={{ width: '13%' }}>Trạng thái</th>
+                <th style={{ width: '18%' }}>Độ trùng lặp</th>
                 <th style={{ width: '10%' }} aria-label="Thao tác" />
               </tr>
             </thead>
@@ -183,6 +189,7 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
 
                 const vs = isDone && entry.verdict ? (VERDICT_STYLE[entry.verdict] || VERDICT_STYLE.LOW) : null;
                 const maxScorePct = isDone && entry.max_score !== undefined ? ((entry.max_score ?? 0) * 100).toFixed(0) : null;
+                const avgScorePct = isDone ? ((entry.avg_score ?? entry.max_score ?? 0) * 100).toFixed(1) : null;
 
                 const handleRowClick = () => {
                   if (isDone) {
@@ -202,9 +209,14 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                     <td>
                       <div className="c-table-cell-file">
                         {getFileIcon(entry.fileName)}
-                        <span className="c-file-name" title={entry.fileName}>
-                          {entry.fileName}
-                        </span>
+                        <div className="c-file-info">
+                          <span className="c-file-name" title={entry.fileName}>{entry.fileName}</span>
+                          {isDone && (
+                            <span className="c-file-result-meta">
+                              {entry.sentences_checked ?? 0} câu · {entry.matches_found ?? 0} đoạn · {(entry.text_length ?? 0).toLocaleString()} ký tự · {formatRuntime(entry.runtime)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
 
@@ -230,7 +242,7 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
 
                     {/* Results / Score */}
                     <td>
-                      {isDone && vs && maxScorePct !== null ? (
+                      {isDone && vs && maxScorePct !== null && avgScorePct !== null ? (
                         <div className="c-table-score-wrapper">
                           <span
                             className="c-score-label"
@@ -238,8 +250,9 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                           >
                             {vs.label}
                           </span>
-                          <span className="c-score-percent" style={{ color: vs.color }}>
-                            {maxScorePct}%
+                          <span className="c-score-values">
+                            <strong className="c-score-percent" style={{ color: vs.color }}>{avgScorePct}% toàn bài</strong>
+                            <small>{maxScorePct}% đoạn cao nhất</small>
                           </span>
                         </div>
                       ) : isFailed ? (
@@ -252,15 +265,20 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                     </td>
 
                     <td>
-                      <button
-                        className="c-delete-history-btn"
-                        onClick={(event) => handleDelete(event, entry)}
-                        disabled={isRunning || deletingJobId === entry.job_id}
-                        title={isRunning ? 'Không thể xóa khi đang xử lý' : 'Xóa tài liệu'}
-                        aria-label={`Xóa ${entry.fileName}`}
-                      >
-                        {deletingJobId === entry.job_id ? '…' : 'Xóa'}
-                      </button>
+                      <div className="c-history-row-actions">
+                        {isDone && (
+                          <button className="c-view-history-btn" onClick={(event) => { event.stopPropagation(); onSelectEntry(entry); }}>Xem</button>
+                        )}
+                        <button
+                          className="c-delete-history-btn"
+                          onClick={(event) => handleDelete(event, entry)}
+                          disabled={isRunning || deletingJobId === entry.job_id}
+                          title={isRunning ? 'Không thể xóa khi đang xử lý' : 'Xóa tài liệu'}
+                          aria-label={`Xóa ${entry.fileName}`}
+                        >
+                          {deletingJobId === entry.job_id ? '…' : 'Xóa'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

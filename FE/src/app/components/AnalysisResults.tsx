@@ -87,6 +87,7 @@ function ScorePill({ label, value, highlight }: { label: string; value: number; 
 export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
   const hasDocumentView = Boolean(result.original_text && result.report_items.some((item) => item.matched_ranges?.length));
   const [resultView, setResultView] = useState<'document' | 'sources'>(hasDocumentView ? 'document' : 'sources');
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const avgScore = result.avg_score !== undefined
     ? result.avg_score
     : (() => {
@@ -121,6 +122,24 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
 
   return (
     <div className="c-results">
+      <button
+        type="button"
+        className="c-result-summary-toggle"
+        aria-expanded={summaryExpanded}
+        onClick={() => setSummaryExpanded((expanded) => !expanded)}
+      >
+        <span className="c-result-summary-toggle-main">
+          <span className="c-result-summary-dot" style={{ background: vc.color }} />
+          <span><strong>{vc.label.split('—')[0].trim()}</strong> · {(avgScore * 100).toFixed(1)}% trùng lặp cả bài</span>
+        </span>
+        <span className="c-result-summary-toggle-action">
+          {summaryExpanded ? 'Ẩn chi tiết' : 'Chi tiết & xuất báo cáo'}
+          <span aria-hidden="true">{summaryExpanded ? '↑' : '↓'}</span>
+        </span>
+      </button>
+
+      {summaryExpanded && (
+        <div className="c-result-summary-details">
       {/* ── Verdict Banner ── */}
       <div
         className="c-verdict-banner"
@@ -155,7 +174,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
           <div className="c-stat-card-value" style={{ color: (result.max_score ?? 0) >= 0.7 ? 'var(--c-red)' : (result.max_score ?? 0) >= 0.45 ? '#e8a838' : 'var(--c-green)' }}>
             {((result.max_score ?? 0) * 100).toFixed(0)}%
           </div>
-          <div className="c-stat-card-label">Điểm câu cao nhất</div>
+          <div className="c-stat-card-label">Đoạn trùng lặp cao nhất</div>
         </div>
         <div className="c-stat-card">
           <div className="c-stat-card-value">{formatRuntime(result.runtime)}</div>
@@ -199,11 +218,23 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
           Kiểm tra mới
         </button>
       </div>
+        </div>
+      )}
 
       {result.report_items.length > 0 && (
-        <div className="c-result-view-tabs" role="tablist" aria-label="Chế độ xem kết quả">
-          <button type="button" role="tab" aria-selected={resultView === 'document'} disabled={!hasDocumentView} className={resultView === 'document' ? 'is-active' : ''} onClick={() => setResultView('document')}>Toàn văn đã đánh dấu</button>
-          <button type="button" role="tab" aria-selected={resultView === 'sources'} className={resultView === 'sources' ? 'is-active' : ''} onClick={() => setResultView('sources')}>Nguồn chi tiết</button>
+        <div className="c-result-view-tabs">
+          <div className="c-result-view-tab-buttons" role="tablist" aria-label="Chế độ xem kết quả">
+            <button type="button" role="tab" aria-selected={resultView === 'document'} disabled={!hasDocumentView} className={resultView === 'document' ? 'is-active' : ''} onClick={() => setResultView('document')}>Toàn văn đã đánh dấu</button>
+            <button type="button" role="tab" aria-selected={resultView === 'sources'} className={resultView === 'sources' ? 'is-active' : ''} onClick={() => setResultView('sources')}>Nguồn chi tiết</button>
+          </div>
+          <div className="c-result-view-actions">
+            <button type="button" onClick={() => window.open(api.reportUrl(result.job_id), '_blank')}>Báo cáo HTML</button>
+            <button type="button" onClick={() => {
+              const reportUrl = api.reportUrl(result.job_id);
+              window.open(`${reportUrl}${reportUrl.includes('?') ? '&' : '?'}print=true`, '_blank');
+            }}>Xuất PDF</button>
+            <button type="button" onClick={onReset}>Kiểm tra mới</button>
+          </div>
         </div>
       )}
 
