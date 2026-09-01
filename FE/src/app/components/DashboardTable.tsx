@@ -37,12 +37,6 @@ const STATUS_BADGE = {
   }
 };
 
-const VERDICT_STYLE = {
-  HIGH: { color: 'var(--c-red)', bg: 'rgba(220, 38, 38, 0.1)', label: 'Cao' },
-  MEDIUM: { color: '#d97706', bg: 'rgba(217, 119, 6, 0.1)', label: 'Trung bình' },
-  LOW: { color: 'var(--c-green)', bg: 'rgba(22, 163, 74, 0.1)', label: 'Thấp' },
-};
-
 export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDelete, onRefresh, isLoading }: DashboardTableProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
@@ -70,21 +64,43 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
     }
   };
 
-  // Helper to format date
-  const formatDate = (date: Date) => {
-    return date.toLocaleString('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatTimestamp = (date: Date) => ({
+    date: date.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
-    });
-  };
+    }),
+    time: date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  });
 
   const formatRuntime = (seconds = 0) => {
     const minutes = Math.floor(seconds / 60);
     const rest = (seconds % 60).toFixed(1);
     return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
+  };
+
+  const formatFileName = (fileName: string, maxLength = 34) => {
+    if (fileName.length <= maxLength) return fileName;
+    const dotIndex = fileName.lastIndexOf('.');
+    const hasExtension = dotIndex > 0 && dotIndex < fileName.length - 1;
+    const extension = hasExtension ? fileName.slice(dotIndex) : '';
+    const stem = hasExtension ? fileName.slice(0, dotIndex) : fileName;
+    const available = Math.max(12, maxLength - extension.length - 1);
+    const headLength = Math.ceil(available * 0.68);
+    const tailLength = Math.max(3, available - headLength);
+    return `${stem.slice(0, headLength)}…${stem.slice(-tailLength)}${extension}`;
+  };
+
+  const getResultMeta = (entry: HistoryEntry) => {
+    const items: string[] = [];
+    if ((entry.sentences_checked ?? 0) > 0) items.push(`${entry.sentences_checked} câu`);
+    if ((entry.matches_found ?? 0) > 0) items.push(`${entry.matches_found} nguồn trùng`);
+    if ((entry.text_length ?? 0) > 0) items.push(`${entry.text_length!.toLocaleString()} ký tự`);
+    if ((entry.runtime ?? 0) > 0) items.push(formatRuntime(entry.runtime));
+    return items;
   };
 
   // Helper to get file icon
@@ -173,23 +189,26 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
           <table className="c-dashboard-table">
             <thead>
               <tr>
-                <th style={{ width: '42%' }}>Tên tài liệu</th>
-                <th style={{ width: '17%' }}>Thời gian kiểm tra</th>
-                <th style={{ width: '13%' }}>Trạng thái</th>
-                <th style={{ width: '18%' }}>Độ trùng lặp</th>
-                <th style={{ width: '10%' }} aria-label="Thao tác" />
+                <th style={{ width: '41%' }}>Tên tài liệu</th>
+                <th style={{ width: '16%' }}>Thời gian kiểm tra</th>
+                <th className="c-table-status-column" style={{ width: '14%' }}>Trạng thái</th>
+                <th style={{ width: '14%' }}>Độ trùng lặp</th>
+                <th className="c-table-actions-column" style={{ width: '15%' }} aria-label="Thao tác" />
               </tr>
             </thead>
             <tbody>
               {history.map((entry) => {
                 const badge = STATUS_BADGE[entry.status] || STATUS_BADGE.queued;
                 const isRunning = entry.status === 'queued' || entry.status === 'running';
+                const isProcessing = entry.status === 'running';
                 const isDone = entry.status === 'done';
                 const isFailed = entry.status === 'failed';
 
-                const vs = isDone && entry.verdict ? (VERDICT_STYLE[entry.verdict] || VERDICT_STYLE.LOW) : null;
-                const maxScorePct = isDone && entry.max_score !== undefined ? ((entry.max_score ?? 0) * 100).toFixed(0) : null;
-                const avgScorePct = isDone ? ((entry.avg_score ?? entry.max_score ?? 0) * 100).toFixed(1) : null;
+                const avgScorePct = isDone && entry.avg_score !== undefined
+                  ? (entry.avg_score * 100).toFixed(1)
+                  : null;
+                const resultMeta = getResultMeta(entry);
+                const timestamp = formatTimestamp(entry.timestamp);
 
                 const handleRowClick = () => {
                   if (isDone) {
@@ -210,10 +229,10 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                       <div className="c-table-cell-file">
                         {getFileIcon(entry.fileName)}
                         <div className="c-file-info">
-                          <span className="c-file-name" title={entry.fileName}>{entry.fileName}</span>
-                          {isDone && (
+                          <span className="c-file-name" title={entry.fileName}>{formatFileName(entry.fileName)}</span>
+                          {isDone && resultMeta.length > 0 && (
                             <span className="c-file-result-meta">
-                              {entry.sentences_checked ?? 0} câu · {entry.matches_found ?? 0} đoạn · {(entry.text_length ?? 0).toLocaleString()} ký tự · {formatRuntime(entry.runtime)}
+                              {resultMeta.join(' · ')}
                             </span>
                           )}
                         </div>
@@ -222,11 +241,14 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
 
                     {/* Timestamp */}
                     <td>
-                      <span className="c-table-date">{formatDate(entry.timestamp)}</span>
+                      <span className="c-table-date">
+                        <span>{timestamp.date}</span>
+                        <span>{timestamp.time}</span>
+                      </span>
                     </td>
 
                     {/* Status badge */}
-                    <td>
+                    <td className="c-table-status-column">
                       <span
                         className="c-status-badge"
                         style={{ backgroundColor: badge.bg, color: badge.color }}
@@ -242,19 +264,8 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
 
                     {/* Results / Score */}
                     <td>
-                      {isDone && vs && maxScorePct !== null && avgScorePct !== null ? (
-                        <div className="c-table-score-wrapper">
-                          <span
-                            className="c-score-label"
-                            style={{ color: vs.color, backgroundColor: vs.bg }}
-                          >
-                            {vs.label}
-                          </span>
-                          <span className="c-score-values">
-                            <strong className="c-score-percent" style={{ color: vs.color }}>{avgScorePct}% toàn bài</strong>
-                            <small>{maxScorePct}% đoạn cao nhất</small>
-                          </span>
-                        </div>
+                      {isDone && avgScorePct !== null ? (
+                        <strong className="c-score-percent">{avgScorePct}%</strong>
                       ) : isFailed ? (
                         <span className="c-score-error" title={entry.error || 'Lỗi không rõ'}>
                           Chi tiết lỗi
@@ -264,7 +275,7 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                       )}
                     </td>
 
-                    <td>
+                    <td className="c-table-actions-column">
                       <div className="c-history-row-actions">
                         {isDone && (
                           <button className="c-view-history-btn" onClick={(event) => { event.stopPropagation(); onSelectEntry(entry); }}>Xem</button>
@@ -272,8 +283,8 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                         <button
                           className="c-delete-history-btn"
                           onClick={(event) => handleDelete(event, entry)}
-                          disabled={isRunning || deletingJobId === entry.job_id}
-                          title={isRunning ? 'Không thể xóa khi đang xử lý' : 'Xóa tài liệu'}
+                          disabled={isProcessing || deletingJobId === entry.job_id}
+                          title={isProcessing ? 'Không thể xóa khi đang xử lý' : 'Xóa tài liệu'}
                           aria-label={`Xóa ${entry.fileName}`}
                         >
                           {deletingJobId === entry.job_id ? '…' : 'Xóa'}

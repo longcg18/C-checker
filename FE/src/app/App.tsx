@@ -20,6 +20,10 @@ import { LimitationsArticle } from './components/LimitationsArticle';
 import { AlgorithmsArticle } from './components/AlgorithmsArticle';
 import { ChinesePlagiarismChallengesArticle } from './components/ChinesePlagiarismChallengesArticle';
 import { RecognizeChinesePlagiarismArticle } from './components/RecognizeChinesePlagiarismArticle';
+import { SimilarityThresholdArticle } from './components/SimilarityThresholdArticle';
+import { ResearchTrendsArticle } from './components/ResearchTrendsArticle';
+import { ChineseComparisonArticle } from './components/ChineseComparisonArticle';
+import { IntentionalPlagiarismArticle } from './components/IntentionalPlagiarismArticle';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -74,6 +78,22 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
   '/kien-thuc': {
     title: 'Kiến thức kiểm tra trùng lặp tiếng Trung — C-checker',
     description: 'Tài liệu chuyên sâu về cách đọc báo cáo, phương pháp, hạn chế và sai số khi kiểm tra trùng lặp tiếng Trung bằng C-checker.',
+  },
+  '/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam': {
+    title: 'Bao nhiêu % trùng lặp thì có thể yên tâm? — C-checker',
+    description: 'Tìm hiểu các mốc tỷ lệ trùng lặp tham khảo, cách đọc vị trí trùng và quy trình đánh giá bài viết trước khi nộp.',
+  },
+  '/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc': {
+    title: 'Xu hướng nghiên cứu ngôn ngữ và văn hóa Trung Quốc — C-checker',
+    description: 'Khám phá các hướng nghiên cứu về khối liệu tiếng Trung, AI, nhân văn số, diễn ngôn mạng xã hội và ứng dụng xuyên ngành.',
+  },
+  '/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon': {
+    title: 'Vì sao kiểm tra đạo văn tiếng Trung khó hơn? — C-checker',
+    description: 'So sánh những khó khăn khi kiểm tra tiếng Trung với tiếng Anh, tiếng Việt về tách từ, hệ chữ, ngữ nghĩa và nguồn dữ liệu.',
+  },
+  '/kien-thuc/dao-van-vo-y-va-co-y': {
+    title: 'Phân biệt đạo văn vô ý và cố ý — C-checker',
+    description: 'Hiểu sự khác nhau giữa đạo văn vô ý và cố ý, các tình huống thường gặp và cách phòng tránh sai sót trích dẫn.',
   },
   '/kien-thuc/huong-dan-doc-bao-cao': {
     title: 'Hướng dẫn đọc báo cáo C-checker',
@@ -545,7 +565,7 @@ export default function App() {
           )}
 
           {viewMode === 'result' && currentResult && (
-            <div className="c-results-layout" style={{ marginTop: 24 }}>
+            <div className="c-results-layout">
               <div className="c-results-container">
                 <AnalysisResults
                   key={currentResult.job_id}
@@ -630,7 +650,7 @@ export default function App() {
       </header>
 
       {/* ── Main Routing Layout ── */}
-      <main className="c-main">
+      <main className={`c-main ${viewMode === 'result' && (location.pathname === '/' || location.pathname === '/home') ? 'c-main--results' : ''}`}>
         <Routes>
           <Route path="/" element={renderWorkspaceView()} />
           <Route path="/home" element={renderWorkspaceView()} />
@@ -640,6 +660,10 @@ export default function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/kien-thuc" element={<KnowledgePage />} />
+          <Route path="/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam" element={<SimilarityThresholdArticle />} />
+          <Route path="/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc" element={<ResearchTrendsArticle />} />
+          <Route path="/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon" element={<ChineseComparisonArticle />} />
+          <Route path="/kien-thuc/dao-van-vo-y-va-co-y" element={<IntentionalPlagiarismArticle />} />
           <Route path="/kien-thuc/huong-dan-doc-bao-cao" element={<ReportReadingArticle />} />
           <Route path="/kien-thuc/han-che-va-sai-so" element={<LimitationsArticle />} />
           <Route path="/kien-thuc/cach-nhan-biet-dao-van-tieng-trung" element={<RecognizeChinesePlagiarismArticle />} />

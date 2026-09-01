@@ -4,7 +4,7 @@ export function ChinesePlagiarismChallengesArticle() {
   const navigate = useNavigate();
   return (
     <article className="c-page-layout c-article-layout"><div className="c-page-container">
-      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><span aria-hidden="true">←</span> Quay lại mục Kiến thức</button>
+      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg> Quay lại mục Kiến thức</button>
       <header className="c-page-hero"><div className="c-page-hero-badge">Bối cảnh người học</div><h1 className="c-page-title">Vì sao kiểm tra trùng lặp tài liệu tiếng Trung khó?</h1><p className="c-page-subtitle">Từ khả năng tiếp cận kho học thuật đến đặc điểm chữ Hán, nguồn đóng và cách hiểu sai tỷ lệ tương đồng.</p><div className="c-article-byline">Ban biên tập C-checker · Cập nhật 01/09/2026 · 8 phút đọc</div></header>
       <div className="c-page-content c-article-content">
         <section><h2>1. Khó khăn không chỉ nằm ở thuật toán</h2><p>Sinh viên và người nghiên cứu tiếng Trung tại Việt Nam thường cần rà soát tiểu luận, khóa luận hoặc bản dịch trước khi nộp. Vấn đề là nguồn liên quan có thể nằm rải rác giữa website công khai, tạp chí học thuật, sách số hóa, luận văn và cơ sở dữ liệu cần tài khoản tổ chức. Không một công cụ đơn lẻ nào có quyền truy cập đầy đủ vào tất cả các kho đó.</p></section>

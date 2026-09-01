@@ -4,7 +4,7 @@ export function AlgorithmsArticle() {
   const navigate = useNavigate();
   return (
     <article className="c-page-layout c-article-layout"><div className="c-page-container">
-      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><span aria-hidden="true">←</span> Quay lại mục Kiến thức</button>
+      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg> Quay lại mục Kiến thức</button>
       <header className="c-page-hero"><div className="c-page-hero-badge">Công nghệ C-checker</div><h1 className="c-page-title">LCS, N-gram và Semantic Similarity hoạt động thế nào?</h1><p className="c-page-subtitle">Vì sao một lượt kiểm tra có thể mất thời gian và mỗi phép đo đóng góp gì vào báo cáo tương đồng tiếng Trung.</p><div className="c-article-byline">Ban biên tập C-checker · Cập nhật 01/09/2026 · 9 phút đọc</div></header>
       <div className="c-page-content c-article-content">
         <section><h2>1. C-checker không chỉ so hai chuỗi văn bản</h2><p>Một công cụ chính tả thường chỉ cần phân tích nội dung người dùng nhập. C-checker phải thực hiện nhiều công đoạn hơn: chia tài liệu thành các khối ngắn, tạo truy vấn tìm nguồn công khai, tải một số trang ứng viên, làm sạch nội dung rồi so sánh từng ứng viên bằng nhiều phép đo. Tốc độ vì thế phụ thuộc cả độ dài tài liệu, số nguồn tìm được, phản hồi của website bên ngoài và tài nguyên xử lý mô hình.</p><div className="c-article-note"><strong>Lưu ý:</strong> thời gian chờ không chỉ đến từ AI. Tìm kiếm và tải các trang nguồn trên Internet thường là phần có độ trễ biến động nhất.</div></section>

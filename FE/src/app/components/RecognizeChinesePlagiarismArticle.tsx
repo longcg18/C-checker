@@ -4,7 +4,7 @@ export function RecognizeChinesePlagiarismArticle() {
   const navigate = useNavigate();
   return (
     <article className="c-page-layout c-article-layout"><div className="c-page-container">
-      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><span aria-hidden="true">←</span> Quay lại mục Kiến thức</button>
+      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg> Quay lại mục Kiến thức</button>
       <header className="c-page-hero"><div className="c-page-hero-badge">Liêm chính học thuật</div><h1 className="c-page-title">Cách nhận biết đạo văn trong văn bản tiếng Trung</h1><p className="c-page-subtitle">Những hình thức thường gặp, dấu hiệu cần kiểm tra và cách sử dụng nguồn mà vẫn giữ được tính nguyên bản.</p><div className="c-article-byline">Ban biên tập C-checker · Cập nhật 01/09/2026 · 10 phút đọc</div></header>
       <div className="c-page-content c-article-content">
         <section><h2>1. Tương đồng không đồng nghĩa với đạo văn</h2><p>Đạo văn liên quan đến việc sử dụng câu chữ, dữ liệu, cấu trúc lập luận hoặc ý tưởng của người khác mà không ghi nhận phù hợp. Một đoạn có tỷ lệ tương đồng cao vẫn có thể là trích dẫn hợp lệ; ngược lại, đoạn gần như không trùng chữ vẫn có thể thiếu ghi nguồn cho ý tưởng. Vì vậy, cần kết hợp phần mềm với đọc hiểu và quy định trích dẫn của cơ sở đào tạo.</p></section>

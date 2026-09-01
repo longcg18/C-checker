@@ -7,7 +7,7 @@ export function LimitationsArticle() {
     <article className="c-page-layout c-article-layout">
       <div className="c-page-container">
         <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}>
-          <span aria-hidden="true">←</span> Quay lại mục Kiến thức
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg> Quay lại mục Kiến thức
         </button>
 
         <header className="c-page-hero">

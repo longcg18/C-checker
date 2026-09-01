@@ -1124,6 +1124,26 @@ def login_local(req: LocalLoginRequest):
         "user": {"id": user.id, "name": user.name, "email": user.email, "picture": user.picture, "username": user.username}
     }
 
+def _history_avg_score(result: Dict, job_db_id) -> float:
+    """Return whole-document similarity, including for legacy saved results."""
+    stored_avg = result.get("avg_score")
+    if stored_avg is not None:
+        return float(stored_avg)
+
+    items = result.get("report_items") or get_report_items(job_db_id)
+    sentence_max_scores = {}
+    for item in items:
+        sentence = item.get("sentence")
+        if sentence:
+            score = float(item.get("final_score") or 0.0)
+            sentence_max_scores[sentence] = max(sentence_max_scores.get(sentence, 0.0), score)
+
+    sentence_count = result.get("sentences_checked") or len(sentence_max_scores)
+    if not sentence_count:
+        return 0.0
+    return sum(sentence_max_scores.values()) / sentence_count
+
+
 @app.get("/history")
 def get_history(current_user: User = Depends(get_current_user)):
     jobs = get_jobs_by_user_id(current_user.id)
@@ -1170,7 +1190,7 @@ def get_history(current_user: User = Depends(get_current_user)):
                         "verdict": res.get("verdict", "LOW"),
                         "verdict_text": res.get("verdict_text", ""),
                         "max_score": res.get("max_score", 0.0),
-                        "avg_score": res.get("avg_score", 0.0),
+                        "avg_score": _history_avg_score(res, j.id),
                         "runtime": res.get("runtime", 0.0),
                         "sentences_checked": res.get("sentences_checked", 0),
                         "matches_found": res.get("matches_found", 0),
@@ -1233,8 +1253,9 @@ def delete_history_job(job_id: str, current_user: User = Depends(get_current_use
     if not job or job.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    current_status = JOBS.get(job_id, {}).get("status", job.status)
-    if current_status in ("queued", "running"):
+    memory_job = JOBS.get(job_id)
+    current_status = memory_job.get("status", job.status) if memory_job else job.status
+    if current_status == "running" or (current_status == "queued" and memory_job):
         raise HTTPException(status_code=409, detail="Không thể xóa tài liệu đang được xử lý")
 
     try:

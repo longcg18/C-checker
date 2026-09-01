@@ -7,6 +7,19 @@ interface Segment {
   matchIndexes: number[];
 }
 
+function normalizeComparable(value: string) {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '');
+}
+
+function isExactSentenceMatch(item: JobResult['report_items'][number]) {
+  const sentence = normalizeComparable(item.sentence || '');
+  const source = normalizeComparable(item.body || item.snippet || '');
+  return sentence.length >= 8 && source.includes(sentence);
+}
+
 function scoreTone(score: number) {
   if (score >= 0.7) return 'high';
   if (score >= 0.45) return 'medium';
@@ -19,22 +32,26 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
   const usableMatches = useMemo(
     () => result.report_items
       .map((item, originalIndex) => ({ item, originalIndex }))
-      .filter(({ item }) => item.matched_ranges?.some((range) => range.end > range.start)),
+      .filter(({ item }) => (
+        item.sentence_start !== undefined
+        && item.sentence_end !== undefined
+        && item.sentence_end > item.sentence_start
+      )),
     [result.report_items],
   );
   const [selected, setSelected] = useState(usableMatches[0]?.originalIndex ?? 0);
 
   const segments = useMemo<Segment[]>(() => {
     const boundaries = new Set<number>([0, text.length]);
-    usableMatches.forEach(({ item }) => item.matched_ranges?.forEach((range) => {
-      boundaries.add(Math.max(0, Math.min(text.length, range.start)));
-      boundaries.add(Math.max(0, Math.min(text.length, range.end)));
-    }));
+    usableMatches.forEach(({ item }) => {
+      boundaries.add(Math.max(0, Math.min(text.length, item.sentence_start!)));
+      boundaries.add(Math.max(0, Math.min(text.length, item.sentence_end!)));
+    });
     const points = [...boundaries].sort((a, b) => a - b);
     return points.slice(0, -1).map((start, index) => {
       const end = points[index + 1];
       const matchIndexes = usableMatches.flatMap(({ item, originalIndex }) =>
-        item.matched_ranges?.some((range) => range.start < end && range.end > start) ? [originalIndex] : [],
+        item.sentence_start! < end && item.sentence_end! > start ? [originalIndex] : [],
       );
       return { start, end, matchIndexes };
     }).filter((segment) => segment.end > segment.start);
@@ -56,19 +73,25 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
   return (
     <div className="c-document-review">
       <section className="c-document-pane" aria-label="Toàn bộ văn bản được kiểm tra">
-        <div className="c-document-pane-header"><div><strong>Toàn bộ văn bản</strong><span>{text.length.toLocaleString()} ký tự</span></div><div className="c-highlight-legend"><span className="high">Cao</span><span className="medium">Trung bình</span><span className="low">Thấp</span></div></div>
+        <div className="c-document-pane-header"><div><strong>Toàn bộ văn bản</strong><span>{text.length.toLocaleString()} ký tự</span></div></div>
         <div className="c-document-text">
           {segments.map((segment) => {
             const content = text.slice(segment.start, segment.end);
             if (!segment.matchIndexes.length) return <span key={`${segment.start}-${segment.end}`}>{content}</span>;
-            const primaryIndex = segment.matchIndexes.reduce((best, index) => result.report_items[index].final_score > result.report_items[best].final_score ? index : best);
+            const primaryIndex = segment.matchIndexes.reduce((best, index) => {
+              const candidateExact = isExactSentenceMatch(result.report_items[index]);
+              const bestExact = isExactSentenceMatch(result.report_items[best]);
+              if (candidateExact !== bestExact) return candidateExact ? index : best;
+              return result.report_items[index].final_score > result.report_items[best].final_score ? index : best;
+            });
+            const exact = segment.matchIndexes.some((index) => isExactSentenceMatch(result.report_items[index]));
             const score = result.report_items[primaryIndex].final_score;
             return (
               <mark
                 key={`${segment.start}-${segment.end}`}
                 data-match-indexes={segment.matchIndexes.join(' ')}
-                className={`c-document-highlight c-document-highlight--${scoreTone(score)} ${selected === primaryIndex ? 'is-selected' : ''}`}
-                title={`${segment.matchIndexes.length} nguồn · Mức trùng lặp cao nhất ${Math.round(score * 100)}%`}
+                className={`c-document-highlight c-document-highlight--${exact ? 'exact' : 'similar'} ${segment.matchIndexes.includes(selected) ? 'is-selected' : ''}`}
+                title={`${segment.matchIndexes.length} nguồn · ${exact ? 'Trùng nguyên văn' : `Tương đồng ${Math.round(score * 100)}%`}`}
                 onClick={() => selectMatch(primaryIndex)}
               >{content}<sup>#{primaryIndex + 1}</sup></mark>
             );

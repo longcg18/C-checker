@@ -2,39 +2,49 @@ import { Link, useNavigate } from 'react-router';
 
 const articles = [
   {
+    href: '/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc',
+    title: 'Xu hướng nghiên cứu ngôn ngữ và văn hóa Trung Quốc',
+    description: 'Các hướng nghiên cứu nổi bật về khối liệu, AI, nhân văn số, mạng xã hội và ứng dụng xuyên ngành.',
+  },
+  {
+    href: '/kien-thuc/dao-van-vo-y-va-co-y',
+    title: 'Phân biệt đạo văn vô ý và cố ý',
+    description: 'Nhận biết khác biệt về ý định, những tình huống thường gặp và cách phòng tránh sai sót trích dẫn.',
+  },
+  {
+    href: '/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon',
+    title: 'Vì sao kiểm tra đạo văn tiếng Trung khó hơn?',
+    description: 'So sánh tiếng Trung với tiếng Anh, tiếng Việt qua ranh giới từ, hệ chữ, cấu trúc câu và dữ liệu đối chiếu.',
+  },
+  {
+    href: '/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam',
+    title: 'Bao nhiêu % trùng lặp thì có thể yên tâm?',
+    description: 'Các mốc tỷ lệ thường gặp, lý do không có một ngưỡng chung và quy trình đánh giá bài viết trước khi nộp.',
+  },
+  {
     href: '/kien-thuc/cach-nhan-biet-dao-van-tieng-trung',
-    icon: '🔎',
     title: 'Cách nhận biết đạo văn tiếng Trung',
     description: 'Các hình thức thường gặp, dấu hiệu cần kiểm tra, phương pháp đối chiếu thủ công và cách trích dẫn nguồn đúng.',
-    readingTime: '10 phút đọc',
   },
   {
     href: '/kien-thuc/lcs-ngram-semantic-similarity',
-    icon: '🧠',
     title: 'LCS, N-gram và Semantic Similarity',
     description: 'Tìm hiểu bốn chỉ số C-checker sử dụng, công thức điểm Final và những công đoạn khiến một lượt kiểm tra cần thời gian.',
-    readingTime: '9 phút đọc',
   },
   {
     href: '/kien-thuc/kho-khan-kiem-tra-dao-van-tieng-trung',
-    icon: '🀄',
     title: 'Vì sao kiểm tra tài liệu tiếng Trung khó?',
     description: 'Khả năng tiếp cận kho học thuật, đặc điểm chữ Hán, nguồn dữ liệu đóng và vai trò phù hợp của C-checker.',
-    readingTime: '8 phút đọc',
   },
   {
     href: '/kien-thuc/huong-dan-doc-bao-cao',
-    icon: '📊',
     title: 'Hướng dẫn đọc báo cáo C-checker',
     description: 'Hiểu kết luận toàn bài, điểm câu cao nhất, các chỉ số LCS, N-gram, Semantic, Contiguous và cách kiểm tra nguồn nghi ngờ.',
-    readingTime: '10 phút đọc',
   },
   {
     href: '/kien-thuc/han-che-va-sai-so',
-    icon: '⚖️',
     title: 'Hạn chế và sai số của C-checker',
     description: 'Những trường hợp có thể tạo dương tính giả, âm tính giả và cách sử dụng kết quả kiểm tra một cách có trách nhiệm.',
-    readingTime: '9 phút đọc',
   },
 ];
 
@@ -45,7 +55,10 @@ export function KnowledgePage() {
     <div className="c-page-layout">
       <div className="c-page-container">
         <button className="c-page-back-btn" onClick={() => navigate('/')}>
-          <span aria-hidden="true">←</span> Quay lại trang chủ
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Quay lại trang chủ
         </button>
 
         <header className="c-page-hero">
@@ -59,11 +72,9 @@ export function KnowledgePage() {
         <div className="c-knowledge-grid">
           {articles.map((article) => (
             <article className="c-knowledge-card" key={article.href}>
-              <div className="c-knowledge-icon" aria-hidden="true">{article.icon}</div>
-              <div className="c-knowledge-meta">Cập nhật 01/09/2026 · {article.readingTime}</div>
               <h2><Link to={article.href}>{article.title}</Link></h2>
+              <div className="c-knowledge-meta">Cập nhật 01/09/2026 · Admin</div>
               <p>{article.description}</p>
-              <Link className="c-knowledge-link" to={article.href}>Đọc bài viết →</Link>
             </article>
           ))}
         </div>

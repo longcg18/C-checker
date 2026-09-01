@@ -8,6 +8,9 @@ interface AnalysisResultsProps {
   onReset: () => void;
 }
 
+// Tạm ẩn chế độ xem kỹ thuật; giữ nguyên phần triển khai để có thể bật lại sau.
+const SHOW_DETAILED_SOURCES = false;
+
 // Escape HTML special chars so attacker-controlled text renders as text, never markup.
 function escapeHtml(s: string): string {
   return s
@@ -225,7 +228,9 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
         <div className="c-result-view-tabs">
           <div className="c-result-view-tab-buttons" role="tablist" aria-label="Chế độ xem kết quả">
             <button type="button" role="tab" aria-selected={resultView === 'document'} disabled={!hasDocumentView} className={resultView === 'document' ? 'is-active' : ''} onClick={() => setResultView('document')}>Toàn văn đã đánh dấu</button>
-            <button type="button" role="tab" aria-selected={resultView === 'sources'} className={resultView === 'sources' ? 'is-active' : ''} onClick={() => setResultView('sources')}>Nguồn chi tiết</button>
+            {SHOW_DETAILED_SOURCES && (
+              <button type="button" role="tab" aria-selected={resultView === 'sources'} className={resultView === 'sources' ? 'is-active' : ''} onClick={() => setResultView('sources')}>Nguồn chi tiết</button>
+            )}
           </div>
           <div className="c-result-view-actions">
             <button type="button" onClick={() => window.open(api.reportUrl(result.job_id), '_blank')}>Báo cáo HTML</button>
@@ -240,8 +245,23 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
 
       {resultView === 'document' && hasDocumentView ? <DocumentMatchView result={result} /> : null}
 
+      {result.report_items.length === 0 ? (
+        <div className="c-no-matches">
+          <div className="c-no-matches-icon">✅</div>
+          <h3>Không phát hiện đạo văn</h3>
+          <p>Không tìm thấy nguồn nào có nội dung tương đồng đáng kể.</p>
+        </div>
+      ) : null}
+
+      {!hasDocumentView && !SHOW_DETAILED_SOURCES && result.report_items.length > 0 ? (
+        <div className="c-no-matches">
+          <h3>Chưa có chế độ toàn văn</h3>
+          <p>Tài liệu cũ này cần được kiểm tra lại để hiển thị các vị trí trùng lặp trực tiếp trong toàn văn.</p>
+        </div>
+      ) : null}
+
       {/* ── Match Cards ── */}
-      {resultView === 'sources' && (result.report_items.length === 0 ? (
+      {SHOW_DETAILED_SOURCES && resultView === 'sources' && (result.report_items.length === 0 ? (
         <div className="c-no-matches">
           <div className="c-no-matches-icon">✅</div>
           <h3>Không phát hiện đạo văn</h3>
