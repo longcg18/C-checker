@@ -5,6 +5,7 @@ import { DocumentMatchView } from './DocumentMatchView';
 
 interface AnalysisResultsProps {
   result: JobResult;
+  fileName: string;
   onReset: () => void;
 }
 
@@ -87,7 +88,7 @@ function ScorePill({ label, value, highlight }: { label: string; value: number; 
   );
 }
 
-export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
+export function AnalysisResults({ result, fileName, onReset }: AnalysisResultsProps) {
   const hasDocumentView = Boolean(result.original_text && result.report_items.some((item) => item.matched_ranges?.length));
   const [resultView, setResultView] = useState<'document' | 'sources'>(hasDocumentView ? 'document' : 'sources');
   const [summaryExpanded, setSummaryExpanded] = useState(false);
@@ -224,7 +225,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
         </div>
       )}
 
-      {result.report_items.length > 0 && (
+      {SHOW_DETAILED_SOURCES && result.report_items.length > 0 && (
         <div className="c-result-view-tabs">
           <div className="c-result-view-tab-buttons" role="tablist" aria-label="Chế độ xem kết quả">
             <button type="button" role="tab" aria-selected={resultView === 'document'} disabled={!hasDocumentView} className={resultView === 'document' ? 'is-active' : ''} onClick={() => setResultView('document')}>Toàn văn đã đánh dấu</button>
@@ -243,7 +244,7 @@ export function AnalysisResults({ result, onReset }: AnalysisResultsProps) {
         </div>
       )}
 
-      {resultView === 'document' && hasDocumentView ? <DocumentMatchView result={result} /> : null}
+      {resultView === 'document' && hasDocumentView ? <DocumentMatchView result={result} fileName={fileName} onReset={onReset} /> : null}
 
       {result.report_items.length === 0 ? (
         <div className="c-no-matches">

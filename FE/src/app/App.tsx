@@ -24,6 +24,11 @@ import { SimilarityThresholdArticle } from './components/SimilarityThresholdArti
 import { ResearchTrendsArticle } from './components/ResearchTrendsArticle';
 import { ChineseComparisonArticle } from './components/ChineseComparisonArticle';
 import { IntentionalPlagiarismArticle } from './components/IntentionalPlagiarismArticle';
+import { ThesisSectionsArticle } from './components/ThesisSectionsArticle';
+import { SimilarityVsPlagiarismArticle } from './components/SimilarityVsPlagiarismArticle';
+import { FlaggedSentenceArticle } from './components/FlaggedSentenceArticle';
+import { ThesisChecklistArticle } from './components/ThesisChecklistArticle';
+import { ChineseParaphraseArticle } from './components/ChineseParaphraseArticle';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -94,6 +99,26 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
   '/kien-thuc/dao-van-vo-y-va-co-y': {
     title: 'Phân biệt đạo văn vô ý và cố ý — C-checker',
     description: 'Hiểu sự khác nhau giữa đạo văn vô ý và cố ý, các tình huống thường gặp và cách phòng tránh sai sót trích dẫn.',
+  },
+  '/kien-thuc/nhung-phan-nao-trong-luan-van-thuong-bi-bao-trung': {
+    title: 'Những phần nào trong luận văn thường bị báo trùng? — C-checker',
+    description: 'Tìm hiểu vì sao tổng quan, định nghĩa, phương pháp, phụ lục và tài liệu tham khảo thường tạo nội dung tương đồng.',
+  },
+  '/kien-thuc/ty-le-tuong-dong-va-dao-van-khac-nhau-nhu-the-nao': {
+    title: 'Tỷ lệ tương đồng và đạo văn khác nhau thế nào? — C-checker',
+    description: 'Phân biệt chỉ số tương đồng kỹ thuật với đánh giá đạo văn dựa trên nguồn, ngữ cảnh và quy định học thuật.',
+  },
+  '/kien-thuc/cach-xu-ly-tung-cau-bi-c-checker-danh-dau': {
+    title: 'Cách xử lý từng câu bị C-checker đánh dấu',
+    description: 'Hướng dẫn giữ nguyên, bổ sung trích dẫn, paraphrase hoặc loại bỏ từng câu sau khi kiểm tra nguồn đối chiếu.',
+  },
+  '/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop': {
+    title: 'Checklist luận văn tiếng Trung trước khi nộp — C-checker',
+    description: 'Checklist rà soát trích dẫn, hệ chữ, cấu trúc, dữ liệu, định dạng và báo cáo tương đồng trước khi nộp luận văn.',
+  },
+  '/kien-thuc/cach-paraphrase-tieng-trung-dung-cach': {
+    title: 'Cách paraphrase tiếng Trung đúng cách — C-checker',
+    description: 'Học cách paraphrase tiếng Trung mà không làm sai ý, giữ đúng mức độ khẳng định và trích dẫn nguồn minh bạch.',
   },
   '/kien-thuc/huong-dan-doc-bao-cao': {
     title: 'Hướng dẫn đọc báo cáo C-checker',
@@ -375,6 +400,10 @@ export default function App() {
   const isLoggedIn = !!user || !!getToken();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
+
+  useEffect(() => {
     const pathname = location.pathname === '/home' ? '/' : location.pathname;
     const meta = PAGE_META[pathname] || PAGE_META['/'];
     const canonicalUrl = `${SITE_URL}${pathname === '/' ? '/' : pathname}`;
@@ -570,6 +599,7 @@ export default function App() {
                 <AnalysisResults
                   key={currentResult.job_id}
                   result={currentResult}
+                  fileName={history.find((entry) => entry.job_id === currentResult.job_id)?.fileName || activeJob?.fileName || 'Văn bản đã kiểm tra'}
                   onReset={handleReset}
                 />
               </div>
@@ -664,6 +694,11 @@ export default function App() {
           <Route path="/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc" element={<ResearchTrendsArticle />} />
           <Route path="/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon" element={<ChineseComparisonArticle />} />
           <Route path="/kien-thuc/dao-van-vo-y-va-co-y" element={<IntentionalPlagiarismArticle />} />
+          <Route path="/kien-thuc/nhung-phan-nao-trong-luan-van-thuong-bi-bao-trung" element={<ThesisSectionsArticle />} />
+          <Route path="/kien-thuc/ty-le-tuong-dong-va-dao-van-khac-nhau-nhu-the-nao" element={<SimilarityVsPlagiarismArticle />} />
+          <Route path="/kien-thuc/cach-xu-ly-tung-cau-bi-c-checker-danh-dau" element={<FlaggedSentenceArticle />} />
+          <Route path="/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop" element={<ThesisChecklistArticle />} />
+          <Route path="/kien-thuc/cach-paraphrase-tieng-trung-dung-cach" element={<ChineseParaphraseArticle />} />
           <Route path="/kien-thuc/huong-dan-doc-bao-cao" element={<ReportReadingArticle />} />
           <Route path="/kien-thuc/han-che-va-sai-so" element={<LimitationsArticle />} />
           <Route path="/kien-thuc/cach-nhan-biet-dao-van-tieng-trung" element={<RecognizeChinesePlagiarismArticle />} />

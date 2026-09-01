@@ -1,0 +1,20 @@
+import { Link, useNavigate } from 'react-router';
+
+export function FlaggedSentenceArticle() {
+  const navigate = useNavigate();
+  return (
+    <article className="c-page-layout c-article-layout"><div className="c-page-container">
+      <button className="c-page-back-btn" onClick={() => navigate('/kien-thuc')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg> Quay lại mục Kiến thức</button>
+      <header className="c-page-hero"><div className="c-page-hero-badge">Thực hành với báo cáo</div><h1 className="c-page-title">Cách xử lý từng câu bị C-checker đánh dấu</h1><p className="c-page-subtitle">Một câu được tô màu chưa chắc phải viết lại. Hãy mở nguồn, xác định loại nội dung rồi chọn giữa giữ nguyên, bổ sung trích dẫn, paraphrase hoặc loại bỏ.</p><div className="c-article-byline">Ban biên tập C-checker · Cập nhật 01/09/2026 · 7 phút đọc</div></header>
+      <div className="c-page-content c-article-content">
+        <section><h2>1. Hiểu đúng hai màu hiện tại</h2><ul className="c-guide-list"><li><strong>Vàng nhạt:</strong> câu có nội dung tương đồng với nguồn đối chiếu nhưng không xuất hiện nguyên vẹn sau bước chuẩn hóa.</li><li><strong>Cam:</strong> câu xuất hiện nguyên văn trong nội dung nguồn sau khi chuẩn hóa Unicode, khoảng trắng và dấu câu.</li></ul><p>Màu thể hiện kiểu khớp để hỗ trợ rà soát, không phải kết luận “đạo văn” hay mức kỷ luật. Nhấp vào câu hoặc thẻ bên phải để xem nguồn liên quan.</p></section>
+        <section><h2>2. Khi nào nên giữ nguyên?</h2><p>Có thể cần giữ nguyên câu chữ đối với điều luật, định nghĩa cần phân tích, phát biểu nguyên văn hoặc câu ngữ liệu. Khi đó, hãy đặt đúng định dạng trích dẫn trực tiếp, ghi tác giả, năm, trang hoặc thông tin nguồn theo quy định, rồi giải thích vai trò của câu trong lập luận.</p><p>Giữ nguyên không có nghĩa bỏ qua báo cáo; mục tiêu là làm rõ đây là nội dung được sử dụng minh bạch.</p></section>
+        <section><h2>3. Khi nào chỉ cần bổ sung nguồn?</h2><p>Nếu câu do bạn diễn đạt nhưng số liệu, mô hình, phân loại hoặc kết luận đến từ nghiên cứu khác, thường cần dẫn nguồn ngay tại vị trí sử dụng. Hãy kiểm tra xem câu có đang giữ quá sát cấu trúc của nguồn hay không; nếu có, việc thêm nguồn thôi chưa đủ và cần viết lại.</p></section>
+        <section><h2>4. Khi nào cần paraphrase?</h2><p>Paraphrase phù hợp khi bạn cần sử dụng ý tưởng nhưng không cần giữ nguyên câu chữ. Đọc cả đoạn nguồn, xác định ý cốt lõi, đóng tài liệu và viết lại theo vai trò của thông tin trong lập luận của mình. Sau đó mở lại để kiểm tra không thêm, bớt hoặc nâng mức độ khẳng định.</p><p>Dù câu mới khác hoàn toàn về từ và cấu trúc, ý tưởng của người khác vẫn cần được dẫn nguồn.</p></section>
+        <section><h2>5. Khi nào có thể giữ thuật ngữ cố định?</h2><p>Tên riêng, thuật ngữ như 自然语言处理, tên học thuyết, thành ngữ và cụm pháp lý thường không nên bị thay bằng từ gần nghĩa. Tuy vậy, đừng mặc nhiên bỏ qua cả câu chỉ vì có một thuật ngữ chuẩn. Hãy xem phần còn lại của câu có sao chép cách diễn đạt đặc thù của nguồn hay không.</p></section>
+        <section><h2>6. Khi nào nên loại bỏ?</h2><p>Nếu câu chỉ lặp lại thông tin phụ, không phục vụ câu hỏi nghiên cứu hoặc không thể xác minh nguồn, loại bỏ có thể tốt hơn việc cố viết lại. Với dữ liệu hoặc nhận định quan trọng, cần quay lại tài liệu gốc thay vì che giấu dấu vết tương đồng.</p></section>
+        <section><h2>7. Quy trình quyết định nhanh</h2><ol className="c-article-steps"><li><strong>Mở nguồn:</strong> đọc câu trước và sau vị trí khớp.</li><li><strong>Xác định quyền sở hữu:</strong> câu chữ, ý tưởng và dữ liệu đến từ đâu?</li><li><strong>Kiểm tra cách ghi nhận:</strong> đã có ngoặc kép, nguồn và số trang phù hợp chưa?</li><li><strong>Chọn thao tác:</strong> giữ nguyên có trích dẫn, thêm nguồn, paraphrase hoặc bỏ.</li><li><strong>Đọc lại toàn đoạn:</strong> bảo đảm mạch logic và sắc thái không thay đổi.</li></ol><p>Xem ví dụ chi tiết trong <Link to="/kien-thuc/cach-paraphrase-tieng-trung-dung-cach">hướng dẫn paraphrase tiếng Trung</Link>.</p></section>
+      </div>
+    </div></article>
+  );
+}

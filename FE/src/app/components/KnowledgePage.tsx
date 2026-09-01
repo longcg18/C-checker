@@ -2,6 +2,31 @@ import { Link, useNavigate } from 'react-router';
 
 const articles = [
   {
+    href: '/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop',
+    title: 'Checklist kiểm tra luận văn tiếng Trung trước khi nộp',
+    description: 'Danh sách rà soát trích dẫn, hệ chữ, cấu trúc, dữ liệu, định dạng và báo cáo tương đồng trước khi nộp bản cuối.',
+  },
+  {
+    href: '/kien-thuc/cach-paraphrase-tieng-trung-dung-cach',
+    title: 'Cách paraphrase tiếng Trung đúng cách và tránh đạo văn',
+    description: 'Quy trình diễn đạt lại trung thành với nguồn, ví dụ tiếng Trung và những lỗi làm thay đổi ý cần tránh.',
+  },
+  {
+    href: '/kien-thuc/cach-xu-ly-tung-cau-bi-c-checker-danh-dau',
+    title: 'Cách xử lý từng câu bị C-checker đánh dấu',
+    description: 'Cách chọn giữa giữ nguyên, bổ sung nguồn, paraphrase hoặc loại bỏ sau khi mở câu và nguồn đối chiếu.',
+  },
+  {
+    href: '/kien-thuc/ty-le-tuong-dong-va-dao-van-khac-nhau-nhu-the-nao',
+    title: 'Tỷ lệ tương đồng và đạo văn khác nhau như thế nào?',
+    description: 'Vì sao phần trăm tương đồng là tín hiệu kỹ thuật chứ không phải tỷ lệ đạo văn hay phán quyết về ý định.',
+  },
+  {
+    href: '/kien-thuc/nhung-phan-nao-trong-luan-van-thuong-bi-bao-trung',
+    title: 'Những phần nào trong luận văn thường bị báo trùng?',
+    description: 'Cách đọc tương đồng ở tổng quan, định nghĩa, phương pháp, phụ lục, tài liệu tham khảo và phần kết quả.',
+  },
+  {
     href: '/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc',
     title: 'Xu hướng nghiên cứu ngôn ngữ và văn hóa Trung Quốc',
     description: 'Các hướng nghiên cứu nổi bật về khối liệu, AI, nhân văn số, mạng xã hội và ứng dụng xuyên ngành.',

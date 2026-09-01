@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { JobResult } from '../lib/api';
+import { api } from '../lib/api';
 
 interface Segment {
   start: number;
@@ -26,7 +27,13 @@ function scoreTone(score: number) {
   return 'low';
 }
 
-export function DocumentMatchView({ result }: { result: JobResult }) {
+interface DocumentMatchViewProps {
+  result: JobResult;
+  fileName: string;
+  onReset: () => void;
+}
+
+export function DocumentMatchView({ result, fileName, onReset }: DocumentMatchViewProps) {
   const text = result.original_text || '';
 
   const usableMatches = useMemo(
@@ -40,6 +47,11 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
     [result.report_items],
   );
   const [selected, setSelected] = useState(usableMatches[0]?.originalIndex ?? 0);
+  const wholeDocumentScore = Math.max(0, Math.min(100, (result.avg_score ?? 0) * 100));
+  const runtimeMinutes = Math.max(0, result.runtime ?? 0) / 60;
+  const formattedRuntime = runtimeMinutes < 1
+    ? 'Dưới 1 phút'
+    : `${runtimeMinutes.toLocaleString('vi-VN', { maximumFractionDigits: 1 })} phút`;
 
   const segments = useMemo<Segment[]>(() => {
     const boundaries = new Set<number>([0, text.length]);
@@ -73,7 +85,23 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
   return (
     <div className="c-document-review">
       <section className="c-document-pane" aria-label="Toàn bộ văn bản được kiểm tra">
-        <div className="c-document-pane-header"><div><strong>Toàn bộ văn bản</strong><span>{text.length.toLocaleString()} ký tự</span></div></div>
+        <div className="c-document-pane-header">
+          <div className="c-document-file-heading">
+            <strong title={fileName}>{fileName}</strong>
+            <div className="c-document-summary">
+              <span><b>{wholeDocumentScore.toFixed(1)}%</b> toàn bài</span>
+              <span><b>{formattedRuntime}</b> kiểm tra</span>
+            </div>
+          </div>
+          <div className="c-document-actions">
+            <button type="button" onClick={() => window.open(api.reportUrl(result.job_id), '_blank')}>Báo cáo HTML</button>
+            <button type="button" onClick={() => {
+              const reportUrl = api.reportUrl(result.job_id);
+              window.open(`${reportUrl}${reportUrl.includes('?') ? '&' : '?'}print=true`, '_blank');
+            }}>Xuất PDF</button>
+            <button type="button" onClick={onReset}>Kiểm tra mới</button>
+          </div>
+        </div>
         <div className="c-document-text">
           {segments.map((segment) => {
             const content = text.slice(segment.start, segment.end);
@@ -100,7 +128,7 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
       </section>
 
       <aside className="c-source-pane" aria-label="Danh sách các vị trí được đánh dấu">
-        <div className="c-source-pane-header"><strong>Vị trí được đánh dấu</strong><span>{usableMatches.length} nguồn đối chiếu</span></div>
+        <div className="c-source-pane-header"><strong>Các đoạn được đánh dấu</strong><span>{usableMatches.length} vị trí cần xem lại</span></div>
         <div className="c-source-list">
           {usableMatches.map(({ item, originalIndex }) => (
             <button
@@ -119,9 +147,6 @@ export function DocumentMatchView({ result }: { result: JobResult }) {
         </div>
         {result.report_items[selected] && (
           <div className="c-source-selected-detail">
-            <div><span>LCS</span><strong>{result.report_items[selected].lcs_score.toFixed(3)}</strong></div>
-            <div><span>N-gram</span><strong>{result.report_items[selected].ngram_score.toFixed(3)}</strong></div>
-            <div><span>Semantic</span><strong>{result.report_items[selected].semantic_score.toFixed(3)}</strong></div>
             <a href={result.report_items[selected].url} target="_blank" rel="noopener noreferrer">Mở nguồn ↗</a>
           </div>
         )}

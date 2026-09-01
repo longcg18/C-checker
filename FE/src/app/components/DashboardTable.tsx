@@ -12,28 +12,20 @@ interface DashboardTableProps {
 
 const STATUS_BADGE = {
   queued: {
-    bg: 'rgba(156, 163, 175, 0.1)',
     color: 'var(--c-text-dim)',
-    label: 'Đang chờ',
-    dotClass: 'bg-gray-400 animate-pulse'
+    label: 'Đang chờ'
   },
   running: {
-    bg: 'rgba(59, 130, 246, 0.1)',
     color: 'var(--c-accent)',
-    label: 'Đang quét',
-    dotClass: 'bg-blue-500 c-pulsing-dot'
+    label: 'Đang quét'
   },
   done: {
-    bg: 'rgba(22, 163, 74, 0.1)',
     color: 'var(--c-green)',
-    label: 'Hoàn thành',
-    dotClass: 'bg-green-500'
+    label: 'Hoàn thành'
   },
   failed: {
-    bg: 'rgba(220, 38, 38, 0.1)',
     color: 'var(--c-red)',
-    label: 'Thất bại',
-    dotClass: 'bg-red-500'
+    label: 'Thất bại'
   }
 };
 
@@ -72,15 +64,11 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
     }),
     time: date.toLocaleTimeString('vi-VN', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
     })
   });
-
-  const formatRuntime = (seconds = 0) => {
-    const minutes = Math.floor(seconds / 60);
-    const rest = (seconds % 60).toFixed(1);
-    return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
-  };
 
   const formatFileName = (fileName: string, maxLength = 34) => {
     if (fileName.length <= maxLength) return fileName;
@@ -92,15 +80,6 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
     const headLength = Math.ceil(available * 0.68);
     const tailLength = Math.max(3, available - headLength);
     return `${stem.slice(0, headLength)}…${stem.slice(-tailLength)}${extension}`;
-  };
-
-  const getResultMeta = (entry: HistoryEntry) => {
-    const items: string[] = [];
-    if ((entry.sentences_checked ?? 0) > 0) items.push(`${entry.sentences_checked} câu`);
-    if ((entry.matches_found ?? 0) > 0) items.push(`${entry.matches_found} nguồn trùng`);
-    if ((entry.text_length ?? 0) > 0) items.push(`${entry.text_length!.toLocaleString()} ký tự`);
-    if ((entry.runtime ?? 0) > 0) items.push(formatRuntime(entry.runtime));
-    return items;
   };
 
   // Helper to get file icon
@@ -207,7 +186,6 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                 const avgScorePct = isDone && entry.avg_score !== undefined
                   ? (entry.avg_score * 100).toFixed(1)
                   : null;
-                const resultMeta = getResultMeta(entry);
                 const timestamp = formatTimestamp(entry.timestamp);
 
                 const handleRowClick = () => {
@@ -230,11 +208,6 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                         {getFileIcon(entry.fileName)}
                         <div className="c-file-info">
                           <span className="c-file-name" title={entry.fileName}>{formatFileName(entry.fileName)}</span>
-                          {isDone && resultMeta.length > 0 && (
-                            <span className="c-file-result-meta">
-                              {resultMeta.join(' · ')}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -251,9 +224,8 @@ export function DashboardTable({ history, onSelectEntry, onSelectProgress, onDel
                     <td className="c-table-status-column">
                       <span
                         className="c-status-badge"
-                        style={{ backgroundColor: badge.bg, color: badge.color }}
+                        style={{ color: badge.color }}
                       >
-                        <span className={`c-status-dot ${badge.dotClass}`} style={{ backgroundColor: badge.color }} />
                         {entry.status === 'running' && entry.progress && entry.progress !== '0/0' ? (
                           <span>Quét {entry.progress}</span>
                         ) : (
