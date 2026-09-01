@@ -48,6 +48,13 @@ export function DocumentMatchView({ result, fileName, onReset }: DocumentMatchVi
   );
   const [selected, setSelected] = useState(usableMatches[0]?.originalIndex ?? 0);
   const wholeDocumentScore = Math.max(0, Math.min(100, (result.avg_score ?? 0) * 100));
+  const wholeDocumentTone = wholeDocumentScore < 10
+    ? 'low'
+    : wholeDocumentScore < 15
+      ? 'medium'
+      : wholeDocumentScore < 20
+        ? 'elevated'
+        : 'high';
   const runtimeMinutes = Math.max(0, result.runtime ?? 0) / 60;
   const formattedRuntime = runtimeMinutes < 1
     ? 'Dưới 1 phút'
@@ -89,8 +96,8 @@ export function DocumentMatchView({ result, fileName, onReset }: DocumentMatchVi
           <div className="c-document-file-heading">
             <strong title={fileName}>{fileName}</strong>
             <div className="c-document-summary">
-              <span><b>{wholeDocumentScore.toFixed(1)}%</b> toàn bài</span>
-              <span><b>{formattedRuntime}</b> kiểm tra</span>
+              <span><b className={`c-document-score tone-${wholeDocumentTone}`}>{wholeDocumentScore.toFixed(1)}%</b>toàn bài</span>
+              <span><b>{formattedRuntime}</b>kiểm tra</span>
             </div>
           </div>
           <div className="c-document-actions">

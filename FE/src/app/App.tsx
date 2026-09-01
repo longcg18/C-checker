@@ -404,6 +404,12 @@ export default function App() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (viewMode === 'result') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [viewMode, currentResult?.job_id]);
+
+  useEffect(() => {
     const pathname = location.pathname === '/home' ? '/' : location.pathname;
     const meta = PAGE_META[pathname] || PAGE_META['/'];
     const canonicalUrl = `${SITE_URL}${pathname === '/' ? '/' : pathname}`;
