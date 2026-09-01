@@ -106,6 +106,15 @@ export function AboutPage({ onBack }: AboutPageProps) {
                 <span className="c-about-contact-icon">🌐</span>
                 https://www.c-checker.io.vn
               </a>
+              <a
+                href="https://www.facebook.com/profile.php?id=61593965732839"
+                className="c-about-contact-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="c-about-contact-icon" aria-hidden="true">f</span>
+                Fanpage C-checker
+              </a>
             </div>
           </section>
 
