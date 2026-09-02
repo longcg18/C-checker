@@ -571,7 +571,7 @@ export default function App() {
           )}
 
           {viewMode === 'progress' && (
-            <div className="c-workspace-layout c-workspace-layout--center" style={{ marginTop: 24 }}>
+            <div className="c-workspace-layout c-workspace-layout--center">
               <div className="c-workspace-content c-workspace-content--state">
                 {isSubmitting ? (
                   <div className="c-empty-state">
@@ -686,7 +686,7 @@ export default function App() {
       </header>
 
       {/* ── Main Routing Layout ── */}
-      <main className={`c-main ${viewMode === 'result' && (location.pathname === '/' || location.pathname === '/home') ? 'c-main--results' : ''}`}>
+      <main className={`c-main ${viewMode === 'result' && (location.pathname === '/' || location.pathname === '/home') ? 'c-main--results' : ''} ${viewMode === 'progress' ? 'c-main--progress' : ''}`}>
         <Routes>
           <Route path="/" element={renderWorkspaceView()} />
           <Route path="/home" element={renderWorkspaceView()} />

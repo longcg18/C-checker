@@ -47,10 +47,10 @@ export function JobProgress({ progress, status, startTime, currentSentence, onMi
   const [tipIndex, setTipIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-    return () => clearInterval(timer);
+    const updateElapsed = () => setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    updateElapsed();
+    const timer = window.setInterval(updateElapsed, 1000);
+    return () => window.clearInterval(timer);
   }, [startTime]);
 
   useEffect(() => {
@@ -63,10 +63,10 @@ export function JobProgress({ progress, status, startTime, currentSentence, onMi
   const [current, total] = (progress || '0/0').split('/').map(Number);
   const pct = total > 0 ? Math.round((current / total) * 100) : 0;
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const rest = seconds % 60;
+    return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
   };
 
   return (
@@ -78,7 +78,7 @@ export function JobProgress({ progress, status, startTime, currentSentence, onMi
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{ marginRight: 6 }}>
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Quay lại trang chủ & xem Lịch sử
+            Quay lại trang chủ
           </button>
         </div>
       )}
@@ -92,9 +92,7 @@ export function JobProgress({ progress, status, startTime, currentSentence, onMi
           <div className="c-progress-title">
             {status === 'queued' ? '⏳ Đang xếp hàng...' : '⚙️ Đang phân tích văn bản...'}
           </div>
-          <div className="c-progress-sub">
-            MiniLM semantic + DDGS search · Thời gian: {formatTime(elapsed)}
-          </div>
+          <div className="c-progress-sub">Thời gian: {formatTime(elapsed)}</div>
         </div>
       </div>
 
@@ -117,7 +115,7 @@ export function JobProgress({ progress, status, startTime, currentSentence, onMi
       {/* Current sentence being scanned */}
       {currentSentence && (
         <div className="c-current-sentence">
-          <div className="c-sentence-label">Đang quét câu</div>
+          <div className="c-sentence-label">Đang kiểm tra</div>
           <div className="c-sentence-text">{currentSentence}</div>
         </div>
       )}
