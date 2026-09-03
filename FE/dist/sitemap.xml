@@ -116,4 +116,46 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/cach-trich-dan-tai-lieu-tieng-trung-theo-apa</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/cach-ghi-tai-lieu-tham-khao-tieng-trung-trong-luan-van-tieng-viet</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/khi-nao-can-dat-ngoac-kep-khi-nao-chi-can-dan-nguon</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/cach-trich-dan-nguon-thu-cap-dung-cach</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/kien-thuc-pho-thong-co-can-trich-dan-khong</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.c-checker.io.vn/kien-thuc/cach-quan-ly-tai-lieu-tham-khao-khi-viet-luan-van-tieng-trung</loc>
+    <lastmod>2026-09-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>

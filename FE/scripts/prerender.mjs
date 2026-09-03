@@ -39,6 +39,13 @@ const pages = {
   '/kien-thuc/cach-nhan-biet-dao-van-tieng-trung': ['Cách nhận biết đạo văn tiếng Trung — C-checker', 'Nhận biết sao chép nguyên văn, diễn đạt lại hời hợt, sử dụng ý tưởng thiếu nguồn và cách kiểm tra văn bản tiếng Trung.'],
   '/kien-thuc/lcs-ngram-semantic-similarity': ['LCS, N-gram và Semantic Similarity trong C-checker', 'Giải thích cách C-checker kết hợp LCS, N-gram, MiniLM Semantic và Contiguous để tìm nguồn tương đồng tiếng Trung.'],
   '/kien-thuc/kho-khan-kiem-tra-dao-van-tieng-trung': ['Vì sao kiểm tra tài liệu tiếng Trung khó? — C-checker', 'Những trở ngại về kho dữ liệu, quyền truy cập, token hóa và cách đánh giá tỷ lệ tương đồng trong tài liệu tiếng Trung.'],
+  '/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y': ['Cách giảm tỷ lệ trùng lặp mà không làm sai ý — C-checker', 'Quy trình 4 bước xử lý đoạn văn bị trùng lặp, kỹ thuật biến đổi câu tiếng Trung học thuật an toàn và cạm bẫy lách máy cần tránh.'],
+  '/kien-thuc/cach-trich-dan-tai-lieu-tieng-trung-theo-apa': ['Cách trích dẫn tài liệu tiếng Trung theo APA — C-checker', 'Nguyên tắc trích dẫn nguồn chữ Hán theo chuẩn APA 7, cách phiên âm Pinyin, dịch nghĩa tiêu đề và ví dụ cho sách, bài báo khoa học, luận văn.'],
+  '/kien-thuc/cach-ghi-tai-lieu-tham-khao-tieng-trung-trong-luan-van-tieng-viet': ['Cách ghi tài liệu tham khảo tiếng Trung trong luận văn tiếng Việt — C-checker', 'Hướng dẫn giữ chữ Hán, chọn phiên âm Hán Việt hay Pinyin, dịch tiêu đề và cách sắp xếp danh mục tài liệu tham khảo tiếng Trung.'],
+  '/kien-thuc/khi-nao-can-dat-ngoac-kep-khi-nao-chi-can-dan-nguon': ['Khi nào cần đặt ngoặc kép và khi nào chỉ cần dẫn nguồn? — C-checker', 'Phân biệt trích dẫn nguyên văn và paraphrase, khi nào bắt buộc đặt ngoặc kép và cách tránh lỗi đạo văn vô ý khi diễn giải câu chữ tiếng Trung.'],
+  '/kien-thuc/cach-trich-dan-nguon-thu-cap-dung-cach': ['Cách trích dẫn nguồn thứ cấp đúng cách — C-checker', 'Khái niệm nguồn sơ cấp và thứ cấp, cách dùng dẫn theo (as cited in / 转引自) trong bài viết tiếng Trung và các nguyên tắc trích dẫn gián tiếp.'],
+  '/kien-thuc/kien-thuc-pho-thong-co-can-trich-dan-khong': ['Kiến thức phổ thông có cần trích dẫn không? — C-checker', 'Tiêu chí xác định kiến thức phổ thông (common knowledge), các tình huống cần và không cần trích dẫn trong nghiên cứu tiếng Trung.'],
+  '/kien-thuc/cach-quan-ly-tai-lieu-tham-khao-khi-viet-luan-van-tieng-trung': ['Cách quản lý tài liệu tham khảo khi viết luận văn tiếng Trung — C-checker', 'Quy trình 5 bước quản lý tài liệu tham khảo, sử dụng Zotero/Mendeley với chữ Hán, phân biệt trích nguyên văn và diễn giải khi ghi chú.'],
 };
 
 const escapeAttr = (value) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;');

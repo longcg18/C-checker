@@ -2,6 +2,41 @@ import { Link, useNavigate } from 'react-router';
 
 const articles = [
   {
+    href: '/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y',
+    title: 'Cách giảm tỷ lệ trùng lặp mà không làm sai ý bài viết',
+    description: 'Quy trình 4 bước xử lý đoạn văn bị trùng lặp, kỹ thuật biến đổi câu tiếng Trung an toàn và cạm bẫy lách máy cần tránh.',
+  },
+  {
+    href: '/kien-thuc/cach-trich-dan-tai-lieu-tieng-trung-theo-apa',
+    title: 'Cách trích dẫn tài liệu tiếng Trung theo APA',
+    description: 'Nguyên tắc trích dẫn nguồn chữ Hán theo chuẩn APA 7, phiên âm Pinyin, dịch nghĩa tiêu đề và ví dụ cho sách, báo, luận văn.',
+  },
+  {
+    href: '/kien-thuc/cach-ghi-tai-lieu-tham-khao-tieng-trung-trong-luan-van-tieng-viet',
+    title: 'Cách ghi tài liệu tham khảo tiếng Trung trong luận văn tiếng Việt',
+    description: 'Hướng dẫn giữ chữ Hán, chọn phiên âm Hán Việt hay Pinyin, dịch tiêu đề và cách sắp xếp danh mục tài liệu chuẩn mực.',
+  },
+  {
+    href: '/kien-thuc/khi-nao-can-dat-ngoac-kep-khi-nao-chi-can-dan-nguon',
+    title: 'Khi nào cần đặt ngoặc kép và khi nào chỉ cần dẫn nguồn?',
+    description: 'Phân biệt trích dẫn nguyên văn và diễn giải (paraphrase), khi nào bắt buộc đặt ngoặc kép và cách tránh lỗi đạo văn vô ý.',
+  },
+  {
+    href: '/kien-thuc/cach-trich-dan-nguon-thu-cap-dung-cach',
+    title: 'Cách trích dẫn nguồn thứ cấp đúng cách',
+    description: 'Khái niệm nguồn sơ cấp và thứ cấp, cách dùng "dẫn theo" (转引自 / as cited in) và các nguyên tắc trích dẫn gián tiếp.',
+  },
+  {
+    href: '/kien-thuc/kien-thuc-pho-thong-co-can-trich-dan-khong',
+    title: 'Kiến thức phổ thông có cần trích dẫn không?',
+    description: 'Ba tiêu chí xác định kiến thức phổ thông (common knowledge), phân biệt sự thật hiển nhiên và dữ liệu nghiên cứu cần trích dẫn.',
+  },
+  {
+    href: '/kien-thuc/cach-quan-ly-tai-lieu-tham-khao-khi-viet-luan-van-tieng-trung',
+    title: 'Cách quản lý tài liệu tham khảo khi viết luận văn tiếng Trung',
+    description: 'Quy trình 5 bước quản lý nguồn tài liệu, phân biệt ba loại ghi chú và ứng dụng phần mềm Zotero/Mendeley với chữ Hán.',
+  },
+  {
     href: '/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop',
     title: 'Checklist kiểm tra luận văn tiếng Trung trước khi nộp',
     description: 'Danh sách rà soát trích dẫn, hệ chữ, cấu trúc, dữ liệu, định dạng và báo cáo tương đồng trước khi nộp bản cuối.',
