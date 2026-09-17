@@ -117,9 +117,50 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface ServerHealthCheck {
+  status: 'ready' | 'waking' | 'offline';
+  version?: string;
+  latencyMs?: number;
+}
+
 export const api = {
   health(): Promise<{ status: string; version: string }> {
     return apiFetch('/health');
+  },
+
+  async checkHealth(timeoutMs: number = 3000): Promise<ServerHealthCheck> {
+    const start = Date.now();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(`${API_BASE}/health`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' },
+      });
+      clearTimeout(timer);
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return {
+          status: 'ready',
+          version: data.version,
+          latencyMs: Date.now() - start,
+        };
+      }
+
+      if (res.status === 502 || res.status === 503 || res.status === 504 || res.status === 524) {
+        return { status: 'waking', latencyMs: Date.now() - start };
+      }
+
+      return { status: 'offline', latencyMs: Date.now() - start };
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err.name === 'AbortError') {
+        return { status: 'waking', latencyMs: timeoutMs };
+      }
+      return { status: 'waking', latencyMs: Date.now() - start };
+    }
   },
 
   login(googleToken: string): Promise<{ access_token: string; user: any }> {
@@ -151,11 +192,41 @@ export const api = {
     return apiFetch(`/history/${job_id}`, { method: 'DELETE' });
   },
 
-  submitCheck(text: string, fileName?: string): Promise<SubmitResponse> {
-    return apiFetch('/check', {
-      method: 'POST',
-      body: JSON.stringify({ text, file_name: fileName || "Manual Input" }),
-    });
+  async submitCheck(
+    text: string,
+    fileName?: string,
+    onRetry?: (attempt: number, maxAttempts: number) => void
+  ): Promise<SubmitResponse> {
+    const maxAttempts = 5;
+    let lastError: any = null;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await apiFetch<SubmitResponse>('/check', {
+          method: 'POST',
+          body: JSON.stringify({ text, file_name: fileName || "Manual Input" }),
+        });
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = String(err?.message || '');
+        const isColdStartError =
+          errMsg.includes('502') ||
+          errMsg.includes('503') ||
+          errMsg.includes('504') ||
+          errMsg.includes('524') ||
+          errMsg.includes('Failed to fetch') ||
+          errMsg.includes('NetworkError');
+
+        if (isColdStartError && attempt < maxAttempts) {
+          if (onRetry) onRetry(attempt, maxAttempts);
+          await new Promise((r) => setTimeout(r, 4000));
+          continue;
+        }
+
+        throw err;
+      }
+    }
+    throw lastError;
   },
 
   getResult(job_id: string): Promise<JobResult> {

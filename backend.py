@@ -990,9 +990,14 @@ class JobStatus(BaseModel):
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok", "version": "5.0.0"}
+
+
+@app.api_route("/", methods=["GET", "HEAD"])
+def root():
+    return {"status": "ok", "service": "C-checker API", "version": "5.0.0"}
 
 security = HTTPBearer(auto_error=False)
 

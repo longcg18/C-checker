@@ -206,6 +206,52 @@ export default function App() {
   const [modalType, setModalType] = useState<ModalType>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [serverHealth, setServerHealth] = useState<'checking' | 'ready' | 'waking'>('checking');
+  const [serverBannerDismissed, setServerBannerDismissed] = useState(false);
+  const [submitRetryAttempt, setSubmitRetryAttempt] = useState(0);
+
+  // Background health check on mount to probe cold start
+  useEffect(() => {
+    let isMounted = true;
+    let timerId: any = null;
+
+    const probe = async () => {
+      try {
+        const res = await api.checkHealth(2800);
+        if (!isMounted) return;
+
+        if (res.status === 'ready') {
+          setServerHealth((prev) => {
+            if (prev === 'waking') {
+              // Transition smoothly: display ready notice for 4s, then dismiss
+              setTimeout(() => {
+                if (isMounted) setServerBannerDismissed(true);
+              }, 4000);
+            } else {
+              setServerBannerDismissed(true);
+            }
+            return 'ready';
+          });
+        } else {
+          // If server took > 2.8s or returned 502/503/504, it is cold-starting
+          setServerHealth('waking');
+          timerId = setTimeout(probe, 3500);
+        }
+      } catch {
+        if (isMounted) {
+          setServerHealth('waking');
+          timerId = setTimeout(probe, 3500);
+        }
+      }
+    };
+
+    probe();
+
+    return () => {
+      isMounted = false;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, []);
 
   const loadHistory = useCallback(async () => {
     if (!getToken()) return;
@@ -332,12 +378,17 @@ export default function App() {
     }
 
     setIsSubmitting(true);
+    setSubmitRetryAttempt(0);
     setViewMode('progress');
     navigate('/');
 
     try {
-      const submitRes = await api.submitCheck(text, fileName);
+      const submitRes = await api.submitCheck(text, fileName, (attempt) => {
+        setSubmitRetryAttempt(attempt);
+        setServerHealth('waking');
+      });
       const { job_id } = submitRes;
+      setServerHealth('ready');
       const startTime = Date.now();
 
       setActiveJob({
@@ -360,6 +411,7 @@ export default function App() {
       setViewMode('error');
     } finally {
       setIsSubmitting(false);
+      setSubmitRetryAttempt(0);
     }
   }, [user, navigate]);
 
@@ -505,6 +557,39 @@ export default function App() {
 
           {viewMode === 'workspace' && (
             <>
+              {/* Cold Start / Server Wakeup Status Banner */}
+              {!serverBannerDismissed && (serverHealth === 'waking' || serverHealth === 'ready') && (
+                <div className={`c-server-status-banner c-server-status-banner--${serverHealth}`}>
+                  <div className="c-server-status-icon">
+                    {serverHealth === 'waking' ? (
+                      <span className="c-server-pulse-dot" />
+                    ) : (
+                      <span className="c-server-ready-check">✓</span>
+                    )}
+                  </div>
+                  <div className="c-server-status-content">
+                    <div className="c-server-status-title">
+                      {serverHealth === 'waking'
+                        ? 'Máy chủ AI đang khởi động (Cold Start)'
+                        : 'Máy chủ C-checker đã sẵn sàng!'}
+                    </div>
+                    <div className="c-server-status-desc">
+                      {serverHealth === 'waking'
+                        ? 'Hạ tầng Hugging Face cần khoảng 25–35 giây để nạp xong mô hình sau thời gian nghỉ. Bạn vẫn có thể soạn hoặc dán văn bản bên dưới, hệ thống sẽ tự động quét ngay khi máy chủ sẵn sàng!'
+                        : 'Kết nối ổn định. Bạn có thể tiến hành kiểm tra văn bản ngay.'}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="c-server-status-close"
+                    onClick={() => setServerBannerDismissed(true)}
+                    title="Đóng thông báo"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <UploadSection
                 onAnalyze={handleAnalyze}
                 isAnalyzing={isAnalyzing}
@@ -611,8 +696,20 @@ export default function App() {
                 {isSubmitting ? (
                   <div className="c-empty-state">
                     <div className="c-submitting-spinner" />
-                    <h2 className="c-empty-title">Đang gửi văn bản...</h2>
-                    <p className="c-empty-desc">Kết nối với server phân tích</p>
+                    {submitRetryAttempt > 0 || serverHealth === 'waking' ? (
+                      <>
+                        <h2 className="c-empty-title">Đang đánh thức máy chủ AI...</h2>
+                        <p className="c-empty-desc">
+                          Máy chủ đang trong quá trình Cold-Start (khoảng 20–30s).
+                          {submitRetryAttempt > 0 ? ` Đang tự động kết nối lại (lần ${submitRetryAttempt}/5)...` : ' Hệ thống đang gửi tài liệu và thiết lập phân tích...'}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="c-empty-title">Đang gửi văn bản...</h2>
+                        <p className="c-empty-desc">Kết nối với server phân tích</p>
+                      </>
+                    )}
                   </div>
                 ) : activeJob ? (
                   <JobProgress

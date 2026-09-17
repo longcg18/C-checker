@@ -1,0 +1,38 @@
+name: Keep-Alive & Supabase Inactivity Prevention
+
+on:
+  schedule:
+    # Chạy vào 04:00 UTC mỗi 3 ngày (tránh 7 ngày inactivity của Supabase)
+    - cron: '0 4 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    name: Ping Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          echo "Sending query to Supabase project qsyydjpuzjirxkqyjvqw..."
+          if [ -n "$SUPABASE_KEY" ]; then
+            STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "apikey: $SUPABASE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_KEY" \
+              "https://qsyydjpuzjirxkqyjvqw.supabase.co/rest/v1/users?select=count")
+            echo "Supabase query response HTTP: $STATUS_CODE"
+          else
+            STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://qsyydjpuzjirxkqyjvqw.supabase.co/rest/v1/")
+            echo "Supabase gateway ping response HTTP: $STATUS_CODE (Set SUPABASE_SECRET_KEY secret to enable authenticated queries)"
+          fi
+
+      - name: Wakeup / Ping Backend Health Endpoint
+        run: |
+          echo "Pinging Backend /health with 90s timeout..."
+          curl -sS -m 90 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            "https://longcg18-c-checker-demo.hf.space/health" || echo "Direct HF ping returned non-zero"
+
+          curl -sS -m 30 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            "https://api.c-checker.io.vn/health" || echo "Custom domain ping returned non-zero"
