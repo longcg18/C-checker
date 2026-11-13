@@ -14,48 +14,58 @@ export function ContactPage() {
         </button>
 
         <header className="c-page-hero">
-          <h1 className="c-page-title">Liên hệ với C-checker</h1>
+          <div className="c-seal-mark" style={{ marginBottom: 16 }}>
+            <span className="c-seal-text">考证</span>
+            <span className="c-seal-sub">KÊNH HỖ TRỢ HỌC THUẬT</span>
+          </div>
+          <h1 className="c-page-title">Liên hệ với Ban quản trị C-checker</h1>
           <p className="c-page-subtitle">
-            Chúng tôi luôn sẵn sàng lắng nghe mọi đóng góp, phản hồi và yêu cầu hỗ trợ từ bạn.
+            Chúng tôi luôn trân trọng lắng nghe mọi đóng góp, phản hồi về thuật toán và yêu cầu hỗ trợ kỹ thuật từ cộng đồng nghiên cứu.
           </p>
         </header>
 
         <div className="c-page-content">
           <section className="c-about-section">
-            <h2 className="c-page-section-title">Kênh liên hệ trực tiếp</h2>
-            <div className="c-about-tech-grid">
-              <article className="c-about-tech-card c-about-tech-card--blue">
-                <div className="c-about-tech-icon">✉️</div>
-                <h3>Email Hỗ trợ & Kỹ thuật</h3>
-                <p>Gửi câu hỏi về thuật toán, lỗi hệ thống hoặc hướng dẫn sử dụng:</p>
-                <p style={{ marginTop: 8 }}>
-                  <a href="mailto:nguyenphuclong.work@gmail.com" style={{ color: 'var(--c-accent)', fontWeight: 600 }}>
+            <h2 className="c-page-section-title">Kênh Tiếp nhận Chính thức</h2>
+            <div className="c-contact-grid">
+              <article className="c-contact-card">
+                <span className="c-contact-dept">BỘ PHẬN KỸ THUẬT &amp; THUẬT TOÁN</span>
+                <h3 className="c-contact-title">Hỗ trợ Phân tích &amp; Lỗi hệ thống</h3>
+                <p className="c-contact-desc">
+                  Giải đáp thắc mắc về cơ chế tính điểm MiniLM, thuật toán LCS/N-gram, phản hồi sự cố tải tệp hoặc yêu cầu tính năng học thuật mới.
+                </p>
+                <div className="c-contact-email-box">
+                  <span className="c-contact-email-label">Email trực tiếp:</span>
+                  <a href="mailto:nguyenphuclong.work@gmail.com" className="c-contact-email-link">
                     nguyenphuclong.work@gmail.com
                   </a>
-                </p>
+                </div>
               </article>
 
-              <article className="c-about-tech-card c-about-tech-card--purple">
-                <div className="c-about-tech-icon">🔒</div>
-                <h3>Email Bảo mật & Dữ liệu</h3>
-                <p>Yêu cầu liên quan đến quyền riêng tư, xóa dữ liệu hoặc báo cáo vi phạm:</p>
-                <p style={{ marginTop: 8 }}>
-                  <a href="mailto:nguyenphuclong.work@gmail.com" style={{ color: 'var(--c-accent)', fontWeight: 600 }}>
+              <article className="c-contact-card">
+                <span className="c-contact-dept">BAN QUẢN TRỊ DỮ LIỆU &amp; PHÁP LÝ</span>
+                <h3 className="c-contact-title">Bảo mật Tác quyền &amp; Quyền riêng tư</h3>
+                <p className="c-contact-desc">
+                  Tiếp nhận các yêu cầu tra soát quyền tác giả bản thảo, yêu cầu hủy bỏ vĩnh viễn dữ liệu tài khoản hoặc các thỏa ước hợp tác nghiên cứu.
+                </p>
+                <div className="c-contact-email-box">
+                  <span className="c-contact-email-label">Email trực tiếp:</span>
+                  <a href="mailto:nguyenphuclong.work@gmail.com" className="c-contact-email-link">
                     nguyenphuclong.work@gmail.com
                   </a>
-                </p>
+                </div>
               </article>
             </div>
           </section>
 
           <section className="c-about-section">
-            <h2 className="c-page-section-title">Thời gian phản hồi</h2>
+            <h2 className="c-page-section-title">Thời hạn &amp; Cam kết Phản hồi</h2>
             <div className="c-about-mission">
               <p className="c-about-text">
-                ⏱️ Đội ngũ quản trị C-checker sẽ phản hồi qua email trong vòng <strong>24 - 48 giờ làm việc</strong> (Thứ Hai - Thứ Sáu).
+                Mọi thư từ điện tử gửi đến C-checker sẽ được ban quản trị xem xét và phúc đáp trong vòng <strong>24 đến 48 giờ làm việc</strong> (từ Thứ Hai đến Thứ Sáu, trừ các ngày nghỉ lễ theo quy định).
               </p>
               <p className="c-about-text">
-                Đối với các báo cáo lỗi khẩn cấp hoặc sự cố máy chủ, vui lòng ghi rõ tiêu đề <code>[URGENT]</code> trong email để được ưu tiên xử lý.
+                Đối với các báo cáo liên quan đến sự cố kỹ thuật hạ tầng nghiêm trọng hoặc khiếu nại bản quyền khẩn cấp, vui lòng thêm tiền tố <code>[KHẨN CẤP]</code> hoặc <code>[URGENT]</code> vào tiêu đề thư để được hệ thống phân luồng ưu tiên xử lý trong ngày.
               </p>
             </div>
           </section>
