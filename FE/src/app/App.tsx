@@ -591,6 +591,20 @@ export default function App() {
                 </div>
               )}
 
+              {/* Grand Academic Hero Header */}
+              <div className="c-workspace-hero">
+                <div className="c-hero-kicker">
+                  <span className="c-hero-seal-symbol">考证</span>
+                  <span className="c-hero-kicker-text">ĐỐI SOÁT VĂN BẢN TIẾNG TRUNG · THẨM ĐỊNH HỌC THUẬT</span>
+                </div>
+                <h1 className="c-workspace-headline">
+                  Khảo chứng tính nguyên bản &amp; đối soát trùng lặp văn bản tiếng Trung
+                </h1>
+                <p className="c-workspace-lead">
+                  Hệ thống AI chuyên biệt cho chữ Hán, tích hợp mô hình ngữ nghĩa <strong>MiniLM</strong> và thuật toán đối chiếu chuỗi kép <strong>LCS &amp; N-gram</strong> phục vụ giảng viên, sinh viên và các nhà nghiên cứu.
+                </p>
+              </div>
+
               <UploadSection
                 onAnalyze={handleAnalyze}
                 isAnalyzing={isAnalyzing}

@@ -493,75 +493,437 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   UPLOAD CARD
+   GRAND SCHOLARLY HERO
 ═══════════════════════════════════════════════════════════════════ */
 
-.c-upload-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--c-radius-xl);
-  padding: 28px;
-  box-shadow: var(--c-shadow-lg);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-  animation: fadeIn 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.c-workspace-hero {
+  text-align: center;
+  max-width: 860px;
+  margin: 36px auto 28px;
+  padding: 0 16px;
 }
 
-.c-upload-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--c-accent);
-}
-
-.c-upload-card:focus-within {
-  border-color: var(--c-border2);
-}
-
-.c-upload-card-header {
-  display: flex;
+.c-hero-kicker {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--c-border);
-}
-
-.c-upload-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--c-surface2);
-  border: 1px solid var(--c-border);
+  gap: 8px;
+  background: #fff8f8;
+  border: 1px solid #fecaca;
+  padding: 4px 12px;
   border-radius: var(--c-radius-sm);
+  margin-bottom: 18px;
+}
+
+.c-hero-seal-symbol {
+  font-family: var(--c-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--c-accent);
+  padding: 1px 5px;
+  border-radius: 2px;
+  line-height: 1.1;
+}
+
+.c-hero-kicker-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--c-accent);
+}
+
+.c-workspace-headline {
+  font-family: var(--c-serif);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--c-text);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .c-workspace-headline {
+    font-size: 1.85rem;
+  }
+}
+
+.c-workspace-lead {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--c-text-dim);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.c-workspace-lead strong {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INSPECTION STUDIO WORKSTATION (Bàn Khảo Duyệt)
+═══════════════════════════════════════════════════════════════════ */
+
+.c-studio-wrap {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.c-studio-card {
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--c-radius-lg);
+  box-shadow: 0 10px 32px -8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.c-studio-card:focus-within {
+  border-color: var(--c-border2);
+  box-shadow: 0 14px 40px -8px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Studio Top Control Bar */
+.c-studio-topbar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--c-accent);
+  justify-content: space-between;
+  background: #fafaf8;
+  border-bottom: 1px solid var(--c-border);
+  padding: 8px 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.c-studio-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.c-studio-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-text-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  border-radius: var(--c-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.c-studio-tab:hover {
+  color: var(--c-text);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.c-studio-tab--active {
+  color: var(--c-text);
+  background: #ffffff;
+  border-color: var(--c-border);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.c-studio-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.c-studio-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--c-text-dim);
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  padding: 5px 10px;
+  border-radius: var(--c-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.c-studio-tool-btn:hover:not(:disabled) {
+  color: var(--c-text);
+  border-color: var(--c-border2);
+  background: #fafaf8;
+}
+
+.c-studio-tool-btn--clear {
+  color: #dc2626;
+  border-color: #fee2e2;
+  background: #fffafa;
+}
+
+.c-studio-tool-btn--clear:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* 1-Click Samples Bar */
+.c-studio-samples-bar {
+  display: flex;
+  align-items: center;
+  background: #fdfdfc;
+  border-bottom: 1px dashed var(--c-border);
+  padding: 8px 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.c-samples-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-faint);
   flex-shrink: 0;
 }
 
-.c-upload-icon svg {
-  width: 20px;
-  height: 20px;
+.c-samples-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.c-upload-title {
+.c-sample-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.c-sample-pill:hover {
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
+}
+
+.c-sample-tag {
   font-family: var(--c-serif);
-  font-size: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-accent);
+  background: #fee2e2;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.1;
+}
+
+.c-sample-text {
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+/* Textarea Work Area */
+.c-studio-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 20px 24px;
+  font-family: var(--c-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--c-text);
+  resize: vertical;
+  min-height: 200px;
+}
+
+.c-studio-textarea::placeholder {
+  color: #a1a1aa;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Studio Bottom Bar */
+.c-studio-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafaf8;
+  border-top: 1px solid var(--c-border);
+  padding: 12px 20px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.c-studio-metrics {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.c-metric-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.c-metric-val {
+  font-family: var(--c-mono);
+  font-size: 14px;
   font-weight: 700;
   color: var(--c-text);
-  line-height: 1.3;
+}
+
+.c-metric-name {
+  font-size: 12px;
+  color: var(--c-text-faint);
+}
+
+.c-metric-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--c-border);
+}
+
+.c-metric-filename {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-accent);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.c-studio-warning {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d97706;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 2px 8px;
+  border-radius: var(--c-radius-sm);
+}
+
+.c-studio-warning--limit {
+  color: #dc2626;
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+/* Primary Action Button (The Scholarly Stamp) */
+.c-btn-inspect {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--c-accent);
+  color: #ffffff;
+  border: 1px solid #991b1b;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 650;
+  border-radius: var(--c-radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(185, 28, 28, 0.2);
+}
+
+.c-btn-inspect:hover:not(:disabled) {
+  background: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(185, 28, 28, 0.25);
+}
+
+.c-btn-inspect:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.c-btn-inspect:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.c-btn-inspect-seal {
+  font-family: var(--c-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-accent);
+  background: #ffffff;
+  width: 19px;
+  height: 19px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+/* ── Academic Trust Ribbon ─────────────────────────────────────── */
+.c-trust-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--c-radius);
+  padding: 16px 20px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .c-trust-ribbon {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .c-ribbon-div {
+    display: none;
+  }
+}
+
+.c-ribbon-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.c-ribbon-strong {
+  font-family: var(--c-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text);
   letter-spacing: -0.01em;
 }
 
-.c-upload-sub {
-  font-size: 12.5px;
-  color: var(--c-text-dim);
-  margin-top: 3px;
+.c-ribbon-label {
+  font-size: 12px;
+  color: var(--c-text-faint);
+}
+
+.c-ribbon-div {
+  width: 1px;
+  height: 28px;
+  background: var(--c-border);
+}
+
+/* ── Fallback upload card compatibility ────────────────────────── */
+.c-upload-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--c-radius-lg);
+  padding: 24px;
 }
 
 /* ── Mode toggle ─────────────────────────────────────────────────── */
