@@ -7,6 +7,7 @@ import { AnalysisResults } from './components/AnalysisResults';
 import { JobProgress } from './components/JobProgress';
 import { Login } from './components/Login';
 import { DashboardTable } from './components/DashboardTable';
+import { LandingAcademicContent } from './components/LandingAcademicContent';
 import { InfoModal, ModalType } from './components/InfoModal';
 import { Footer } from './components/Footer';
 import { GuidePage } from './components/GuidePage';
@@ -607,85 +608,10 @@ export default function App() {
                     onDelete={handleDeleteHistory}
                     onRefresh={loadHistory}
                   />
+                  <LandingAcademicContent />
                 </div>
               ) : (
-                <div className="c-public-intro">
-                  <div className="c-intro-hero">
-                    <h1 className="c-intro-title">
-                      Phát hiện đạo văn tiếng Trung thông minh
-                    </h1>
-                    <p className="c-intro-subtitle">
-                      Hệ thống <strong>C-checker</strong> là một trong những công cụ tiên phong tại Việt Nam hỗ trợ sinh viên, giảng viên và nhà nghiên cứu rà soát mức độ trùng lặp của văn bản tiếng Trung bằng MiniLM và các thuật toán so khớp.
-                    </p>
-                  </div>
-
-                  <div className="c-intro-grid">
-                    <div className="c-intro-card">
-                      <h3 className="c-intro-card-title c-text-blue">
-                        <span className="c-intro-card-icon">🚀</span> Dùng thử miễn phí
-                      </h3>
-                      <p className="c-intro-card-desc">
-                        Không cần tài khoản, bạn có thể dán đoạn văn bản trực tiếp để kiểm tra tính nguyên bản lên tới <strong>300 ký tự</strong>.
-                      </p>
-                    </div>
-                    <div className="c-intro-card">
-                      <h3 className="c-intro-card-title c-text-purple">
-                        <span className="c-intro-card-icon">🧠</span> AI ngữ nghĩa sâu
-                      </h3>
-                      <p className="c-intro-card-desc">
-                        Phân tích ngữ cảnh bằng MiniLM kết hợp thuật toán so khớp LCS & N-gram giúp phát hiện các hình thức chỉnh sửa tinh vi.
-                      </p>
-                    </div>
-                    <div className="c-intro-card">
-                      <h3 className="c-intro-card-title c-text-green">
-                        <span className="c-intro-card-icon">🌐</span> So khớp Internet
-                      </h3>
-                      <p className="c-intro-card-desc">
-                        Tìm kiếm và đối chiếu trực tiếp dữ liệu theo thời gian thực trên các kho lưu trữ web để phát hiện nguồn sao chép.
-                      </p>
-                    </div>
-                    <div className="c-intro-card">
-                      <h3 className="c-intro-card-title c-text-amber">
-                        <span className="c-intro-card-icon">📂</span> Mở khóa đầy đủ
-                      </h3>
-                      <p className="c-intro-card-desc">
-                        Đăng nhập bằng tài khoản Google để tải lên các tệp <code>.docx</code>, <code>.pdf</code>, <code>.txt</code> và lưu trữ lịch sử kiểm tra.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="c-intro-faq">
-                    <h2 className="c-faq-heading">
-                      Các câu hỏi thường gặp (FAQs)
-                    </h2>
-                    <div className="c-faq-list">
-                      <div className="c-faq-item">
-                        <h4 className="c-faq-q">
-                          Q: Tôi có cần trả phí để sử dụng C-checker không?
-                        </h4>
-                        <p className="c-faq-a">
-                          A: Không. C-checker được cung cấp hoàn toàn miễn phí nhằm hỗ trợ tối đa việc nghiên cứu và học thuật.
-                        </p>
-                      </div>
-                      <div className="c-faq-item">
-                        <h4 className="c-faq-q">
-                          Q: Cách thức quét tài liệu lớn hơn 300 ký tự?
-                        </h4>
-                        <p className="c-faq-a">
-                          A: Bạn chỉ cần đăng nhập bằng tài khoản Google thông qua nút Đăng nhập ở góc trên cùng bên phải màn hình.
-                        </p>
-                      </div>
-                      <div className="c-faq-item">
-                        <h4 className="c-faq-q">
-                          Q: Dữ liệu của tôi có được bảo mật không?
-                        </h4>
-                        <p className="c-faq-a">
-                          A: Chúng tôi cam kết bảo mật nội dung bạn đăng tải. Đối với phiên bản dùng thử của khách, văn bản sẽ không lưu vào cơ sở dữ liệu.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <LandingAcademicContent />
               )}
             </>
           )}
