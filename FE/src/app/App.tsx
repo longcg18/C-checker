@@ -704,7 +704,7 @@ export default function App() {
             </div>
             <div>
               <div className="c-logo-title">C-checker</div>
-              <div className="c-logo-sub">Chinese Plagiarism Detection · v5</div>
+              <div className="c-logo-sub">Khảo chứng văn bản tiếng Trung</div>
             </div>
           </Link>
 

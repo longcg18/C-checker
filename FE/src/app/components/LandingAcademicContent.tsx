@@ -3,140 +3,125 @@ import { Link } from 'react-router';
 
 export function LandingAcademicContent() {
   return (
-    <section className="c-academic-landing" aria-label="Thông tin học thuật và công nghệ C-checker">
-      {/* ── 1. Hero Summary & Academic Badges ── */}
+    <section className="c-academic-landing" aria-label="Khảo chứng học thuật và công nghệ C-checker">
+      {/* ── 1. Hero Summary & Academic Principles ── */}
       <div className="c-academic-hero">
-        <div className="c-academic-badge-pill">
-          <span className="c-pulse-dot" />
-          <span>Hệ thống phân tích ngữ liệu &amp; đối soát học thuật tiếng Trung</span>
+        <div className="c-seal-mark">
+          <span className="c-seal-text">考证</span>
+          <span className="c-seal-sub">KIỂM CHỨNG HỌC THUẬT TIẾNG TRUNG</span>
         </div>
         <h2 className="c-academic-hero-title">
-          Giải pháp kiểm tra tính nguyên bản &amp; trùng lặp văn bản tiếng Trung chuyên sâu
+          Hệ thống đối soát văn bản &amp; thẩm định tính nguyên bản chữ Hán
         </h2>
         <p className="c-academic-hero-lead">
-          C-checker kết hợp mô hình ngôn ngữ ngữ nghĩa sâu <strong>MiniLM</strong> cùng các thuật toán đối chiếu cấu trúc chuỗi 
-          <strong> LCS (Longest Common Subsequence)</strong> và <strong>N-gram</strong>. Nền tảng được thiết kế riêng nhằm xử lý 
-          triệt để những thách thức đặc thù của chữ Hán (Hán tự Giản thể &amp; Phồn thể), giúp người học, giảng viên và nhà nghiên cứu 
-          bảo đảm sự liêm chính học thuật trong các công trình nghiên cứu.
+          Được xây dựng chuyên biệt cho hệ thống chữ tượng hình, C-checker kết hợp mô hình không gian ngữ nghĩa 
+          <strong> MiniLM</strong> cùng các thuật toán đối chiếu chuỗi con chung dài nhất 
+          <strong> (LCS)</strong> và <strong>N-gram</strong>. Nền tảng hỗ trợ sinh viên, giảng viên và các nhà nghiên cứu 
+          nhận diện chuẩn xác mức độ tương đồng, bảo vệ sự liêm chính học thuật trong các công trình Hán học.
         </p>
 
-        {/* 4 Feature Badges */}
-        <div className="c-academic-badges-grid">
-          <div className="c-academic-badge-card">
-            <div className="c-badge-icon c-badge-icon--blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <div className="c-badge-content">
-              <h3 className="c-badge-title">AI Ngữ nghĩa MiniLM</h3>
-              <p className="c-badge-desc">Phát hiện câu đồng nghĩa, đảo ngữ, thay thế từ đồng nghĩa tinh vi trong tiếng Trung.</p>
+        {/* 4 Core Pillars - Minimalist & Scholarly */}
+        <div className="c-academic-pillars">
+          <div className="c-pillar-item">
+            <div className="c-pillar-number">I</div>
+            <div className="c-pillar-content">
+              <h3 className="c-pillar-title">Ngữ nghĩa Đa tầng</h3>
+              <p className="c-pillar-desc">
+                Nhận dạng câu đồng nghĩa, biến đổi cấu trúc ngữ pháp và paraphrase tinh vi bằng mạng Transformer.
+              </p>
             </div>
           </div>
 
-          <div className="c-academic-badge-card">
-            <div className="c-badge-icon c-badge-icon--green">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M2 12h20" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-            </div>
-            <div className="c-badge-content">
-              <h3 className="c-badge-title">Giản thể &amp; Phồn thể</h3>
-              <p className="c-badge-desc">Hỗ trợ đầy đủ khối ngữ liệu chữ Hán giản thể (简体) và phồn thể (繁體) theo ngữ cảnh.</p>
+          <div className="c-pillar-item">
+            <div className="c-pillar-number">II</div>
+            <div className="c-pillar-content">
+              <h3 className="c-pillar-title">Giản thể &amp; Phồn thể</h3>
+              <p className="c-pillar-desc">
+                Xử lý đồng nhất văn bản chữ Hán giản thể (简体) và phồn thể (繁體) theo mạch ngữ cảnh học thuật.
+              </p>
             </div>
           </div>
 
-          <div className="c-academic-badge-card">
-            <div className="c-badge-icon c-badge-icon--purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-            </div>
-            <div className="c-badge-content">
-              <h3 className="c-badge-title">Chuẩn Trích dẫn APA 7</h3>
-              <p className="c-badge-desc">Phân định rõ ràng giữa trích dẫn học thuật hợp lệ và tình trạng sao chép nguyên văn.</p>
+          <div className="c-pillar-item">
+            <div className="c-pillar-number">III</div>
+            <div className="c-pillar-content">
+              <h3 className="c-pillar-title">Quy chuẩn APA 7</h3>
+              <p className="c-pillar-desc">
+                Phân định rành mạch giữa trích dẫn học thuật hợp quy và hiện tượng sao chép văn bản nguyên văn.
+              </p>
             </div>
           </div>
 
-          <div className="c-academic-badge-card">
-            <div className="c-badge-icon c-badge-icon--amber">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            </div>
-            <div className="c-badge-content">
-              <h3 className="c-badge-title">Bảo mật Tác quyền</h3>
-              <p className="c-badge-desc">Không lưu giữ văn bản thử nghiệm của khách. Đảm bảo toàn vẹn quyền riêng tư dữ liệu bài viết.</p>
+          <div className="c-pillar-item">
+            <div className="c-pillar-number">IV</div>
+            <div className="c-pillar-content">
+              <h3 className="c-pillar-title">Bảo mật Tác quyền</h3>
+              <p className="c-pillar-desc">
+                Không lưu trữ dữ liệu văn bản dùng thử. Tôn trọng tuyệt đối quyền bảo mật bản thảo của người viết.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 2. How It Works (4-Step Pipeline) ── */}
+      {/* ── 2. How It Works (Scholarly Pipeline) ── */}
       <div className="c-academic-section">
         <div className="c-section-header">
-          <span className="c-section-tag">QUY TRÌNH KỸ THUẬT</span>
-          <h2 className="c-section-title">Cách thức C-checker phân tích &amp; đối soát văn bản</h2>
+          <h2 className="c-section-title">Tiến trình phân tích &amp; đối soát 4 giai đoạn</h2>
           <p className="c-section-subtitle">
-            Hệ thống áp dụng kiến trúc phân tích 4 giai đoạn khép kín nhằm bảo đảm độ bao phủ cao và hạn chế tối đa các trường hợp dương tính giả.
+            Cơ chế đối chiếu khép kín kết hợp giữa phân tích ký tự học (Lexical) và học máy ngữ nghĩa (Semantic Embedding).
           </p>
         </div>
 
-        <div className="c-steps-timeline">
-          <div className="c-step-card">
-            <div className="c-step-number">01</div>
-            <h3 className="c-step-title">Tiền xử lý &amp; Phân tách câu Hán tự</h3>
-            <p className="c-step-desc">
-              Văn bản được tách câu dựa trên hệ dấu câu tiếng Trung học thuật (。？！；…), lọc bỏ khoảng trắng thừa và chuẩn hóa 
-              mã hóa Unicode UTF-8 để nhận diện chính xác từng thành phần câu.
+        <div className="c-pipeline-grid">
+          <div className="c-pipeline-node">
+            <div className="c-node-head">
+              <span className="c-node-phase">Giai đoạn 1</span>
+              <h3 className="c-node-title">Tiền xử lý Hán tự</h3>
+            </div>
+            <p className="c-node-desc">
+              Chuẩn hóa mã hóa Unicode UTF-8, ngắt phân đoạn câu dựa trên ngữ pháp và hệ dấu câu tiếng Trung chuẩn (。？！；).
             </p>
           </div>
 
-          <div className="c-step-card">
-            <div className="c-step-number">02</div>
-            <h3 className="c-step-title">So khớp Song song Lexical &amp; N-gram</h3>
-            <p className="c-step-desc">
-              Thuật toán <strong>LCS (Longest Common Subsequence)</strong> nhận diện các cụm ký tự liền kề trùng lặp, kết hợp với 
-              <strong> 3-gram/4-gram</strong> để phát hiện các phân đoạn chữ Hán bị xáo trộn vị trí.
+          <div className="c-pipeline-node">
+            <div className="c-node-head">
+              <span className="c-node-phase">Giai đoạn 2</span>
+              <h3 className="c-node-title">Đối soát chuỗi LCS &amp; N-gram</h3>
+            </div>
+            <p className="c-node-desc">
+              Thuật toán LCS nhận diện các cụm ký tự liền kề trùng khớp, kết hợp 3-gram/4-gram phát hiện sự đảo trật tự cụm từ.
             </p>
           </div>
 
-          <div className="c-step-card">
-            <div className="c-step-number">03</div>
-            <h3 className="c-step-title">Phân tích Vector Ngữ nghĩa (Transformer)</h3>
-            <p className="c-step-desc">
-              Mô hình nhúng đa ngôn ngữ chuyển đổi từng câu thành vector toán học 384 chiều, tính khoảng cách Cosine để nhận dạng 
-              kể cả khi câu đã được paraphrase (diễn đạt lại bằng từ đồng nghĩa).
+          <div className="c-pipeline-node">
+            <div className="c-node-head">
+              <span className="c-node-phase">Giai đoạn 3</span>
+              <h3 className="c-node-title">Mô hình hóa Vector MiniLM</h3>
+            </div>
+            <p className="c-node-desc">
+              Chuyển hóa câu văn thành không gian vector 384 chiều, đo lường khoảng cách Cosine để nhận diện các câu paraphrase.
             </p>
           </div>
 
-          <div className="c-step-card">
-            <div className="c-step-number">04</div>
-            <h3 className="c-step-title">Xuất Báo cáo Trực quan Đa tầng</h3>
-            <p className="c-step-desc">
-              Tổng hợp điểm tương đồng tổng thể (%), tô màu phân loại từng câu (Đỏ: Trùng lặp cao, Vàng: Nguy cơ paraphrase, 
-              Xanh: Nguyên bản), đồng thời hiển thị trích dẫn nguồn đối sánh minh bạch.
+          <div className="c-pipeline-node">
+            <div className="c-node-head">
+              <span className="c-node-phase">Giai đoạn 4</span>
+              <h3 className="c-node-title">Báo cáo kiểm chứng câu</h3>
+            </div>
+            <p className="c-node-desc">
+              Xác lập tỷ lệ phần trăm tương đồng toàn bài, đánh dấu trực quan từng câu trùng lặp kèm trích dẫn văn bản đối chứng.
             </p>
           </div>
         </div>
       </div>
 
       {/* ── 3. Academic Comparison Matrix ── */}
-      <div className="c-academic-section c-academic-section--alt">
+      <div className="c-academic-section c-academic-section--framed">
         <div className="c-section-header">
-          <span className="c-section-tag">ĐỐI CHIẾU CÔNG NGHỆ</span>
-          <h2 className="c-section-title">Vì sao kiểm tra văn bản tiếng Trung cần công nghệ chuyên biệt?</h2>
+          <h2 className="c-section-title">Đặc tính kỹ thuật chuyên biệt cho chữ Hán</h2>
           <p className="c-section-subtitle">
-            Tiếng Trung là ngôn ngữ không có khoảng trắng phân cách giữa các từ như tiếng Việt hay tiếng Anh, do đó các công cụ 
-            quét chuỗi thông thường dễ bỏ sót hoặc nhận diện sai lệch.
+            Khác biệt cơ bản giữa công cụ đối soát tối ưu tiếng Trung và các giải pháp kiểm tra văn bản chữ cái Alphabet thông thường.
           </p>
         </div>
 
@@ -144,42 +129,42 @@ export function LandingAcademicContent() {
           <table className="c-comparison-table">
             <thead>
               <tr>
-                <th scope="col">Tiêu chí đánh giá</th>
+                <th scope="col">Tiêu chí đối chiếu</th>
                 <th scope="col">Công cụ tìm kiếm thông thường</th>
-                <th scope="col">Phần mềm đạo văn tiếng Anh</th>
-                <th scope="col" className="c-col-highlight">C-checker (Tối ưu tiếng Trung)</th>
+                <th scope="col">Phần mềm kiểm tra tiếng Anh</th>
+                <th scope="col" className="c-col-seal">C-checker (Tối ưu Hán ngữ)</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="c-table-criteria"><strong>Nhận diện ranh giới từ Hán</strong></td>
-                <td>Chỉ khớp chính xác cụm từ</td>
-                <td>Gặp lỗi token hóa ký tự CJK</td>
-                <td className="c-col-highlight"><span className="c-check-icon">✓</span> Phân tích câu &amp; ký tự Hán tự chuyên sâu</td>
+                <td className="c-table-criteria"><strong>Phân đoạn ranh giới từ Hán tự</strong></td>
+                <td>Khớp chuỗi từ khóa rời rạc</td>
+                <td>Gặp lỗi token hóa chữ tượng hình CJK</td>
+                <td className="c-col-seal">Phân tích theo câu &amp; cấu trúc Hán tự chuyên sâu</td>
               </tr>
               <tr>
-                <td className="c-table-criteria"><strong>Phát hiện Paraphrase tiếng Trung</strong></td>
-                <td><span className="c-cross-icon">✗</span> Không phát hiện được</td>
-                <td><span className="c-cross-icon">✗</span> Chỉ hỗ trợ tiếng Anh tốt</td>
-                <td className="c-col-highlight"><span className="c-check-icon">✓</span> Mô hình Transformer MiniLM đa ngữ</td>
+                <td className="c-table-criteria"><strong>Nhận diện câu diễn đạt lại (Paraphrase)</strong></td>
+                <td>Không hỗ trợ</td>
+                <td>Chỉ chính xác với tiếng Anh</td>
+                <td className="c-col-seal">Mô hình nơ-ron Transformer MiniLM đa ngữ</td>
               </tr>
               <tr>
-                <td className="c-table-criteria"><strong>Báo cáo vị trí câu &amp; Nguồn</strong></td>
-                <td>Chỉ hiển thị link web chung</td>
-                <td>Báo cáo theo khối đoạn</td>
-                <td className="c-col-highlight"><span className="c-check-icon">✓</span> Bóc tách trực quan từng câu có trích đoạn nguồn</td>
+                <td className="c-table-criteria"><strong>Bóc tách từng câu &amp; Nguồn gốc</strong></td>
+                <td>Dẫn liên kết website chung</td>
+                <td>Đánh dấu theo khối văn bản lớn</td>
+                <td className="c-col-seal">Bóc tách chi tiết từng câu kèm nguồn đối chiếu</td>
               </tr>
               <tr>
-                <td className="c-table-criteria"><strong>Hỗ trợ Giản thể &amp; Phồn thể</strong></td>
-                <td>Cần gõ chính xác hệ chữ</td>
-                <td>Không hỗ trợ chuyển tự</td>
-                <td className="c-col-highlight"><span className="c-check-icon">✓</span> Nhận diện tương đương ngữ nghĩa cả 2 hệ chữ</td>
+                <td className="c-table-criteria"><strong>Tương thích Giản thể &amp; Phồn thể</strong></td>
+                <td>Yêu cầu đúng tuyệt đối ký tự</td>
+                <td>Không hỗ trợ liên thông hệ chữ</td>
+                <td className="c-col-seal">Liên kết ngữ nghĩa giữa hai hệ chữ Hán</td>
               </tr>
               <tr>
-                <td className="c-table-criteria"><strong>Chi phí sử dụng</strong></td>
-                <td>Miễn phí nhưng hạn chế</td>
-                <td>Đắt đỏ (tính theo lượt/tháng)</td>
-                <td className="c-col-highlight"><span className="c-check-icon">✓</span> Miễn phí phục vụ cộng đồng học thuật</td>
+                <td className="c-table-criteria"><strong>Chính sách tiếp cận học thuật</strong></td>
+                <td>Miễn phí nhưng hạn chế tính năng</td>
+                <td>Thu phí giấy phép đắt đỏ theo tháng</td>
+                <td className="c-col-seal">Hỗ trợ miễn phí vì cộng đồng nghiên cứu</td>
               </tr>
             </tbody>
           </table>
@@ -189,145 +174,136 @@ export function LandingAcademicContent() {
       {/* ── 4. Use Cases ── */}
       <div className="c-academic-section">
         <div className="c-section-header">
-          <span className="c-section-tag">ỨNG DỤNG THỰC TẾ</span>
-          <h2 className="c-section-title">Đồng hành cùng cộng đồng nghiên cứu tiếng Trung</h2>
+          <h2 className="c-section-title">Phạm vi ứng dụng trong nghiên cứu &amp; đào tạo</h2>
           <p className="c-section-subtitle">
-            C-checker được thiết kế nhằm đáp ứng các tiêu chuẩn khắt khe trong môi trường học viện và cơ sở đào tạo đại học.
+            Cung cấp công cụ chuẩn mực cho các cấp bậc đào tạo và nghiên cứu học thuật Hán văn.
           </p>
         </div>
 
         <div className="c-usecase-grid">
           <div className="c-usecase-card">
-            <div className="c-usecase-header">
-              <span className="c-usecase-tag">Học viên &amp; Sinh viên</span>
-              <h3 className="c-usecase-title">Khóa luận &amp; Luận văn tốt nghiệp</h3>
-            </div>
+            <div className="c-usecase-role">Học viên &amp; Sinh viên</div>
+            <h3 className="c-usecase-title">Khóa luận &amp; Luận văn tốt nghiệp</h3>
             <p className="c-usecase-text">
-              Hỗ trợ sinh viên ngành Ngôn ngữ Trung Quốc, Sư phạm tiếng Trung và Trung Quốc học tự rà soát văn bản trước khi nộp 
-              hội đồng chấm luận văn, hạn chế các sơ suất trích dẫn vô ý.
+              Hỗ trợ sinh viên ngành Ngôn ngữ Trung Quốc, Sư phạm tiếng Trung tự rà soát văn bản trước khi trình hội đồng, 
+              chủ động điều chỉnh các sai sót trích dẫn vô ý.
             </p>
             <ul className="c-usecase-list">
-              <li>Rà soát chương Tổng quan lý thuyết &amp; Lịch sử vấn đề</li>
-              <li>Kiểm tra tính chuẩn xác của các đoạn dịch ngữ liệu</li>
-              <li>Bảo đảm tỷ lệ tương đồng nằm trong ngưỡng quy định của trường</li>
+              <li>Rà soát chương Tổng quan tư liệu &amp; Cơ sở lý luận</li>
+              <li>Kiểm chứng độ chính xác các đoạn trích dẫn ngữ liệu</li>
+              <li>Bảo đảm tỷ lệ tương đồng trong ngưỡng quy định của cơ sở đào tạo</li>
             </ul>
           </div>
 
           <div className="c-usecase-card">
-            <div className="c-usecase-header">
-              <span className="c-usecase-tag">Nghiên cứu sinh &amp; Tác giả</span>
-              <h3 className="c-usecase-title">Bài báo khoa học &amp; Đề tài NCKH</h3>
-            </div>
+            <div className="c-usecase-role">Tác giả &amp; Nhà nghiên cứu</div>
+            <h3 className="c-usecase-title">Bài báo khoa học &amp; Đề tài NCKH</h3>
             <p className="c-usecase-text">
-              Hỗ trợ tác giả hoàn thiện bản thảo trước khi gửi đến các tạp chí khoa học chuyên ngành, hội thảo quốc tế hoặc cơ quan 
-              tài trợ nghiên cứu.
+              Giúp tác giả thẩm định tính nguyên bản của bản thảo trước khi gửi phản biện tại các tạp chí khoa học chuyên ngành 
+              hoặc hội thảo quốc tế.
             </p>
             <ul className="c-usecase-list">
-              <li>Kiểm chứng nguồn tham khảo gốc (Primary &amp; Secondary sources)</li>
-              <li>Đối chiếu trích dẫn theo định dạng chuẩn APA 7 / Chicago</li>
-              <li>Bảo đảm sự độc lập của kết quả phân tích và thảo luận</li>
+              <li>Đối soát nguồn sơ cấp (Primary) và nguồn thứ cấp (Secondary)</li>
+              <li>Chuẩn hóa trích dẫn theo định dạng APA 7 / MLA</li>
+              <li>Khẳng định tính độc lập của luận cứ và kết quả phân tích</li>
             </ul>
           </div>
 
           <div className="c-usecase-card">
-            <div className="c-usecase-header">
-              <span className="c-usecase-tag">Biên phiên dịch</span>
-              <h3 className="c-usecase-title">Dịch thuật học thuật Hán - Việt</h3>
-            </div>
+            <div className="c-usecase-role">Biên phiên dịch học thuật</div>
+            <h3 className="c-usecase-title">Dịch thuật &amp; Đối chiếu ngữ liệu Hán - Việt</h3>
             <p className="c-usecase-text">
-              Giúp biên dịch viên kiểm soát mức độ trùng lặp giữa văn bản dịch và các bản dịch song ngữ đã xuất bản trước đó trên 
-              không gian trực tuyến.
+              Hỗ trợ dịch giả kiểm soát mức độ trùng lặp giữa bản dịch mới và các công trình dịch thuật song ngữ đã công bố.
             </p>
             <ul className="c-usecase-list">
-              <li>Tránh vô tình trùng lặp diễn đạt với các ấn bản cũ</li>
-              <li>Tra cứu đối sánh thuật ngữ chuyên ngành chuẩn xác</li>
-              <li>Nâng cao chất lượng dịch và tính tự nhiên của câu văn</li>
+              <li>Tránh trùng lặp diễn đạt vô thức với các bản dịch tiền nhiệm</li>
+              <li>Chuẩn hóa thuật ngữ chuyên ngành Hán - Việt</li>
+              <li>Bảo toàn văn phong học thuật chuẩn mực</li>
             </ul>
           </div>
         </div>
       </div>
 
       {/* ── 5. Featured Knowledge Base Articles ── */}
-      <div className="c-academic-section c-academic-section--alt">
+      <div className="c-academic-section c-academic-section--framed">
         <div className="c-section-header">
-          <span className="c-section-tag">CHUYÊN ĐỀ HỌC THUẬT</span>
-          <h2 className="c-section-title">Cẩm nang &amp; Kiến thức viết nghiên cứu tiếng Trung</h2>
+          <h2 className="c-section-title">Chuyên đề nghiên cứu &amp; Cẩm nang trích dẫn</h2>
           <p className="c-section-subtitle">
-            Khám phá tuyển tập các bài nghiên cứu và hướng dẫn thực hành trích dẫn, xử lý câu trùng lặp do đội ngũ học thuật biên soạn.
+            Tuyển tập tài liệu hướng dẫn kỹ năng viết và xử lý văn bản tiếng Trung học thuật do C-checker biên soạn.
           </p>
         </div>
 
         <div className="c-articles-grid">
           <article className="c-article-card">
-            <div className="c-article-tag">PHƯƠNG PHÁP VIẾT</div>
+            <span className="c-article-category">PHƯƠNG PHÁP VIẾT</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y">
                 Cách giảm tỷ lệ trùng lặp mà không làm sai ý bài viết
               </Link>
             </h3>
             <p className="c-article-excerpt">
-              Quy trình 4 bước xử lý đoạn văn bị trùng lặp, kỹ thuật biến đổi cấu trúc câu tiếng Trung học thuật an toàn và nhận diện các cạm bẫy lách máy cần tránh.
+              Quy trình 4 bước xử lý đoạn văn bị trùng lặp, kỹ thuật biến đổi cấu trúc câu tiếng Trung học thuật an toàn và nhận diện cạm bẫy lách máy cần tránh.
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
 
           <article className="c-article-card">
-            <div className="c-article-tag">CHUẨN TRÍCH DẪN</div>
+            <span className="c-article-category">CHUẨN TRÍCH DẪN</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/cach-trich-dan-tai-lieu-tieng-trung-theo-apa">
                 Cách trích dẫn tài liệu tiếng Trung theo chuẩn APA 7
               </Link>
             </h3>
             <p className="c-article-excerpt">
-              Nguyên tắc trích dẫn nguồn chữ Hán, cách phiên âm Pinyin, dịch nghĩa tiêu đề và bộ ví dụ chi tiết cho sách chuyên khảo, bài báo tạp chí và luận văn.
+              Nguyên tắc trích dẫn nguồn chữ Hán, cách ghi Pinyin, dịch nghĩa tiêu đề và bộ ví dụ chi tiết cho sách chuyên khảo, bài báo tạp chí và luận văn.
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/cach-trich-dan-tai-lieu-tieng-trung-theo-apa" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
 
           <article className="c-article-card">
-            <div className="c-article-tag">ĐÁNH GIÁ TỶ LỆ</div>
+            <span className="c-article-category">NGƯỠNG ĐÁNH GIÁ</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam">
                 Bao nhiêu % trùng lặp thì có thể yên tâm nộp bài?
               </Link>
             </h3>
             <p className="c-article-excerpt">
-              Tìm hiểu các mốc tỷ lệ tương đồng tham khảo tại các trường đại học, cách phân biệt trùng lặp kỹ thuật và đạo văn thực chất trước hội đồng.
+              Tìm hiểu các mốc tỷ lệ tương đồng tham khảo tại các cơ sở đào tạo, cách phân biệt trùng lặp kỹ thuật và đạo văn thực chất trước hội đồng.
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
 
           <article className="c-article-card">
-            <div className="c-article-tag">KỸ THUẬT PARAPHRASE</div>
+            <span className="c-article-category">KỸ THUẬT PARAPHRASE</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/cach-paraphrase-tieng-trung-dung-cach">
                 Cách paraphrase tiếng Trung đúng cách và tránh đạo văn
               </Link>
             </h3>
             <p className="c-article-excerpt">
-              Phương pháp diễn đạt lại văn bản tiếng Trung mà không làm biến đổi sắc thái khẳng định, nguyên tắc dẫn nguồn và các lỗi diễn đạt thường gặp.
+              Phương pháp diễn đạt lại văn bản tiếng Trung mà không làm biến đổi sắc thái khẳng định, nguyên tắc dẫn nguồn và các lỗi sai ngữ nghĩa thường gặp.
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/cach-paraphrase-tieng-trung-dung-cach" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
 
           <article className="c-article-card">
-            <div className="c-article-tag">DANH MỤC THAM KHẢO</div>
+            <span className="c-article-category">TÀI LIỆU THAM KHẢO</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/cach-ghi-tai-lieu-tham-khao-tieng-trung-trong-luan-van-tieng-viet">
                 Cách ghi tài liệu tham khảo tiếng Trung trong luận văn tiếng Việt
@@ -338,13 +314,13 @@ export function LandingAcademicContent() {
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/cach-ghi-tai-lieu-tham-khao-tieng-trung-trong-luan-van-tieng-viet" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
 
           <article className="c-article-card">
-            <div className="c-article-tag">KIỂM TRA TRƯỚC KHI NỘP</div>
+            <span className="c-article-category">BẢNG KIỂM NỘP BÀI</span>
             <h3 className="c-article-title">
               <Link to="/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop">
                 Checklist kiểm tra luận văn tiếng Trung trước khi nộp
@@ -355,15 +331,15 @@ export function LandingAcademicContent() {
             </p>
             <div className="c-article-footer">
               <Link to="/kien-thuc/checklist-kiem-tra-luan-van-tieng-trung-truoc-khi-nop" className="c-article-link">
-                Đọc bài viết →
+                Xem chuyên đề →
               </Link>
             </div>
           </article>
         </div>
 
         <div className="c-section-cta">
-          <Link to="/kien-thuc" className="c-btn c-btn--outline c-btn--lg">
-            Khám phá toàn bộ 21+ chuyên đề học thuật tiếng Trung →
+          <Link to="/kien-thuc" className="c-btn-scholarly">
+            Xem toàn bộ 21 chuyên đề học thuật tiếng Trung →
           </Link>
         </div>
       </div>
@@ -371,116 +347,114 @@ export function LandingAcademicContent() {
       {/* ── 6. Comprehensive FAQs (8 In-Depth Academic Questions) ── */}
       <div className="c-academic-section">
         <div className="c-section-header">
-          <span className="c-section-tag">HỎI ĐÁP HỌC THUẬT</span>
-          <h2 className="c-section-title">Các câu hỏi thường gặp về kiểm tra trùng lặp tiếng Trung</h2>
+          <h2 className="c-section-title">Giải đáp thắc mắc về kiểm chứng văn bản</h2>
           <p className="c-section-subtitle">
-            Giải đáp chi tiết các thắc mắc về cơ chế tính điểm, tính bảo mật và chuẩn mực học thuật khi sử dụng hệ thống C-checker.
+            Làm rõ các vấn đề cốt lõi về bản chất điểm tương đồng, thuật toán và quyền riêng tư dữ liệu học thuật.
           </p>
         </div>
 
-        <div className="c-faq-accordion-grid">
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              1. Điểm tương đồng (Similarity Score) có đồng nghĩa với đạo văn không?
+        <div className="c-faq-scholarly-grid">
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Điểm tương đồng kỹ thuật (Similarity) khác với đạo văn (Plagiarism) như thế nào?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                <strong>Không.</strong> Điểm tương đồng là chỉ số kỹ thuật phản ánh tỷ lệ phần trăm các câu hoặc cụm từ trong văn bản 
-                của bạn trùng khớp hoặc tương tự về mặt ngữ nghĩa với ngữ liệu đối chiếu. Đạo văn là một phán quyết học thuật dựa trên 
-                ngữ cảnh: một đoạn văn có trích dẫn đúng nguồn hợp lệ vẫn có thể có điểm tương đồng kỹ thuật, nhưng hoàn toàn hợp lệ về mặt học thuật.
+                Điểm tương đồng là một chỉ số tính toán khách quan phản ánh tỷ lệ phần trăm ký tự hoặc cấu trúc câu trùng khớp với dữ liệu đối chứng. 
+                Đạo văn là kết luận mang tính học thuật về việc có hay không hành vi sử dụng tư tưởng hoặc câu chữ của người khác mà không dẫn nguồn hợp lệ. 
+                Một bài viết có tỷ lệ tương đồng 15% nhưng toàn bộ là trích dẫn đúng chuẩn APA thì hoàn toàn liêm chính về mặt học thuật.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              2. Vì sao kiểm tra trùng lặp văn bản tiếng Trung lại phức tạp hơn tiếng Anh hay tiếng Việt?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Vì sao kiểm tra văn bản tiếng Trung cần phương pháp tách biệt với tiếng Anh hay tiếng Việt?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                Tiếng Trung là chữ tượng hình (Logogram), không có dấu cách ngăn cách từ như các hệ chữ Alphabet hay Latin. Do đó, một 
-                công cụ kiểm tra tốt phải giải quyết đồng thời bài toán phân đoạn từ (Word Segmentation), sự khác biệt giữa Giản thể và 
-                Phồn thể, cùng với các biến thể ngữ nghĩa đa dạng của thành ngữ (quán dụng ngữ, thành ngữ 4 chữ 成语).
+                Tiếng Trung là chữ tượng hình khối vuông (方块字), không sử dụng khoảng trắng phân cách từ. Do đó, các công cụ quét chuỗi đơn giản 
+                sẽ thất bại trong việc phân định ranh giới từ và nhận diện thành ngữ, quán dụng ngữ. C-checker xử lý kết hợp cả cấp độ câu học thuật, 
+                đoạn ngữ nghĩa và đối chiếu linh hoạt giữa Giản thể và Phồn thể.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              3. C-checker kết hợp các thuật toán nào để đưa ra kết luận chính xác?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              C-checker kết hợp những thuật toán nào để tính toán kết quả?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                C-checker tích hợp 4 thước đo:
+                Hệ thống vận hành cơ chế đa tầng:
               </p>
               <ul>
-                <li><strong>MiniLM Semantic Embedding:</strong> Đo độ tương đồng ngữ nghĩa bằng mạng nơ-ron Transformer.</li>
-                <li><strong>LCS (Longest Common Subsequence):</strong> Bắt chuỗi ký tự chung dài nhất dù bị chèn thêm trợ từ.</li>
-                <li><strong>N-gram Overlap:</strong> Đo mức độ phủ cụm từ ngắn.</li>
-                <li><strong>Contiguous Match:</strong> Phát hiện câu bị sao chép nguyên văn từng ký tự.</li>
+                <li><strong>MiniLM Semantic Embedding:</strong> Đo lường sự tương đồng về mặt ý niệm qua mô hình mạng nơ-ron Transformer.</li>
+                <li><strong>LCS (Longest Common Subsequence):</strong> Bắt chuỗi ký tự chung dài nhất, hiệu quả ngay cả khi bị chèn hư từ.</li>
+                <li><strong>N-gram Overlap:</strong> Đo lường mức độ bao phủ cụm ký tự liền kề.</li>
+                <li><strong>Contiguous Match:</strong> Phát hiện các trường hợp sao chép nguyên văn từng ký tự.</li>
               </ul>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              4. Tài liệu tôi tải lên C-checker có bị lưu trữ công khai hoặc chia sẻ không?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Văn bản gửi lên hệ thống có bị lưu lại hoặc rò rỉ bản thảo không?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                <strong>Tuyệt đối không.</strong> C-checker tuân thủ chính sách bảo vệ quyền tác giả nghiêm ngặt. Đối với phiên bản 
-                dùng thử không đăng nhập, văn bản chỉ được xử lý tạm thời trong bộ nhớ đệm phục vụ phân tích và bị xóa ngay sau khi trả kết quả. 
-                Với tài khoản cá nhân, kết quả chỉ hiển thị trong kho lưu trữ riêng của bạn và bạn có quyền xóa vĩnh viễn bất kỳ lúc nào.
+                Tuyệt đối không. Đối với lượt kiểm tra nhanh của khách, văn bản chỉ nạp vào bộ nhớ RAM tạm thời để phân tích và tự động hủy bỏ ngay sau đó. 
+                Đối với tài khoản cá nhân, kết quả được mã hóa và chỉ duy nhất chủ tài khoản có quyền truy cập hoặc xóa vĩnh viễn khỏi lịch sử.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              5. Tôi cần làm gì khi một câu bị C-checker đánh dấu màu đỏ (trùng lặp cao)?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Nên xử lý như thế nào khi một câu bị hệ thống đánh dấu màu đỏ?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                Bạn hãy nhấp vào câu đó để xem câu đối chiếu nguồn gốc. Nếu đó là định nghĩa gốc hoặc số liệu của tác giả khác, hãy 
-                bổ sung trích dẫn chuẩn (Họ tên tác giả, năm xuất bản). Nếu đó là phân tích của bạn nhưng vô tình trùng lặp diễn đạt, 
-                hãy áp dụng kỹ thuật <em>paraphrase</em>: thay đổi cấu trúc chủ - vị, diễn đạt lại bằng vốn từ của bạn nhưng bảo lưu trọn vẹn ý nghĩa học thuật.
+                Nhấp vào câu được đánh dấu để mở đoạn văn đối chiếu nguồn. Nếu câu đó trích dẫn định nghĩa hay số liệu của tác giả khác, 
+                hãy bổ sung dấu ngoặc kép hoặc nguồn tham khảo chuẩn mực. Nếu là câu diễn giải của bạn, hãy tái cấu trúc câu văn bằng cách thay đổi 
+                thành phần chủ - vị hoặc dùng từ ngữ của riêng bạn nhưng bảo lưu trọn vẹn ý tứ nghiên cứu.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              6. Các định dạng tệp nào được C-checker hỗ trợ tải lên?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Hệ thống hỗ trợ những định dạng tệp tài liệu nào?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                Khi đăng nhập bằng tài khoản Google, bạn có thể tải lên trực tiếp các tệp văn bản định dạng <strong>.docx (Microsoft Word)</strong>, 
-                <strong>.pdf</strong> và <strong>.txt</strong>. Hệ thống tự động trích xuất nội dung văn bản chữ Hán và tiến hành đối soát nhanh chóng.
+                Khi đăng nhập bằng tài khoản Google, bạn có thể tải lên trực tiếp các tệp <strong>.docx (Microsoft Word)</strong>, 
+                <strong>.pdf</strong> và <strong>.txt</strong>. Bộ trích xuất ngữ liệu sẽ tự động bóc tách nội dung chữ Hán để tiến hành phân tích.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              7. Làm thế nào để trích dẫn tài liệu tiếng Trung đúng chuẩn APA 7?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              Nguyên tắc cơ bản để trích dẫn tài liệu chữ Hán theo chuẩn APA 7 là gì?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                Theo chuẩn APA 7, với tài liệu chữ Hán: giữ nguyên tên tác giả bằng chữ Hán (kèm Pinyin nếu viết bằng tiếng Anh), 
-                năm xuất bản trong ngoặc đơn, tên bài báo hoặc sách bằng chữ Hán kèm theo bản dịch nghĩa tiếng Việt/tiếng Anh đặt trong dấu ngoặc vuông <code>[...]</code>. 
-                Bạn có thể xem hướng dẫn chi tiết tại mục Kiến thức của C-checker.
+                Giữ nguyên họ tên tác giả bằng chữ Hán, ghi năm xuất bản trong ngoặc đơn, tên tài liệu bằng chữ Hán kèm theo bản dịch nghĩa 
+                tiếng Việt hoặc tiếng Anh đặt trong dấu ngoặc vuông <code>[...]</code>. Chi tiết từng trường hợp sách chuyên khảo hay bài báo khoa học 
+                đều có bài hướng dẫn cụ thể trong mục Kiến thức.
               </p>
             </div>
           </div>
 
-          <div className="c-faq-box">
-            <h3 className="c-faq-box-q">
-              8. Dịch vụ của C-checker có thu phí không?
+          <div className="c-faq-entry">
+            <h3 className="c-faq-question">
+              C-checker có phải là dịch vụ thương mại thu phí không?
             </h3>
-            <div className="c-faq-box-a">
+            <div className="c-faq-answer">
               <p>
-                C-checker hoạt động theo tôn chỉ phi lợi nhuận hỗ trợ giáo dục và nghiên cứu học thuật. Hệ thống cung cấp dịch vụ 
-                <strong> hoàn toàn miễn phí</strong> cho sinh viên, giảng viên và các nhà nghiên cứu độc lập.
+                Không. C-checker được duy trì phi thương mại với mục tiêu phụng sự giáo dục và hỗ trợ cộng đồng sinh viên, giảng viên và các nhà nghiên cứu 
+                tiếng Trung tại Việt Nam tiếp cận công nghệ kiểm chứng văn bản hiện đại một cách hoàn toàn miễn phí.
               </p>
             </div>
           </div>
@@ -489,4 +463,3 @@ export function LandingAcademicContent() {
     </section>
   );
 }
-
