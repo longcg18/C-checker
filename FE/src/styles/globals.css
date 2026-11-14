@@ -871,32 +871,26 @@ body {
 
 /* ── Academic Trust Ribbon ─────────────────────────────────────── */
 .c-trust-ribbon {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   background: #ffffff;
   border: 1px solid var(--c-border);
   border-radius: var(--c-radius);
   padding: 16px 20px;
   margin-top: 18px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-@media (max-width: 640px) {
-  .c-trust-ribbon {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .c-ribbon-div {
-    display: none;
-  }
+  gap: 0;
 }
 
 .c-ribbon-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  padding: 0 16px;
+  border-right: 1px solid var(--c-border);
+}
+
+.c-ribbon-item:last-child {
+  border-right: none;
 }
 
 .c-ribbon-strong {
@@ -909,13 +903,51 @@ body {
 
 .c-ribbon-label {
   font-size: 12px;
+  line-height: 1.4;
   color: var(--c-text-faint);
 }
 
 .c-ribbon-div {
-  width: 1px;
-  height: 28px;
-  background: var(--c-border);
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .c-trust-ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+    gap: 16px 0;
+  }
+  .c-ribbon-item {
+    padding: 0 14px;
+  }
+  .c-ribbon-item:nth-child(even) {
+    border-right: none;
+  }
+  .c-ribbon-item:nth-child(1),
+  .c-ribbon-item:nth-child(2) {
+    border-bottom: 1px solid var(--c-border);
+    padding-bottom: 14px;
+  }
+  .c-ribbon-item:nth-child(3),
+  .c-ribbon-item:nth-child(4) {
+    padding-top: 2px;
+  }
+}
+
+@media (max-width: 520px) {
+  .c-trust-ribbon {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .c-ribbon-item {
+    border-right: none !important;
+    border-bottom: 1px solid var(--c-border) !important;
+    padding: 0 0 12px 0 !important;
+  }
+  .c-ribbon-item:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
 }
 
 /* ── Fallback upload card compatibility ────────────────────────── */

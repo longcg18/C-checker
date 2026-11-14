@@ -333,19 +333,16 @@ export function UploadSection({ onAnalyze, isAnalyzing, onReset, currentPhase, i
       <div className="c-trust-ribbon">
         <div className="c-ribbon-item">
           <span className="c-ribbon-strong">99.2%</span>
-          <span className="c-ribbon-label">Độ chính xác tương đồng ngữ nghĩa</span>
+          <span className="c-ribbon-label">Độ chính xác ngữ nghĩa</span>
         </div>
-        <div className="c-ribbon-div" />
         <div className="c-ribbon-item">
           <span className="c-ribbon-strong">MiniLM + LCS</span>
           <span className="c-ribbon-label">Phân tích kép ngữ nghĩa &amp; chuỗi</span>
         </div>
-        <div className="c-ribbon-div" />
         <div className="c-ribbon-item">
           <span className="c-ribbon-strong">0 Ký tự lưu trữ</span>
           <span className="c-ribbon-label">Bảo mật tác quyền bản thảo</span>
         </div>
-        <div className="c-ribbon-div" />
         <div className="c-ribbon-item">
           <span className="c-ribbon-strong">100% Phi lợi nhuận</span>
           <span className="c-ribbon-label">Hỗ trợ nghiên cứu học thuật</span>
