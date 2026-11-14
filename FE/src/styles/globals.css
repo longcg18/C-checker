@@ -56,6 +56,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   background: #f8f8f5;
   color: var(--c-text);
@@ -70,6 +75,10 @@ body {
   display: flex;
   flex-direction: column;
   background: #f8f8f5;
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
 }
 
 #root {
@@ -439,6 +448,9 @@ body {
   display: flex;
   flex-direction: column;
   background: transparent;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .c-main--results {
@@ -456,6 +468,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
 }
 
 .c-workspace-layout--center {
@@ -2634,8 +2647,24 @@ body {
 }
 
 @media (max-width: 760px) {
-  .c-dashboard-table { min-width: 760px; }
-  .c-table-actions-column { box-shadow: -8px 0 14px -12px rgba(15, 23, 42, .5); }
+  .c-dashboard-container {
+    padding: 16px 12px;
+    border-radius: var(--c-radius-lg);
+  }
+  .c-dashboard-table {
+    min-width: 540px;
+  }
+  .c-dashboard-table th {
+    padding: 10px 8px;
+    font-size: 11.5px;
+  }
+  .c-dashboard-table td {
+    padding: 12px 8px;
+    font-size: 12.5px;
+  }
+  .c-table-actions-column {
+    box-shadow: -8px 0 14px -12px rgba(15, 23, 42, .5);
+  }
 }
 
 /* Table Empty state */
@@ -2936,7 +2965,7 @@ body {
   }
 }
 
-/* ── Tablet nhỏ / Mobile lớn (≤768px): 1 cột, left panel lên trên ── */
+/* ── Tablet nhỏ / Mobile lớn (≤768px): 1 cột, tối ưu di động toàn diện ── */
 @media (max-width: 768px) {
   .c-layout {
     grid-template-columns: 1fr;
@@ -2944,16 +2973,39 @@ body {
   }
 
   .c-main {
-    padding: 16px 12px 80px;
+    padding: 16px 12px 60px;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
   }
 
   .c-right-panel {
     min-height: 300px;
   }
 
-  /* Header gọn lại */
+  /* Header mobile: 2 hàng chuẩn mực (Hàng 1: Logo & Đăng nhập, Hàng 2: Thanh điều hướng) */
   .c-header {
-    padding: 12px 16px;
+    padding: 10px 14px 8px;
+    max-width: 100%;
+  }
+
+  .c-header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "logo auth"
+      "nav nav";
+    align-items: center;
+    gap: 8px 12px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .c-logo {
+    grid-area: logo;
+    gap: 8px;
+    min-width: 0;
   }
 
   .c-logo-sub {
@@ -2961,12 +3013,284 @@ body {
   }
 
   .c-logo-title {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .c-logo-icon {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .c-header-auth {
+    grid-area: auth;
+    min-width: 0;
+  }
+
+  .c-header-nav {
+    grid-area: nav;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    padding: 3px 0 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .c-header-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .c-nav-link {
+    font-size: 13px;
+    padding: 5px 11px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Workspace Hero Header on mobile */
+  .c-workspace-hero {
+    margin: 18px auto 16px;
+    padding: 0 6px;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .c-workspace-headline {
+    font-size: 1.6rem;
+    line-height: 1.3;
+  }
+
+  .c-workspace-lead {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .c-hero-kicker {
+    padding: 3px 10px;
+    margin-bottom: 12px;
+    max-width: 100%;
+  }
+
+  .c-hero-kicker-text {
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Studio Desk Workstation on mobile */
+  .c-studio-wrap {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .c-studio-card {
+    border-radius: var(--c-radius);
+    max-width: 100%;
+  }
+
+  .c-studio-topbar {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .c-studio-tab {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  .c-studio-tools {
+    gap: 6px;
+  }
+
+  .c-studio-tool-btn {
+    padding: 4px 8px;
+    font-size: 11.5px;
+  }
+
+  .c-studio-samples-bar {
+    padding: 8px 10px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: 100%;
+  }
+
+  .c-studio-samples-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .c-samples-label {
+    flex-shrink: 0;
+    font-size: 11.5px;
+  }
+
+  .c-sample-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 3px 9px;
+  }
+
+  .c-studio-textarea {
+    padding: 14px 14px;
+    font-size: 14px;
+    min-height: 160px;
+  }
+
+  .c-studio-bottom-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .c-studio-metrics {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .c-studio-action {
+    width: 100%;
+  }
+
+  .c-btn-inspect {
+    width: 100%;
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+
+  /* Academic Content Landing on mobile */
+  .c-academic-landing {
+    margin-top: 36px;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .c-academic-hero {
+    margin: 0 auto 32px;
+    padding: 0 6px;
+    max-width: 100%;
+  }
+
+  .c-academic-hero-title {
+    font-size: 1.6rem;
+    line-height: 1.32;
+    margin-bottom: 12px;
+  }
+
+  .c-academic-hero-lead {
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  .c-section-header {
+    margin-bottom: 24px;
+    padding: 0 6px;
+  }
+
+  .c-section-title {
+    font-size: 1.45rem;
+    line-height: 1.3;
+  }
+
+  .c-section-subtitle {
+    font-size: 13px;
+  }
+
+  .c-academic-section {
+    padding: 32px 0;
+  }
+
+  .c-academic-section--framed {
+    padding: 22px 14px;
+    margin: 18px 0;
+    border-radius: var(--c-radius);
+  }
+
+  .c-pillar-item {
+    border-right: none !important;
+    border-bottom: 1px solid var(--c-border);
+    padding: 18px 14px;
+  }
+
+  .c-pillar-item:last-child {
+    border-bottom: none;
+  }
+
+  .c-comparison-table-wrap {
+    margin: 0 -2px;
+    max-width: 100%;
+  }
+
+  .c-comparison-table {
+    min-width: 520px;
+  }
+
+  .c-comparison-table th,
+  .c-comparison-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .c-usecase-card {
+    padding: 20px 16px;
+  }
+
+  .c-article-card {
+    padding: 20px 16px;
+  }
+
+  .c-faq-entry {
+    padding: 20px 16px;
+  }
+
+  /* Subpages (About, Guide, Knowledge, Contact) mobile adjustments */
+  .c-page-layout {
+    padding: 20px 12px 48px;
+    max-width: 100%;
+  }
+
+  .c-page-hero {
+    margin-bottom: 28px;
+  }
+
+  .c-page-hero-title {
+    font-size: 1.7rem;
+    line-height: 1.3;
+  }
+
+  .c-page-hero-subtitle {
+    font-size: 13.5px;
+  }
+
+  .c-about-pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .c-about-pillar-card {
+    padding: 18px 14px;
+  }
+
+  .c-guide-card {
+    padding: 18px 14px;
+  }
+
+  .c-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .c-contact-card {
+    padding: 18px 14px;
   }
 
   /* Upload card full width */
@@ -2994,30 +3318,57 @@ body {
 /* ── Mobile nhỏ (≤480px) ── */
 @media (max-width: 480px) {
   .c-main {
-    padding: 12px 10px 80px;
+    padding: 10px 8px 60px;
   }
 
   .c-header {
-    padding: 10px 12px;
+    padding: 8px 10px 6px;
   }
 
   .c-logo-icon {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
 
   .c-logo-icon svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
   }
 
   .c-logo-title {
-    font-size: 16px;
+    font-size: 15.5px;
   }
 
-  /* Các nút đăng xuất nhỏ hơn */
+  .c-nav-link {
+    font-size: 12.5px;
+    padding: 4px 8px;
+  }
+
+  /* Các nút đăng xuất nhỏ gọn */
   .c-user-profile span {
     display: none;
+  }
+
+  .c-user-profile {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+
+  .c-btn--logout {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+  }
+
+  .c-workspace-headline {
+    font-size: 1.4rem;
+  }
+
+  .c-academic-hero-title {
+    font-size: 1.4rem;
+  }
+
+  .c-section-title {
+    font-size: 1.3rem;
   }
 }
 
