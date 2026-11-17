@@ -12,6 +12,14 @@ interface ArticleItem {
 
 const articles: ArticleItem[] = [
   {
+    href: '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh',
+    title: 'Hướng dẫn sử dụng C-checker chi tiết từ A-Z (Kèm hình ảnh & Video)',
+    description: 'Quy trình thực hành 4 giai đoạn với hình ảnh giao diện chi tiết, video mô phỏng thao tác nạp tài liệu và cách đọc báo cáo đối soát câu.',
+    category: 'method',
+    categoryLabel: 'HƯỚNG DẪN THỰC HÀNH',
+    readTime: '10 phút đọc'
+  },
+  {
     href: '/kien-thuc/cach-giam-ty-le-trung-lap-ma-khong-lam-sai-y',
     title: 'Cách giảm tỷ lệ trùng lặp mà không làm sai ý bài viết',
     description: 'Quy trình 4 bước xử lý đoạn văn bị trùng lặp, kỹ thuật biến đổi câu tiếng Trung an toàn và cạm bẫy lách máy cần tránh.',
@@ -206,7 +214,7 @@ export function KnowledgePage() {
           </div>
           <h1 className="c-page-title">Chuyên đề nghiên cứu &amp; Cẩm nang học thuật</h1>
           <p className="c-page-subtitle">
-            Hệ thống 21 bài khảo cứu chuyên sâu về quy chuẩn trích dẫn APA 7, kỹ thuật paraphrase Hán ngữ, giải mã tỷ lệ tương đồng và phân tích cấu trúc văn bản.
+            Hệ thống 22 bài khảo cứu &amp; cẩm nang thực hành chuyên sâu về quy trình kiểm tra đối soát, quy chuẩn trích dẫn APA 7, kỹ thuật paraphrase Hán ngữ và giải mã báo cáo tương đồng.
           </p>
 
           {/* Category Filter Pills */}

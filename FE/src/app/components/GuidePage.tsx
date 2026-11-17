@@ -27,6 +27,27 @@ export function GuidePage({ onBack }: GuidePageProps) {
           <p className="c-page-subtitle">
             Quy trình 4 giai đoạn từ thao tác nhập liệu, theo dõi phân tích ngữ nghĩa đến cách giải mã và xử lý từng chỉ số trong báo cáo đối soát.
           </p>
+
+          <div style={{ marginTop: 18 }}>
+            <a
+              href="/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 16px',
+                background: 'rgba(139, 29, 29, 0.08)',
+                border: '1px solid rgba(139, 29, 29, 0.3)',
+                borderRadius: 20,
+                color: 'var(--c-accent, #8b1d1d)',
+                fontSize: 13,
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}
+            >
+              <span>🎬 Xem bài hướng dẫn trực quan (Kèm hình ảnh UI &amp; Video mô phỏng) →</span>
+            </a>
+          </div>
         </header>
 
         <div className="c-page-content">

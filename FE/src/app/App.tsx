@@ -37,6 +37,7 @@ import { QuotesVsCitationsArticle } from './components/QuotesVsCitationsArticle'
 import { SecondarySourceCitationArticle } from './components/SecondarySourceCitationArticle';
 import { CommonKnowledgeArticle } from './components/CommonKnowledgeArticle';
 import { ManageChineseReferencesArticle } from './components/ManageChineseReferencesArticle';
+import { VisualGuideArticle } from './components/VisualGuideArticle';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,10 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
   '/kien-thuc': {
     title: 'Kiến thức kiểm tra trùng lặp tiếng Trung — C-checker',
     description: 'Tài liệu chuyên sâu về cách đọc báo cáo, phương pháp, hạn chế và sai số khi kiểm tra trùng lặp tiếng Trung bằng C-checker.',
+  },
+  '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh': {
+    title: 'Hướng dẫn sử dụng C-checker có hình ảnh & video minh họa',
+    description: 'Cẩm nang thực hành kiểm tra đạo văn tiếng Trung từng bước với hình ảnh giao diện thực tế, video mô phỏng và hướng dẫn đọc báo cáo đối soát.',
   },
   '/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam': {
     title: 'Bao nhiêu % trùng lặp thì có thể yên tâm? — C-checker',
@@ -768,6 +773,7 @@ export default function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/kien-thuc" element={<KnowledgePage />} />
+          <Route path="/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh" element={<VisualGuideArticle />} />
           <Route path="/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam" element={<SimilarityThresholdArticle />} />
           <Route path="/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc" element={<ResearchTrendsArticle />} />
           <Route path="/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon" element={<ChineseComparisonArticle />} />
