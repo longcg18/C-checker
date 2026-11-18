@@ -13,8 +13,8 @@ interface ArticleItem {
 const articles: ArticleItem[] = [
   {
     href: '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh',
-    title: 'Hướng dẫn sử dụng C-checker chi tiết từ A-Z (Kèm hình ảnh & Video)',
-    description: 'Quy trình thực hành 4 giai đoạn với hình ảnh giao diện chi tiết, video mô phỏng thao tác nạp tài liệu và cách đọc báo cáo đối soát câu.',
+    title: 'Hướng dẫn sử dụng C-checker chi tiết từ A-Z (Kèm hình ảnh & Minh họa tương tác)',
+    description: 'Quy trình thực hành 4 giai đoạn với hình ảnh giao diện chi tiết, minh họa tương tác từng bước và cách đọc báo cáo đối soát câu.',
     category: 'method',
     categoryLabel: 'HƯỚNG DẪN THỰC HÀNH',
     readTime: '10 phút đọc'

@@ -36,8 +36,8 @@ export function ContactPage() {
                 </p>
                 <div className="c-contact-email-box">
                   <span className="c-contact-email-label">Email trực tiếp:</span>
-                  <a href="mailto:nguyenphuclong.work@gmail.com" className="c-contact-email-link">
-                    nguyenphuclong.work@gmail.com
+                  <a href="mailto:longnp@c-checker.io.vn" className="c-contact-email-link">
+                    longnp@c-checker.io.vn
                   </a>
                 </div>
               </article>
@@ -50,8 +50,8 @@ export function ContactPage() {
                 </p>
                 <div className="c-contact-email-box">
                   <span className="c-contact-email-label">Email trực tiếp:</span>
-                  <a href="mailto:nguyenphuclong.work@gmail.com" className="c-contact-email-link">
-                    nguyenphuclong.work@gmail.com
+                  <a href="mailto:longnp@c-checker.io.vn" className="c-contact-email-link">
+                    longnp@c-checker.io.vn
                   </a>
                 </div>
               </article>

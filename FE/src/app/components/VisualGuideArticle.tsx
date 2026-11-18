@@ -1,19 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
+
+interface WalkthroughStep {
+  id: number;
+  label: string;
+  tag: string;
+  title: string;
+  desc: string;
+  tab: 'input' | 'upload' | 'progress' | 'report';
+}
+
+const WALKTHROUGH_STEPS: WalkthroughStep[] = [
+  {
+    id: 1,
+    label: 'Tổng quan Bàn Khảo Duyệt',
+    tag: 'BƯỚC 1 · KHỞI TẠO',
+    title: 'Giao diện Bàn Khảo Duyệt tiếng Trung',
+    desc: 'Chọn chế độ Nhập văn bản trực tiếp (miễn phí, không cần đăng nhập) hoặc Tải tệp DOCX/PDF.',
+    tab: 'input',
+  },
+  {
+    id: 2,
+    label: 'Nhập văn bản & Đoạn mẫu',
+    tag: 'BƯỚC 2 · NHẬP LIỆU',
+    title: 'Dán chữ Hán hoặc nạp nhanh đoạn mẫu',
+    desc: 'Hỗ trợ cả Giản thể và Phồn thể (tối đa 300 ký tự cho khách), tự động đếm ký tự trước khi quét.',
+    tab: 'input',
+  },
+  {
+    id: 3,
+    label: 'Đăng nhập & Tải tệp DOCX/PDF',
+    tag: 'BƯỚC 3 · TẢI TỆP LỚN',
+    title: 'Phân tích toàn văn luận văn qua Google OAuth',
+    desc: 'Đăng nhập Google để mở khóa tải tệp .docx, .pdf, .txt và lưu lịch sử đối soát cá nhân.',
+    tab: 'upload',
+  },
+  {
+    id: 4,
+    label: 'Theo dõi AI phân tích ngầm',
+    tag: 'BƯỚC 4 · XỬ LÝ AI',
+    title: 'Bóc tách câu với MiniLM, LCS & N-gram',
+    desc: 'Hệ thống hiển thị % tiến độ theo thời gian thực và cho phép thu nhỏ để làm việc khác.',
+    tab: 'progress',
+  },
+  {
+    id: 5,
+    label: 'Giải mã báo cáo & Đối soát câu',
+    tag: 'BƯỚC 5 · BÁO CÁO',
+    title: 'Đánh dấu câu trùng lặp kèm nguồn đối chứng',
+    desc: 'Xem tỷ lệ tương đồng toàn bài, nhấp từng câu tô màu để kiểm tra đoạn văn gốc tương ứng.',
+    tab: 'report',
+  },
+];
 
 export function VisualGuideArticle() {
   const navigate = useNavigate();
   const [activeStepTab, setActiveStepTab] = useState<'all' | 'input' | 'upload' | 'progress' | 'report'>('all');
-  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
-  const [currentVideoTimestamp, setCurrentVideoTimestamp] = useState('00:00');
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
 
-  const videoChapters = [
-    { time: '00:00', label: 'Tổng quan giao diện', step: 'input' },
-    { time: '01:10', label: 'Nhập text & Thử mẫu nhanh', step: 'input' },
-    { time: '02:30', label: 'Đăng nhập & Tải tệp DOCX/PDF', step: 'upload' },
-    { time: '03:45', label: 'Theo dõi AI phân tích ngầm', step: 'progress' },
-    { time: '05:15', label: 'Giải mã báo cáo & Đối soát câu', step: 'report' },
-  ];
+  const activeScene = WALKTHROUGH_STEPS[currentStepIdx];
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const timer = setInterval(() => {
+      setCurrentStepIdx((prev) => (prev + 1) % WALKTHROUGH_STEPS.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isAutoPlaying]);
+
+  const handleSelectStep = (idx: number) => {
+    setCurrentStepIdx(idx);
+    setIsAutoPlaying(false);
+  };
 
   return (
     <article className="c-page-layout c-article-layout">
@@ -33,13 +92,13 @@ export function VisualGuideArticle() {
             <span className="c-seal-sub">HƯỚNG DẪN THỰC HÀNH TRỰC QUAN</span>
           </div>
           <h1 className="c-page-title">
-            Hướng dẫn sử dụng C-checker chi tiết từ A-Z (Kèm hình ảnh &amp; Video minh họa)
+            Hướng dẫn sử dụng C-checker chi tiết từ A-Z (Kèm hình ảnh &amp; Minh họa tương tác)
           </h1>
           <p className="c-page-subtitle">
             Cẩm nang thao tác trực quan từng bước: từ nạp tài liệu tiếng Trung, theo dõi tiến trình bóc tách ngữ nghĩa AI thời gian thực cho đến cách đọc hiểu và đối soát từng câu trong báo cáo tương đồng.
           </p>
           <div className="c-article-byline">
-            Ban Học thuật C-checker · Cập nhật tháng 11/2026 · 10 phút đọc · Có hình ảnh &amp; Video mô phỏng
+            Ban Học thuật C-checker · Cập nhật tháng 11/2026 · 10 phút đọc · Minh họa giao diện từng bước
           </div>
         </header>
 
@@ -85,98 +144,158 @@ export function VisualGuideArticle() {
         <div className="c-page-content c-article-content">
 
           {/* ═══════════════════════════════════════════════════════════════
-              KHUNG VIDEO MÔ PHỎNG / WALKTHROUGH PLAYER
+              KHUNG MINH HỌA TƯƠNG TÁC TỪNG BƯỚC (INTERACTIVE WALKTHROUGH)
           ═══════════════════════════════════════════════════════════════ */}
-          <section className="c-visual-media-box">
+          <section className="c-visual-media-box" aria-label="Minh họa quy trình sử dụng C-checker">
             <div className="c-media-box-header">
               <div className="c-media-badge">
                 <span className="c-media-dot" />
-                VIDEO MÔ PHỎNG TRỰC QUAN
+                MINH HỌA TƯƠNG TÁC TỪNG BƯỚC
               </div>
-              <span className="c-media-duration">Thời lượng: 06:40 · Chuẩn HD</span>
+              <span className="c-media-duration">
+                Bước {activeScene.id} / {WALKTHROUGH_STEPS.length}
+              </span>
             </div>
 
             <div className="c-mock-player-container">
-              {/* Màn hình trình phát video */}
+              {/* Màn hình minh họa tương tác */}
               <div className="c-mock-video-screen">
-                {!isPlayingVideo ? (
-                  <div className="c-mock-video-poster">
-                    <div className="c-video-watermark">C-CHECKER DEMO</div>
-                    <div className="c-video-play-center">
-                      <button
-                        type="button"
-                        className="c-video-play-btn"
-                        onClick={() => setIsPlayingVideo(true)}
-                        aria-label="Phát video hướng dẫn"
-                      >
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      </button>
-                      <div className="c-video-play-text">Bấm để xem video mô phỏng thao tác hoàn chỉnh</div>
-                    </div>
-                    {/* Minh họa background giao diện đang chạy */}
-                    <div className="c-video-preview-elements">
-                      <div className="c-preview-card">
-                        <span className="c-badge-red">78.5% Trùng lặp</span>
-                        <p className="c-preview-zh">"随着中越经贸合作的不断深化，跨境电商已成为推动两国双边贸易增长的核心引擎之一..."</p>
-                      </div>
-                    </div>
+                <div className="c-walkthrough-stage">
+                  <div className="c-walkthrough-topbar">
+                    <span className="c-playing-tag">{activeScene.tag}</span>
+                    <span className="c-walkthrough-url">c-checker.io.vn</span>
                   </div>
-                ) : (
-                  <div className="c-mock-video-playing">
-                    <div className="c-playing-animation">
-                      <div className="c-playing-radar" />
-                      <div className="c-playing-step-info">
-                        <span className="c-playing-tag">ĐANG PHÁT: MỐC {currentVideoTimestamp}</span>
-                        <h3>Toàn cảnh quy trình kiểm tra đối soát luận văn tiếng Trung trên C-checker</h3>
-                        <p>Hệ thống tự động bóc tách từng câu Hán tự, tính toán chỉ số LCS, N-gram và vector ngữ nghĩa MiniLM.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* Thanh điều khiển video */}
+                  <div className="c-walkthrough-caption">
+                    <h3>{activeScene.title}</h3>
+                    <p>{activeScene.desc}</p>
+                  </div>
+
+                  {/* Cảnh giao diện tương ứng từng bước */}
+                  <div className="c-walkthrough-canvas">
+                    {activeScene.id === 1 && (
+                      <div className="c-wt-card">
+                        <div className="c-wt-tabs">
+                          <span className="c-wt-tab c-wt-tab--on">✍️ Nhập văn bản</span>
+                          <span className="c-wt-tab">📄 Tải tệp DOCX / PDF</span>
+                        </div>
+                        <div className="c-wt-placeholder">
+                          Dán đoạn văn bản tiếng Trung (Giản thể hoặc Phồn thể) để kiểm tra nhanh...
+                        </div>
+                        <div className="c-wt-chips">
+                          <span className="c-wt-chip">Đoạn mẫu 1</span>
+                          <span className="c-wt-chip">Đoạn mẫu 2</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeScene.id === 2 && (
+                      <div className="c-wt-card">
+                        <div className="c-wt-zh">
+                          随着中越经贸合作的不断深化，跨境电商已成为推动两国双边贸易增长的核心引擎之一...
+                        </div>
+                        <div className="c-wt-footer">
+                          <span className="c-wt-counter">88 / 300 ký tự</span>
+                          <span className="c-wt-btn">Tiến hành đối soát →</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeScene.id === 3 && (
+                      <div className="c-wt-card">
+                        <div className="c-wt-dropzone">
+                          <div className="c-wt-drop-icon">📂</div>
+                          <div className="c-wt-drop-title">Luan_van_Thac_si_2026.docx</div>
+                          <div className="c-wt-drop-sub">Hỗ trợ .docx, .pdf, .txt · Đã xác thực Google OAuth</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeScene.id === 4 && (
+                      <div className="c-wt-card">
+                        <div className="c-wt-progress-head">
+                          <span>Đang phân tích câu 14 / 22</span>
+                          <strong>64%</strong>
+                        </div>
+                        <div className="c-wt-progress-bar">
+                          <div className="c-wt-progress-fill" style={{ width: '64%' }} />
+                        </div>
+                        <div className="c-wt-algo-row">
+                          <span className="c-wt-algo">MiniLM 384d</span>
+                          <span className="c-wt-algo">LCS</span>
+                          <span className="c-wt-algo">N-gram</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeScene.id === 5 && (
+                      <div className="c-wt-card">
+                        <div className="c-wt-report-head">
+                          <span className="c-badge-red">78.5% Trùng lặp</span>
+                          <span className="c-wt-source">Nguồn: 百度学术 / Tạp chí Kinh tế TQ</span>
+                        </div>
+                        <div className="c-wt-zh">
+                          “随着中越经贸合作的不断深化，跨境电商已成为推动两国双边贸易增长的核心引擎之一。”
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Thanh điều khiển trình diễn từng bước */}
                 <div className="c-mock-player-controls">
                   <button
                     type="button"
                     className="c-ctrl-btn"
-                    onClick={() => setIsPlayingVideo(!isPlayingVideo)}
-                    title={isPlayingVideo ? 'Tạm dừng' : 'Phát tiếp'}
+                    onClick={() => setIsAutoPlaying((prev) => !prev)}
+                    title={isAutoPlaying ? 'Tạm dừng tự động chuyển bước' : 'Tự động chạy qua các bước'}
+                    aria-label={isAutoPlaying ? 'Tạm dừng' : 'Phát tự động'}
                   >
-                    {isPlayingVideo ? (
+                    {isAutoPlaying ? (
                       <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
                     ) : (
                       <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                     )}
                   </button>
-                  <span className="c-ctrl-time">{isPlayingVideo ? currentVideoTimestamp : '00:00'} / 06:40</span>
-                  
-                  {/* Timeline bar */}
-                  <div className="c-ctrl-timeline">
-                    <div className="c-ctrl-timeline-fill" style={{ width: isPlayingVideo ? '45%' : '0%' }} />
+                  <button
+                    type="button"
+                    className="c-ctrl-step-btn"
+                    onClick={() => handleSelectStep((currentStepIdx - 1 + WALKTHROUGH_STEPS.length) % WALKTHROUGH_STEPS.length)}
+                  >
+                    ‹ Trước
+                  </button>
+                  <div className="c-ctrl-timeline" aria-hidden="true">
+                    <div
+                      className="c-ctrl-timeline-fill"
+                      style={{ width: `${((currentStepIdx + 1) / WALKTHROUGH_STEPS.length) * 100}%` }}
+                    />
                   </div>
-
-                  <span className="c-ctrl-tag">HD 1080p</span>
+                  <button
+                    type="button"
+                    className="c-ctrl-step-btn"
+                    onClick={() => handleSelectStep((currentStepIdx + 1) % WALKTHROUGH_STEPS.length)}
+                  >
+                    Tiếp ›
+                  </button>
+                  <span className="c-ctrl-tag">
+                    {isAutoPlaying ? 'ĐANG CHẠY' : 'TƯƠNG TÁC'}
+                  </span>
                 </div>
               </div>
 
-              {/* Danh sách các chương / mốc thời gian video */}
+              {/* Danh sách các bước */}
               <div className="c-mock-player-chapters">
-                <div className="c-chapters-title">MỤC LỤC VIDEO HƯỚNG DẪN</div>
+                <div className="c-chapters-title">CÁC BƯỚC THAO TÁC</div>
                 <div className="c-chapters-list">
-                  {videoChapters.map((chap, idx) => (
+                  {WALKTHROUGH_STEPS.map((step, idx) => (
                     <button
-                      key={idx}
+                      key={step.id}
                       type="button"
-                      className={`c-chapter-item ${currentVideoTimestamp === chap.time ? 'c-chapter-item--active' : ''}`}
-                      onClick={() => {
-                        setCurrentVideoTimestamp(chap.time);
-                        setIsPlayingVideo(true);
-                      }}
+                      className={`c-chapter-item ${currentStepIdx === idx ? 'c-chapter-item--active' : ''}`}
+                      onClick={() => handleSelectStep(idx)}
                     >
-                      <span className="c-chapter-time">{chap.time}</span>
-                      <span className="c-chapter-label">{chap.label}</span>
+                      <span className="c-chapter-time">0{step.id}</span>
+                      <span className="c-chapter-label">{step.label}</span>
                     </button>
                   ))}
                 </div>

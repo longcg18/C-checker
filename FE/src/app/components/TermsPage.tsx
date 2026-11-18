@@ -102,9 +102,9 @@ export function TermsPage() {
               Nếu bạn có bất kỳ câu hỏi nào về Điều khoản dịch vụ này, xin vui lòng liên hệ với ban quản trị:
             </p>
             <div className="c-about-contact-info">
-              <a href="mailto:nguyenphuclong.work@gmail.com" className="c-about-contact-link">
+              <a href="mailto:longnp@c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">✉️</span>
-                nguyenphuclong.work@gmail.com
+                longnp@c-checker.io.vn
               </a>
               <a href="https://www.c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>

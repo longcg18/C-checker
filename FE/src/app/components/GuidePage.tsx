@@ -45,7 +45,7 @@ export function GuidePage({ onBack }: GuidePageProps) {
                 textDecoration: 'none'
               }}
             >
-              <span>🎬 Xem bài hướng dẫn trực quan (Kèm hình ảnh UI &amp; Video mô phỏng) →</span>
+              <span>🧭 Xem bài hướng dẫn trực quan (Kèm hình ảnh UI &amp; Minh họa tương tác) →</span>
             </a>
           </div>
         </header>

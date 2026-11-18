@@ -68,7 +68,7 @@ export function Footer({ onOpenModal }: FooterProps) {
                 <Link to="/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam">Ngưỡng tương đồng tham khảo</Link>
               </li>
               <li>
-                <Link to="/kien-thuc" className="c-footer-more-link">Toàn bộ 21 chuyên đề học thuật →</Link>
+                <Link to="/kien-thuc" className="c-footer-more-link">Toàn bộ 22 chuyên đề học thuật →</Link>
               </li>
             </ul>
           </div>

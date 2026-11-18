@@ -124,9 +124,9 @@ export function PrivacyPage() {
               Nếu bạn có bất kỳ thắc mắc hoặc yêu cầu liên quan đến quyền riêng tư và dữ liệu cá nhân, vui lòng liên hệ:
             </p>
             <div className="c-about-contact-info">
-              <a href="mailto:nguyenphuclong.work@gmail.com" className="c-about-contact-link">
+              <a href="mailto:longnp@c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">✉️</span>
-                nguyenphuclong.work@gmail.com
+                longnp@c-checker.io.vn
               </a>
               <a href="https://www.c-checker.io.vn" className="c-about-contact-link">
                 <span className="c-about-contact-icon">🌐</span>

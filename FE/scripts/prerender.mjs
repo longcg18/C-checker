@@ -25,7 +25,7 @@ const pages = {
   '/terms': ['Điều khoản dịch vụ — C-checker', 'Điều kiện sử dụng, giới hạn trách nhiệm và quyền của người dùng khi sử dụng dịch vụ C-checker.'],
   '/contact': ['Liên hệ C-checker', 'Kênh liên hệ hỗ trợ kỹ thuật, góp ý và gửi yêu cầu liên quan đến quyền riêng tư tại C-checker.'],
   '/kien-thuc': ['Kiến thức kiểm tra trùng lặp tiếng Trung — C-checker', 'Tài liệu chuyên sâu về cách đọc báo cáo, phương pháp, hạn chế và sai số khi kiểm tra trùng lặp tiếng Trung bằng C-checker.'],
-  '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh': ['Hướng dẫn sử dụng C-checker có hình ảnh & video minh họa', 'Cẩm nang thực hành kiểm tra đạo văn tiếng Trung từng bước với hình ảnh giao diện thực tế, video mô phỏng và hướng dẫn đọc báo cáo đối soát.'],
+  '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh': ['Hướng dẫn sử dụng C-checker có hình ảnh & minh họa tương tác', 'Cẩm nang thực hành kiểm tra đạo văn tiếng Trung từng bước với hình ảnh giao diện thực tế, minh họa tương tác và hướng dẫn đọc báo cáo đối soát.'],
   '/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam': ['Bao nhiêu % trùng lặp thì có thể yên tâm? — C-checker', 'Tìm hiểu các mốc tỷ lệ trùng lặp tham khảo, cách đọc vị trí trùng và quy trình đánh giá bài viết trước khi nộp.'],
   '/kien-thuc/xu-huong-nghien-cuu-ngon-ngu-van-hoa-trung-quoc': ['Xu hướng nghiên cứu ngôn ngữ và văn hóa Trung Quốc — C-checker', 'Khám phá các hướng nghiên cứu về khối liệu tiếng Trung, AI, nhân văn số, diễn ngôn mạng xã hội và ứng dụng xuyên ngành.'],
   '/kien-thuc/vi-sao-kiem-tra-dao-van-tieng-trung-kho-hon': ['Vì sao kiểm tra đạo văn tiếng Trung khó hơn? — C-checker', 'So sánh những khó khăn khi kiểm tra tiếng Trung với tiếng Anh, tiếng Việt về tách từ, hệ chữ, ngữ nghĩa và nguồn dữ liệu.'],

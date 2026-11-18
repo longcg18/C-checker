@@ -94,8 +94,8 @@ const PAGE_META: Record<string, { title: string; description: string }> = {
     description: 'Tài liệu chuyên sâu về cách đọc báo cáo, phương pháp, hạn chế và sai số khi kiểm tra trùng lặp tiếng Trung bằng C-checker.',
   },
   '/kien-thuc/huong-dan-su-dung-c-checker-co-hinh-anh': {
-    title: 'Hướng dẫn sử dụng C-checker có hình ảnh & video minh họa',
-    description: 'Cẩm nang thực hành kiểm tra đạo văn tiếng Trung từng bước với hình ảnh giao diện thực tế, video mô phỏng và hướng dẫn đọc báo cáo đối soát.',
+    title: 'Hướng dẫn sử dụng C-checker có hình ảnh & minh họa tương tác',
+    description: 'Cẩm nang thực hành kiểm tra đạo văn tiếng Trung từng bước với hình ảnh giao diện thực tế, minh họa tương tác và hướng dẫn đọc báo cáo đối soát.',
   },
   '/kien-thuc/bao-nhieu-phan-tram-trung-lap-thi-yen-tam': {
     title: 'Bao nhiêu % trùng lặp thì có thể yên tâm? — C-checker',
